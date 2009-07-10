@@ -33,13 +33,13 @@ def get_launchpad_object(config, filename=None, staging=False):
 
     if not os.path.exists(filename):
         launchpad = Launchpad.get_token_and_login('Tarmac',
-            SERVICE_ROOT, config.CACHEDIR)
+            SERVICE_ROOT, config.CACHE_HOME)
         launchpad.credentials.save(file(filename, 'w'))
     else:
         credentials = Credentials()
         credentials.load(open(filename))
         launchpad = Launchpad(credentials, SERVICE_ROOT,
-            config.CACHEDIR)
+            config.CACHE_HOME)
 
     return launchpad
 

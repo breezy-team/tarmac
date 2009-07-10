@@ -19,7 +19,7 @@
 import os
 from ConfigParser import NoSectionError, NoOptionError
 from ConfigParser import SafeConfigParser as ConfigParser
-
+from xdg.BaseDirectory import xdg_config_home, xdg_cache_home
 
 class TarmacConfig:
     '''A configuration class.'''
@@ -31,11 +31,10 @@ class TarmacConfig:
         The section parameter is for coping with multiple projects in a single
         config.
         '''
-        self.CONFIG_HOME = os.path.expanduser('~/.config/tarmac')
+        self.CONFIG_HOME = os.path.join(xdg_config_home, 'tarmac')
+        self.CACHE_HOME = os.path.join(xdg_cache_home, 'tarmac')
         self.PID_FILE = '/var/tmp/tarmac-%(project)s' % {'project': project }
-        self.CREDENTIALS = os.path.join(self.CONFIG_HOME, 'credentials')
-
-        self.CACHEDIR = os.path.join(self.CONFIG_HOME, 'cachedir')
+        self.CREDENTIALS = os.path.join(self.CACHE_HOME, 'credentials')
 
         self._check_config_dirs()
         self._CONFIG_FILE = os.path.join(self.CONFIG_HOME, 'tarmac.conf')
@@ -45,12 +44,10 @@ class TarmacConfig:
 
     def _check_config_dirs(self):
         '''Create the configuration directory if it doesn't exist.'''
-        if not os.path.exists(os.path.expanduser('~/.config')):
-            os.mkdir(os.path.expanduser('~/.config'))
-        if not os.path.exists(os.path.expanduser('~/.config/tarmac')):
-            os.mkdir(os.path.expanduser('~/.config/tarmac'))
-        if not os.path.exists(os.path.expanduser('~/.config/tarmac/cachedir')):
-            os.mkdir(os.path.expanduser('~/.config/tarmac/cachedir'))
+        if not os.path.exists(config.CONFIG_HOME):
+            os.makedirs(config.CONFIG_HOME)
+        if not os.path.exists(config.CACHE_HOME):
+            os.makedirs(config.CACHE_HOME)
 
     @property
     def commit_message_template(self):
