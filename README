@@ -57,5 +57,10 @@ I would like to add support for running branch hooks to make sure that the
 branch is fit to land (i.e. run tests, etc.).  I'm not exactly sure of the best
 way to do this just yet.
 
+Web Interface
+=============
 
+Tarmac includes an optional web interface to display the status of Tarmac.
+The web interface is a wsgi app that can easily be loaded into mod_wsgi in
+your apache or nginx server, or run standalone.
 
