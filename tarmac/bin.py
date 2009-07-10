@@ -1,4 +1,19 @@
-# Copyright 2009 Paul Hummer - See LICENSE
+# Copyright 2009 Paul Hummer
+# This file is part of Tarmac.
+#
+# Tarmac is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License version 3 as
+# published by
+# the Free Software Foundation.
+#
+# Tarmac is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Tarmac.  If not, see <http://www.gnu.org/licenses/>.
+
 '''Code used by Tarmac scripts.'''
 import atexit
 import logging
@@ -53,8 +68,39 @@ class TarmacScript:
         raise NotImplementedError
 
 
+class TarmacAuthenticate(TarmacScript):
+    '''Tarmac authentication script.
+
+    This script is intended do nothing but get an OAuth token from Launchpad,
+    and (optionally) output that token to a specified file.
+    '''
+    def __init__(self, test_mode=False):
+        TarmacScript.__init__(self, test_mode)
+
+        self.configuration = TarmacConfig()
+
+        try:
+            self.filename = self.args[0]
+        except IndexError:
+            self.filename = None
+
+    def _create_option_parser(self):
+        '''See `TarmacScript._create_option_parser`.'''
+        parser = OptionParser("%prog [options] <projectname>")
+        return parser
+
+    def main(self):
+        '''See `TarmacScript`.'''
+        launchpad = get_launchpad_object(self.configuration,
+            filename=self.filename)
+
+
 class TarmacLander(TarmacScript):
-    '''Tarmac script.'''
+    '''Tarmac landing script.
+
+    This script handles all landing of branches.  It does the actual work for
+    Tarmac.
+    '''
 
     def __init__(self, test_mode=False):
 
@@ -149,7 +195,9 @@ class TarmacLander(TarmacScript):
                 if self.dry_run:
                     trunk.cleanup()
                 else:
-                    trunk.commit(candidate.commit_message)
+                    trunk.commit(candidate.commit_message,
+                                 authors=source_branch.authors)
+
             except Exception, e:
                 print e
                 trunk.cleanup()
