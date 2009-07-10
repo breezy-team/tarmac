@@ -17,6 +17,7 @@
 '''Tarmac branch tools.'''
 import os
 import shutil
+import tempfile
 
 from bzrlib import branch as bzr_branch, revision
 
@@ -39,7 +40,8 @@ class Branch(object):
 
     def _set_up_working_tree(self):
         '''Create the dir and working tree.'''
-        self.temporary_dir = os.path.join('/tmp', self.lp_branch.project.name)
+        self.temporary_dir = os.path.join(tempfile.gettempdir(),
+                                          self.lp_branch.project.name)
         if os.path.exists(self.temporary_dir):
             shutil.rmtree(self.temporary_dir)
         self.tree = self.branch.create_checkout(self.temporary_dir)
