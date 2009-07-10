@@ -22,7 +22,7 @@ from distutils.core import setup
 from tarmac import __version__
 
 setup(
-    name=u'Tarmac',
+    name=u'tarmac',
     version=__version__,
     description=u'Tarmac - The Launchpad Lander',
     url=u'http://edge.launchpad.net/tarmac',
