@@ -20,7 +20,8 @@ import math
 import os
 import tempfile
 
-from bzrlib import bzrdir
+from bzrlib.branch import Branch
+from bzrlib.bzrdir import BzrDir
 
 
 class MockLPProject(object):
@@ -33,10 +34,16 @@ class MockLPProject(object):
 class MockLPBranch(object):
     '''A mock LP Branch.'''
 
-    def __init__(self):
-        temp_dir = tempfile.mkdtemp()
-        self._internal_bzr_branch = bzrdir.BzrDir.create_branch_convenience(
-            temp_dir)
+    def __init__(self, source_branch=None):
+        self.temp_dir = tempfile.mkdtemp()
+        if source_branch:
+            bzrdir = source_branch.bzrdir.sprout(
+                self.temp_dir)
+            self._internal_tree, self._internal_bzr_branch = \
+                    bzrdir.open_tree_or_branch(self.temp_dir)
+        else:
+            self._internal_bzr_branch = BzrDir.create_branch_convenience(
+                self.temp_dir)
         self.bzr_identity = self._internal_bzr_branch.base
         self.project = MockLPProject()
 

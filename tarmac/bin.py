@@ -191,7 +191,8 @@ class TarmacLander(TarmacScript):
 
         self.logger.info('Downloading development target:\n    %s',
                          project.development_focus.branch)
-        trunk = Branch(trunk, create_tree=True)
+        trunk = Branch(trunk, create_tree=True,
+            configuration=self.configuration)
         for candidate in candidates:
 
             source_branch = Branch(candidate.source_branch)

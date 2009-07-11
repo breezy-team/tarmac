@@ -20,18 +20,30 @@ import unittest
 
 from bzrlib import branch as bzr_branch
 from bzrlib.errors import NoCommits
+from bzrlib.tests import TestCaseInTempDir
 
 from tarmac import branch
 from tarmac.tests.mock import MockLPBranch
 
 
-class TestBranch(unittest.TestCase):
+class TestBranch(TestCaseInTempDir):
     '''Test for Tarmac.branch.Branch.'''
 
-    def setUp(self):
-        '''Set up the test environment.'''
-        temp_dir = os.path.join(os.getcwd(), "_trial_temp")
-        os.environ['BZR_HOME'] = temp_dir
+    #def setUp(self):
+    #    '''Set up the test environment.'''
+    #    temp_dir = os.path.join(os.getcwd(), "_trial_temp")
+    #    os.environ['BZR_HOME'] = temp_dir
+
+    def make_two_branches_to_merge(self):
+        '''Make two branches, one with revisions to merge.'''
+        a_branch = branch.Branch(MockLPBranch(), create_tree=True)
+        a_branch.tree.commit("Reading, 'riting, 'rithmetic")
+        another_branch = branch.Branch(MockLPBranch(
+            source_branch=a_branch.branch))
+        another_branch.lp_branch._internal_tree.commit('ABC...')
+        another_branch.lp_branch._internal_tree.commit('...as easy as 123')
+
+        return a_branch, another_branch
 
     def test_create(self):
         '''Test the creation of a TarmacBranch instance.'''
@@ -61,13 +73,21 @@ class TestBranch(unittest.TestCase):
         self.assertRaises(
             Exception, a_branch.merge, another_branch)
 
-    def test_merge(self):
-        '''A merge on a branch with a tree will succeed.'''
+    def test_merge_no_changes(self):
+        '''A merge on a branch with a tree will raise an exception if no
+        changes are present.'''
         a_branch = branch.Branch(MockLPBranch(), create_tree=True)
         another_branch = branch.Branch(MockLPBranch())
 
         # XXX: Find a way to generate dummy revisions for the second branch.
         self.assertRaises(NoCommits, a_branch.merge, another_branch)
+
+    def test_merge(self):
+        '''A merge on a branch with a tree of a branch with changes will merge.
+        '''
+        a_branch, another_branch = self.make_two_branches_to_merge()
+        a_branch.merge(another_branch)
+        a_branch.has_changes
 
     def test_merge_with_authors(self):
         '''A merge from a branch with authors'''
@@ -79,11 +99,11 @@ class TestBranch(unittest.TestCase):
         branch2.commit('Authors Merge test', authors=branch1.authors)
         self.assertEquals(branch2.authors.sort(), authors.sort())
 
-    def DISABLEDtest_cleanup(self):
+    def test_cleanup(self):
         '''The branch object should clean up after itself.'''
-        a_branch = branch.Branch(MockLPBranch(), create_tree=True)
-        self.assertTrue(os.path.exists(a_branch.temporary_dir))
+        a_branch, another_branch = self.make_two_branches_to_merge()
+        a_branch.merge(another_branch)
+        self.assertTrue(a_branch.has_changes)
 
         a_branch.cleanup()
-        self.assertFalse(os.path.exists(a_branch.temporary_dir))
-
+        self.assertTrue(a_branch.has_changes)
