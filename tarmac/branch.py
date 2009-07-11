@@ -33,9 +33,10 @@ class Branch(object):
     to work seamlessly with both.
     '''
 
-    def __init__(self, lp_branch, create_tree=False):
+    def __init__(self, lp_branch, create_tree=False, configuration=None):
 
-        self.configuration = TarmacConfig()
+        if configuration:
+            self.configuration = configuration
         self.has_tree = create_tree
         self.lp_branch = lp_branch
         self.author_list = None
@@ -45,16 +46,16 @@ class Branch(object):
 
     def _set_up_working_tree(self):
         '''Create the dir and working tree.'''
-        if self.configuration.tree_dir:
-            self.tree_dir = config.tree_dir
+        if self.configuration and self.configuration.tree_dir:
+            self.tree_dir = self.configuration.tree_dir
         else:
             self.tree_dir = os.path.join(tempfile.gettempdir(),
                 self.lp_branch.project.name)
         if os.path.exists(self.tree_dir):
             self.tree = WorkingTree.open(self.tree_dir)
-            self.cleanup()
         else:
             self.tree = self.branch.create_checkout(self.tree_dir)
+        self.cleanup()
         if not self.author_list:
             self._set_authors()
 
@@ -76,7 +77,6 @@ class Branch(object):
         conflict_list = self.tree.merge_from_branch(branch.branch)
         if conflict_list:
             raise BranchHasConflicts
-        #XXX: rockstar - Raise an exception here.
 
     def cleanup(self):
         '''Remove the working tree from the temp dir.'''

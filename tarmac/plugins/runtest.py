@@ -46,7 +46,7 @@ class RunTest(TarmacPlugin):
         self.candidate = candidate
 
         cwd = os.getcwd()
-        os.chdir(trunk.temporary_dir)
+        os.chdir(trunk.tree_dir)
         print 'Running test command: %s' % self.test_command
         proc = subprocess.Popen(
             self.test_command,
