@@ -22,6 +22,8 @@ from distutils.core import setup
 from tarmac import __version__
 
 setup(
+    author='Paul Hummer',
+    author_email='Paul Hummer <paul@eventuallyanyway.com',
     name=u'tarmac',
     version=__version__,
     description=u'Tarmac - The Launchpad Lander',
@@ -30,7 +32,7 @@ setup(
     package_dir={
         'bzrlib.plugins.tarmac': 'bzrplugin',
         'tarmac': 'tarmac'},
-    packages=['bzrlib.plugins.tarmac', 'tarmac'],
+    packages=['bzrlib.plugins.tarmac', 'tarmac', 'tarmac.plugins'],
     scripts=['tarmac-lander', 'tarmac-authenticate'],
     long_description='''
         Tarmac is a series of scripts to facilitate the landing of Bazaar

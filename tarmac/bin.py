@@ -117,6 +117,10 @@ class TarmacLander(TarmacScript):
         logging.basicConfig(filename=self.configuration.log_file,
             level=logging.INFO)
         self.logger = logging.getLogger('tarmac-lander')
+        if self.options.debug:
+            stderr_handler = logging.StreamHandler(sys.stderr)
+            stderr_handler.setLevel(logging.DEBUG)
+            self.logger.addHandler(stderr_handler)
 
         # Write a pid file
         if not test_mode:
@@ -137,6 +141,8 @@ class TarmacLander(TarmacScript):
         parser.add_option('--test-command', type='string', default=None,
             metavar='TEST',
             help='The test command to run after merging a branch.')
+        parser.add_option('--debug', default=False, action='store_true',
+            help='Print information to the screen as well as logging.')
         return parser
 
     def _get_reviewers(self, candidate):
@@ -161,6 +167,8 @@ class TarmacLander(TarmacScript):
 
         project = launchpad.projects[self.project]
         try:
+            self.logger.info('Downloading development target:\n    %s',
+                             project.development_focus.branch)
             trunk = Branch(project.development_focus.branch, create_tree=True)
         except AttributeError:
             message = (
@@ -171,12 +179,15 @@ class TarmacLander(TarmacScript):
             print message
             sys.exit()
 
+        self.logger.debug('Looking for landing candidates')
         candidates = [entry for entry in trunk.landing_candidates
                         if entry.queue_status == u'Approved' and
                         entry.commit_message]
         if not candidates:
             self.logger.info('No branches approved to land.')
             return
+        else:
+            self.logger.debug('Found %s candidates to land', len(candidates))
 
         for candidate in candidates:
 

@@ -16,9 +16,16 @@
 # You should have received a copy of the GNU General Public License
 # along with Tarmac.  If not, see <http://www.gnu.org/licenses/>.
 
+import sys
+
 from tarmac.bin import TarmacLander
 
 if __name__ == '__main__':
     script = TarmacLander()
     script.main()
-
+    # Run the exit functions
+    # On Windows, it seems that things like paramiko do not clean themselves up
+    # properly if you let the stack unwind before running the atexit()
+    # functions. So instead, we just force atexit() to be called here, and then
+    # return
+    sys.exitfunc()
