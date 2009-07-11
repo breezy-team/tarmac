@@ -32,7 +32,7 @@ setup(
     package_dir={
         'tarmac': 'tarmac'},
     packages=['tarmac', 'tarmac.plugins'],
-    scripts=['tarmac-lander', 'tarmac-authenticate'],
+    scripts=['tarmac-lander', 'tarmac-authenticate', 'webui.py'],
     long_description='''
         Tarmac is a series of scripts to facilitate the landing of Bazaar
         branches in Launchpad (http://edge.launchpad.net).''',
