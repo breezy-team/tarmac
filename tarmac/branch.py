@@ -21,6 +21,7 @@ import tempfile
 
 from bzrlib import branch as bzr_branch, revision
 
+from tarmac.config import TarmacConfig
 from tarmac.exceptions import BranchHasConflicts
 
 
@@ -33,6 +34,7 @@ class Branch(object):
 
     def __init__(self, lp_branch, create_tree=False):
 
+        self.configuration = TarmacConfig()
         self.has_tree = create_tree
         self.lp_branch = lp_branch
         self.author_list = None
@@ -42,11 +44,16 @@ class Branch(object):
 
     def _set_up_working_tree(self):
         '''Create the dir and working tree.'''
-        self.temporary_dir = os.path.join(tempfile.gettempdir(),
-                                          self.lp_branch.project.name)
-        if os.path.exists(self.temporary_dir):
-            shutil.rmtree(self.temporary_dir)
-        self.tree = self.branch.create_checkout(self.temporary_dir)
+        if config.tree_dir:
+            self.tree_dir = config.tree_dir
+        else:
+            self.tree_dir = os.path.join(tempfile.gettempdir(),
+                self.lp_branch.project.name)
+        if os.path.exists(self.tree_dir):
+            clean_tree = True
+        self.tree = self.branch.create_checkout(self.tree_dir)
+        if clean_tree:
+            self.cleanup()
         if not self.author_list:
             self._set_authors()
 

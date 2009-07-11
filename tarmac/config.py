@@ -43,7 +43,8 @@ class TarmacConfig:
             self.PID_FILE = os.path.join(pid_base, str(project))
         else:
             self.CONFIG_HOME = os.path.expanduser('~/.config/tarmac')
-            self.PID_FILE = '/var/tmp/tarmac-%(project)s' % {'project': project }
+            self.PID_FILE = '/var/tmp/tarmac-%(project)s' % {
+                'project': project }
 
         self.CREDENTIALS = os.path.join(self.CONFIG_HOME, 'credentials')
 
@@ -92,6 +93,11 @@ class TarmacConfig:
             return self._CONFIG.get(self._PROJECT, 'log_file')
         except (NoOptionError, NoSectionError):
             return os.path.join(self.CONFIG_HOME, self._PROJECT)
+
+    @property
+    def tree_dir(self):
+        '''Get the cached tree dir so no superfluous fetching is needed.'''
+        return self.get('tree_dir')
 
     def get(self, key):
         '''Get a config value for the given key.'''
