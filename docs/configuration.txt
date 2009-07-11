@@ -26,3 +26,19 @@ below::
   # Configuration for the Tarmac project
   log_file=/path/to/logfile
 
+
+Cached tree
+===========
+
+  Tarmac does its best to only have to fetch the WorkingTree of the trunk
+branch once, but sometimes this can have issues.  Tarmac has support for
+specifying where a user may have already placed a WorkingTree of the target
+branch.  In order to use this, simply set the ``tree_dir`` config settisg as
+shown below::
+
+  [tarmac]
+  # Configuration for the Tarmac project
+  tree_dir=/path/to/treedir
+
+  Tarmac is smart enough to clean up that dir when it's done, by making sure
+that there are no local changes just hanging around.
