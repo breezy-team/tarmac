@@ -28,6 +28,7 @@ from launchpadlib.errors import HTTPError
 from tarmac.branch import Branch
 from tarmac.config import TarmacConfig
 from tarmac.hooks import tarmac_hooks
+from tarmac.exceptions import BranchHasConflicts
 from tarmac.plugin import load_plugins
 from tarmac.utils import get_launchpad_object
 
@@ -167,9 +168,7 @@ class TarmacLander(TarmacScript):
 
         project = launchpad.projects[self.project]
         try:
-            self.logger.info('Downloading development target:\n    %s',
-                             project.development_focus.branch)
-            trunk = Branch(project.development_focus.branch, create_tree=True)
+            trunk = project.development_focus.branch
         except AttributeError:
             message = (
                 'Oops!  It looks like you\'ve forgotten to specify a '
@@ -183,18 +182,32 @@ class TarmacLander(TarmacScript):
         candidates = [entry for entry in trunk.landing_candidates
                         if entry.queue_status == u'Approved' and
                         entry.commit_message]
+
         if not candidates:
             self.logger.info('No branches approved to land.')
             return
         else:
             self.logger.debug('Found %s candidates to land', len(candidates))
 
+        self.logger.info('Downloading development target:\n    %s',
+                         project.development_focus.branch)
+        trunk = Branch(trunk, create_tree=True)
         for candidate in candidates:
 
             source_branch = Branch(candidate.source_branch)
 
             try:
                 trunk.merge(source_branch)
+
+            except BranchHasConflicts:
+                # XXX: rockstar - This should also set the status, but it
+                # appears that this is broken in Launchpad currently.
+                candidate.createComment(
+                    subject=u'Conflicts merging branch',
+                    content=trunk.get_conflicts())
+                trunk.cleanup()
+                continue
+
             except PointlessMerge:
                 trunk.cleanup()
                 continue
@@ -209,10 +222,11 @@ class TarmacLander(TarmacScript):
                     trunk.commit(candidate.commit_message,
                                  authors=source_branch.authors)
 
+                tarmac_hooks['post_tarmac_commit'].fire(
+                    self.options, self.configuration, candidate, trunk)
+
             except Exception, e:
                 print e
-                trunk.cleanup()
 
-            tarmac_hooks['post_tarmac_commit'].fire(
-                self.options, self.configuration, candidate, trunk)
+            trunk.cleanup()
 

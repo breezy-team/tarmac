@@ -21,6 +21,8 @@ import tempfile
 
 from bzrlib import branch as bzr_branch, revision
 
+from tarmac.exceptions import BranchHasConflicts
+
 
 class Branch(object):
     '''Wrapper for working with branches.
@@ -63,12 +65,24 @@ class Branch(object):
         '''Merge from another tarmac.branch.Branch instance.'''
         if not self.has_tree:
             raise Exception('This branch wasn\'t set up to do merging,')
-        self.tree.merge_from_branch(branch.branch)
+        conflict_list = self.tree.merge_from_branch(branch.branch)
+        if conflict_list:
+            raise BranchHasConflicts
+        #XXX: rockstar - Raise an exception here.
 
     def cleanup(self):
         '''Remove the working tree from the temp dir.'''
         if self.has_tree:
             self._set_up_working_tree()
+
+    def get_conflicts(self):
+        '''Print the conflicts.'''
+        assert self.tree.conflicts()
+        conflicts = []
+        for conflict in self.tree.conflicts():
+            conflicts.append(
+                u'%s in %s' % (conflict.typestring, conflict.path))
+        return '\n'.join(conflicts)
 
     def commit(self, commit_message, authors=None, **kw):
         '''Commit changes.'''
