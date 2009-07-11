@@ -15,3 +15,6 @@
 # along with Tarmac.  If not, see <http://www.gnu.org/licenses/>.
 
 '''Tarmac specific exceptions.'''
+
+class BranchHasConflicts(Exception):
+    '''Exception for when a branch merge has conflicts.'''

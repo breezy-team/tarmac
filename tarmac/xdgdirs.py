@@ -26,16 +26,27 @@ class NotSupportedError(Exception):
 try:
     from xdg.BaseDirectory import xdg_config_home, xdg_cache_home
 except ImportError:
-    if sys.platform == 'win32' or sys.platform == 'cygwin':
-        xdg_config_home = os.environ.get('XDG_CONFIG_HOME', None)
-        xdg_cache_home = os.environ.get('XDG_CACHE_HOME', None)
-        if not xdg_config_home:
-            xdg_config_home = os.environ.get('APPDATA', None)
-        if not xdg_cache_home:
-            xdg_cache_home = os.environ.get('TEMP', None)
+    if sys.platform == 'win32':
+        from bzrlib import win32utils as win
+        xdg_config_home = win.get_appdata_location_unicode()
+        xdg_cache_home = get_temp_location()
 
-        if not xdg_config_home or not xdg_cache_home:
-            major, minor, build, plat, text = sys.getwindowsversion()
-            if plat != 2 or major < 5:
-                raise NotSupportedError('Windows %d.%d is not supported' % (
-                        major, minor))
+
+# XXX This function should be merged into bzrlib.win32utils
+def get_temp_location():
+    '''Return temporary (cache) directory'''
+    if sys.platform == 'win32':
+        # Doing good
+        temp = os.environ.get('TEMP')
+        if temp:
+            return temp
+
+        # Not on Vista/XP/2000
+        windir = os.environ.get('windir')
+        if windir:
+            temp = os.path.join(windir, 'Temp')
+            if os.path.isdir(temp):
+                return temp
+
+    # Not on win32 or nothing found
+    return None

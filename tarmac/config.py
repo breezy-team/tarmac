@@ -22,6 +22,7 @@
 '''Configuration handler.'''
 # pylint: disable-msg=C0103
 import os
+import sys
 from ConfigParser import NoSectionError, NoOptionError
 from ConfigParser import SafeConfigParser as ConfigParser
 from tarmac.xdgdirs import xdg_config_home, xdg_cache_home
@@ -38,7 +39,8 @@ class TarmacConfig:
         '''
         self.CONFIG_HOME = os.path.join(xdg_config_home, 'tarmac')
         self.CACHE_HOME = os.path.join(xdg_cache_home, 'tarmac')
-        self.PID_FILE = '/var/tmp/tarmac-%(project)s' % {'project': project }
+        self.PID_FILE = os.path.join(
+            self.CACHE_HOME, 'tarmac-%(project)s' % {'project': project })
         self.CREDENTIALS = os.path.join(self.CACHE_HOME, 'credentials')
 
         self._check_config_dirs()
@@ -53,6 +55,9 @@ class TarmacConfig:
             os.makedirs(self.CONFIG_HOME)
         if not os.path.exists(self.CACHE_HOME):
             os.makedirs(self.CACHE_HOME)
+        pid_dir = os.path.dirname(self.PID_FILE)
+        if not os.path.exists(pid_dir):
+            os.makedirs(pid_dir)
 
     @property
     def commit_message_template(self):
@@ -81,6 +86,11 @@ class TarmacConfig:
             return self._CONFIG.get(self._PROJECT, 'log_file')
         except (NoOptionError, NoSectionError):
             return os.path.join(self.CONFIG_HOME, self._PROJECT)
+
+    @property
+    def tree_dir(self):
+        '''Get the cached tree dir so no superfluous fetching is needed.'''
+        return self.get('tree_dir')
 
     def get(self, key):
         '''Get a config value for the given key.'''

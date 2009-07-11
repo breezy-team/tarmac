@@ -1,0 +1,16 @@
+Tarmac 0.1 Released
+===================
+Initial release of Tarmac
+
+
+Tarmac 0.2 Released
+===================
+Plugin support added
+  - Run command plugin added
+  - CIA.vc plugin added
+  - Commit message template plugin added
+Web interface
+Proper attribution of merge commits to the source branch author
+Conflict handling improved
+Added docs
+Increased test coverage

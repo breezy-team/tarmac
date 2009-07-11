@@ -35,6 +35,9 @@ class CIAVC(TarmacPlugin):
     def __call__(self, options, configuration, candidate, trunk):
     # pylint: disable-msg=W0613,W0104,C0324
 
+        if options.dry_run:
+            return
+
         if (configuration.cia_project and configuration.cia_server):
             cia_project = configuration.cia_project
             cia_server = configuration.cia_server

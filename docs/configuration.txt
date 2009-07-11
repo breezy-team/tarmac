@@ -1,0 +1,44 @@
+==============================
+Basic Configuration for Tarmac
+==============================
+
+Introduction
+============
+
+  Tarmac gets it's configuration data from ``~/.config/tarmac/tarmac.conf`` --
+The configuration is split up by projects.  As an example, Tarmac will
+demonstrate its own config throughout this project.  To start with, the Tarmac
+project should be added to the config (with the file being created if it
+doesn't exist already).::
+
+  [tarmac]
+  # Configuration for the Tarmac project
+
+
+Logging
+=======
+
+  The log file, by default, is set to ``~/.config/tarmac/<project-name>``.  In
+order to change this location, simply set the log_file setting, as shown
+below::
+
+  [tarmac]
+  # Configuration for the Tarmac project
+  log_file=/path/to/logfile
+
+
+Cached tree
+===========
+
+  Tarmac does its best to only have to fetch the WorkingTree of the trunk
+branch once, but sometimes this can have issues.  Tarmac has support for
+specifying where a user may have already placed a WorkingTree of the target
+branch.  In order to use this, simply set the ``tree_dir`` config settisg as
+shown below::
+
+  [tarmac]
+  # Configuration for the Tarmac project
+  tree_dir=/path/to/treedir
+
+  Tarmac is smart enough to clean up that dir when it's done, by making sure
+that there are no local changes just hanging around.

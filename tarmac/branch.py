@@ -17,8 +17,13 @@
 '''Tarmac branch tools.'''
 import os
 import shutil
+import tempfile
 
 from bzrlib import branch as bzr_branch, revision
+from bzrlib.workingtree import WorkingTree
+
+from tarmac.config import TarmacConfig
+from tarmac.exceptions import BranchHasConflicts
 
 
 class Branch(object):
@@ -28,8 +33,10 @@ class Branch(object):
     to work seamlessly with both.
     '''
 
-    def __init__(self, lp_branch, create_tree=False):
+    def __init__(self, lp_branch, create_tree=False, configuration=None):
 
+        if configuration:
+            self.configuration = configuration
         self.has_tree = create_tree
         self.lp_branch = lp_branch
         self.author_list = None
@@ -39,10 +46,16 @@ class Branch(object):
 
     def _set_up_working_tree(self):
         '''Create the dir and working tree.'''
-        self.temporary_dir = os.path.join('/tmp', self.lp_branch.project.name)
-        if os.path.exists(self.temporary_dir):
-            shutil.rmtree(self.temporary_dir)
-        self.tree = self.branch.create_checkout(self.temporary_dir)
+        if hasattr(self, 'configuration') and self.configuration.tree_dir:
+            self.tree_dir = self.configuration.tree_dir
+        else:
+            self.tree_dir = os.path.join(tempfile.gettempdir(),
+                self.lp_branch.project.name)
+        if os.path.exists(self.tree_dir):
+            self.tree = WorkingTree.open(self.tree_dir)
+        else:
+            self.tree = self.branch.create_checkout(self.tree_dir)
+        self.cleanup()
         if not self.author_list:
             self._set_authors()
 
@@ -61,12 +74,24 @@ class Branch(object):
         '''Merge from another tarmac.branch.Branch instance.'''
         if not self.has_tree:
             raise Exception('This branch wasn\'t set up to do merging,')
-        self.tree.merge_from_branch(branch.branch)
+        conflict_list = self.tree.merge_from_branch(branch.branch)
+        if conflict_list:
+            raise BranchHasConflicts
 
     def cleanup(self):
         '''Remove the working tree from the temp dir.'''
         if self.has_tree:
-            self._set_up_working_tree()
+            self.tree.revert()
+            self.tree.update()
+
+    def get_conflicts(self):
+        '''Print the conflicts.'''
+        assert self.tree.conflicts()
+        conflicts = []
+        for conflict in self.tree.conflicts():
+            conflicts.append(
+                u'%s in %s' % (conflict.typestring, conflict.path))
+        return '\n'.join(conflicts)
 
     def commit(self, commit_message, authors=None, **kw):
         '''Commit changes.'''
@@ -91,3 +116,9 @@ class Branch(object):
         if self.author_list is None:
             self._set_authors()
         return self.author_list
+
+    @property
+    def has_changes(self):
+        if not self.has_tree:
+            return False
+        return self.tree.changes_from(self.tree.basis_tree())

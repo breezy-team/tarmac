@@ -7,55 +7,47 @@ Launchpad REST API to find approved merge proposals against the current
 development focus, and automatically merges those branches.
 
 
+Installation
+============
+
+Download the most recent Tarmac tarball or checkout the branch with ``bzr
+branch lp:tarmac``.  Within the tarmac directory, one can run ``tarmac-lander``
+straight from there, or run ``python setup.py install`` to install it to the
+system.
+
+
+Authentication
+==============
+
+When running Tarmac for the first time, it will need to get an OAuth token from
+Launchpad to allow it to act as a user.  One can do this by running the
+following command:
+
+  ``tarmac-authenticate``
+
+  ...and then follow the instructions.  The token will be placed in
+``$HOME/.config/tarmac/credentials``.  Tarmac does need to write some data, so
+it's required that the token have at least write access as the user.
+
+
 Usage
 =====
 
-Download the most recent Tarmac tarball or checkout the branch with ``bzr
-branch lp:tarmac``.  Within the tarmac directory, you can run ``tarmac-lander``
-straight from there, or run ``python setup.py install`` to install it to your
-system.
+Run ``tarmac-lander <project>`` to get Tarmac to look for the development
+focus of a project and any branches approved to merge into the branch.  One
+may test it out without merging by running:
 
-Run ``tarmac-lander <your-project>`` to get Tarmac to look for the development
-focus of your project and any branches approved to merge into your branch.  You
-can test it out without merging by running:
+  ``tarmac-lander <project> --dry-run``
 
-  ``tarmac-lander <your-project> --dry-run``
-
-When running Tarmac for the first time, you'll need to get an OAuth token from
-Launchpad to allow it to act as you.  You only need to give it options to read
-data as your login, as Tarmac doesn't currently need to write any data through
-the API.
+Tarmac recognizes branches to land when the merge proposal's status (not the
+votes) is "Approved" and a valid commit message has been set for the branch.
+If a branch isn't being picked up by Tarmac to land, then one of these issues
+is probably the culprit.
 
 
-Commit Comments
-===============
+Web Interface
+=============
 
-While Launchpad's Branch Merge Proposals do have a commit message stored, it's
-not exposed in the API and can not be set outside the email interface.  Until
-this is fixed, it's required that you either send an email to the branch merge
-proposal with the subject set to "Commit Message" with the body being your
-commit message, or make a comment on the merge proposal with "Commit message: "
-as your first thing.  For instance, you could leave a comment like the
-following:
-
-  Commit message: The loop-dee-loo now hippity-bippitys over the samoflam
-
-This will be fixed in Launchpad soon, so it won't require the special commit
-message.
-
-
-Caveats
-=======
-
-Tarmac is a young project, and I'm not exactly sure what features people want,
-so I went for "the simplest thing that could possibly work"
-Currently, only the development focus branch is set to automerge approved
-branches.  Eventually, I'd like to add support for automatically merging to any
-of the branches Tarmac has permission to write to.
-
-I would like to add support for running branch hooks to make sure that the
-branch is fit to land (i.e. run tests, etc.).  I'm not exactly sure of the best
-way to do this just yet.
-
-
-
+Tarmac includes an optional web interface to display the status of Tarmac.
+The web interface is a wsgi app that can easily be loaded into mod_wsgi in
+your apache or nginx server, or run standalone.
