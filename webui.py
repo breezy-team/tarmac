@@ -31,14 +31,13 @@ render = web.template.render('templates/')
 class index(object):
     """The main page of the status site."""
 
-    def GET(self):
-        # XXX I cannot figure out how to make the config object from main
-        # available here.
-        # statusfile = config.log_file
+    def __init__(self):
         from tarmac.config import TarmacConfig
-        statusfile = TarmacConfig(sys.argv[2]).log_file
-        print statusfile
-        tail = subprocess.Popen(('tail', '-n40', statusfile),
+        config = TarmacConfig(sys.argv[2])
+        self.statusfile = config.log_file
+
+    def GET(self):
+        tail = subprocess.Popen(('tail', '-n40', self.statusfile),
             stdout = subprocess.PIPE,
             stderr = subprocess.PIPE)
         output, errput = tail.communicate()
@@ -49,8 +48,6 @@ def main():
     if len(sys.argv) != 3:
         print "Please specify a port number and a project name: ./webui.py 8080 default"
         return 1
-    projectname = sys.argv[2]
-    config = TarmacConfig(projectname)
     app = web.application(urls, globals())
     return app.run()
 
