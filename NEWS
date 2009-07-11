@@ -5,6 +5,7 @@ Initial release of Tarmac
 
 Tarmac 0.2 Released
 ===================
+
 Plugin support added
   - Run command plugin added
   - CIA.vc plugin added
@@ -14,3 +15,4 @@ Proper attribution of merge commits to the source branch author
 Conflict handling improved
 Added docs
 Increased test coverage
+Minimal downloading of checkouts
