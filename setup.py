@@ -30,9 +30,8 @@ setup(
     url=u'http://edge.launchpad.net/tarmac',
     license=u'GPLv3',
     package_dir={
-        'bzrlib.plugins.tarmac': 'bzrplugin',
         'tarmac': 'tarmac'},
-    packages=['bzrlib.plugins.tarmac', 'tarmac', 'tarmac.plugins'],
+    packages=['tarmac', 'tarmac.plugins'],
     scripts=['tarmac-lander', 'tarmac-authenticate'],
     long_description='''
         Tarmac is a series of scripts to facilitate the landing of Bazaar
