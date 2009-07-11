@@ -1,4 +1,19 @@
-# Copyright 2009 Paul Hummer - See LICENSE
+# Copyright 2009 Paul Hummer
+# This file is part of Tarmac.
+#
+# Tarmac is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License version 3 as
+# published by
+# the Free Software Foundation.
+#
+# Tarmac is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Tarmac.  If not, see <http://www.gnu.org/licenses/>.
+
 '''Code used by Tarmac scripts.'''
 import atexit
 import logging
@@ -13,6 +28,7 @@ from launchpadlib.errors import HTTPError
 from tarmac.branch import Branch
 from tarmac.config import TarmacConfig
 from tarmac.hooks import tarmac_hooks
+from tarmac.exceptions import BranchHasConflicts
 from tarmac.plugin import load_plugins
 from tarmac.utils import get_launchpad_object
 
@@ -102,6 +118,10 @@ class TarmacLander(TarmacScript):
         logging.basicConfig(filename=self.configuration.log_file,
             level=logging.INFO)
         self.logger = logging.getLogger('tarmac-lander')
+        if self.options.debug:
+            stderr_handler = logging.StreamHandler(sys.stderr)
+            stderr_handler.setLevel(logging.DEBUG)
+            self.logger.addHandler(stderr_handler)
 
         # Write a pid file
         if not test_mode:
@@ -122,6 +142,8 @@ class TarmacLander(TarmacScript):
         parser.add_option('--test-command', type='string', default=None,
             metavar='TEST',
             help='The test command to run after merging a branch.')
+        parser.add_option('--debug', default=False, action='store_true',
+            help='Print information to the screen as well as logging.')
         return parser
 
     def _get_reviewers(self, candidate):
@@ -146,7 +168,7 @@ class TarmacLander(TarmacScript):
 
         project = launchpad.projects[self.project]
         try:
-            trunk = Branch(project.development_focus.branch, create_tree=True)
+            trunk = project.development_focus.branch
         except AttributeError:
             message = (
                 'Oops!  It looks like you\'ve forgotten to specify a '
@@ -156,19 +178,36 @@ class TarmacLander(TarmacScript):
             print message
             sys.exit()
 
+        self.logger.debug('Looking for landing candidates')
         candidates = [entry for entry in trunk.landing_candidates
                         if entry.queue_status == u'Approved' and
                         entry.commit_message]
+
         if not candidates:
             self.logger.info('No branches approved to land.')
             return
+        else:
+            self.logger.debug('Found %s candidates to land', len(candidates))
 
+        self.logger.info('Downloading development target:\n    %s',
+                         project.development_focus.branch)
+        trunk = Branch(trunk, create_tree=True)
         for candidate in candidates:
 
             source_branch = Branch(candidate.source_branch)
 
             try:
                 trunk.merge(source_branch)
+
+            except BranchHasConflicts:
+                # XXX: rockstar - This should also set the status, but it
+                # appears that this is broken in Launchpad currently.
+                candidate.createComment(
+                    subject=u'Conflicts merging branch',
+                    content=trunk.get_conflicts())
+                trunk.cleanup()
+                continue
+
             except PointlessMerge:
                 trunk.cleanup()
                 continue
@@ -183,10 +222,11 @@ class TarmacLander(TarmacScript):
                     trunk.commit(candidate.commit_message,
                                  authors=source_branch.authors)
 
+                tarmac_hooks['post_tarmac_commit'].fire(
+                    self.options, self.configuration, candidate, trunk)
+
             except Exception, e:
                 print e
-                trunk.cleanup()
 
-            tarmac_hooks['post_tarmac_commit'].fire(
-                self.options, self.configuration, candidate, trunk)
+            trunk.cleanup()
 

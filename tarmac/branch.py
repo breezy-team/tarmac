@@ -1,9 +1,27 @@
-# Copyright 2009 Paul Hummer - See LICENSE
+# Copyright 2009 Paul Hummer
+# This file is part of Tarmac.
+#
+# Tarmac is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License version 3 as
+# published by
+# the Free Software Foundation.
+#
+# Tarmac is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Tarmac.  If not, see <http://www.gnu.org/licenses/>.
+
 '''Tarmac branch tools.'''
 import os
 import shutil
+import tempfile
 
 from bzrlib import branch as bzr_branch, revision
+
+from tarmac.exceptions import BranchHasConflicts
 
 
 class Branch(object):
@@ -24,7 +42,8 @@ class Branch(object):
 
     def _set_up_working_tree(self):
         '''Create the dir and working tree.'''
-        self.temporary_dir = os.path.join('/tmp', self.lp_branch.project.name)
+        self.temporary_dir = os.path.join(tempfile.gettempdir(),
+                                          self.lp_branch.project.name)
         if os.path.exists(self.temporary_dir):
             shutil.rmtree(self.temporary_dir)
         self.tree = self.branch.create_checkout(self.temporary_dir)
@@ -46,12 +65,24 @@ class Branch(object):
         '''Merge from another tarmac.branch.Branch instance.'''
         if not self.has_tree:
             raise Exception('This branch wasn\'t set up to do merging,')
-        self.tree.merge_from_branch(branch.branch)
+        conflict_list = self.tree.merge_from_branch(branch.branch)
+        if conflict_list:
+            raise BranchHasConflicts
+        #XXX: rockstar - Raise an exception here.
 
     def cleanup(self):
         '''Remove the working tree from the temp dir.'''
         if self.has_tree:
             self.tree.revert()
+
+    def get_conflicts(self):
+        '''Print the conflicts.'''
+        assert self.tree.conflicts()
+        conflicts = []
+        for conflict in self.tree.conflicts():
+            conflicts.append(
+                u'%s in %s' % (conflict.typestring, conflict.path))
+        return '\n'.join(conflicts)
 
     def commit(self, commit_message, authors=None, **kw):
         '''Commit changes.'''

@@ -1,4 +1,19 @@
-# Copyright 2009 Paul Hummer - See LICENSE
+# Copyright 2009 Paul Hummer
+# This file is part of Tarmac.
+#
+# Tarmac is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License version 3 as
+# published by
+# the Free Software Foundation.
+#
+# Tarmac is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Tarmac.  If not, see <http://www.gnu.org/licenses/>.
+
 '''Tarmac plugin for running tests pre-commit.'''
 import os
 import subprocess
@@ -60,8 +75,10 @@ class RunTest(TarmacPlugin):
         comment = u'\n'.join([stdout_value, stderr_value])
         self.candidate.createComment(subject="Failed test command",
                                 content=comment)
-        self.candidate.queue_status = u'Needs review'
-        self.candidate.lp_save()
+        # XXX: rockstar - This should also set the status, but it
+        # appears that this is broken in Launchpad currently.
+        #self.candidate.queue_status = u'Needs review'
+        #self.candidate.lp_save()
 
 
 tarmac_hooks['pre_tarmac_commit'].hook(RunTest(), 'Test run hook')

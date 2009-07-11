@@ -43,3 +43,11 @@ Tarmac recognizes branches to land when the merge proposal's status (not the
 votes) is "Approved" and a valid commit message has been set for the branch.
 If a branch isn't being picked up by Tarmac to land, then one of these issues
 is probably the culprit.
+
+
+Web Interface
+=============
+
+Tarmac includes an optional web interface to display the status of Tarmac.
+The web interface is a wsgi app that can easily be loaded into mod_wsgi in
+your apache or nginx server, or run standalone.
