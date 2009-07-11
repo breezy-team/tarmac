@@ -16,6 +16,6 @@
 
 '''Tarmac - A tool for controlling the landing of Launchpad branches.'''
 
-__version__ = u'0.2a'
+__version__ = u'0.2'
 __copyright__ = u'Paul Hummer <paul@eventuallyanyway.com>'
 
