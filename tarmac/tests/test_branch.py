@@ -37,6 +37,7 @@ class TestBranch(TestCaseInTempDir):
     def make_two_branches_to_merge(self):
         '''Make two branches, one with revisions to merge.'''
         a_branch = branch.Branch(MockLPBranch(), create_tree=True)
+        a_branch.tree.commit("Reading, 'riting, 'rithmetic")
         another_branch = branch.Branch(MockLPBranch(
             source_branch=a_branch.branch))
         another_branch.lp_branch._internal_tree.commit('ABC...')

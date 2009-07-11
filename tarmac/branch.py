@@ -46,7 +46,7 @@ class Branch(object):
 
     def _set_up_working_tree(self):
         '''Create the dir and working tree.'''
-        if self.configuration and self.configuration.tree_dir:
+        if hasattr(self, 'configuration') and self.configuration.tree_dir:
             self.tree_dir = self.configuration.tree_dir
         else:
             self.tree_dir = os.path.join(tempfile.gettempdir(),
