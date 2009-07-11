@@ -24,7 +24,7 @@
 import os
 from ConfigParser import NoSectionError, NoOptionError
 from ConfigParser import SafeConfigParser as ConfigParser
-from xdg.BaseDirectory import xdg_config_home, xdg_cache_home
+from tarmac.xdgdirs import xdg_config_home, xdg_cache_home
 
 class TarmacConfig:
     '''A configuration class.'''
@@ -49,10 +49,10 @@ class TarmacConfig:
 
     def _check_config_dirs(self):
         '''Create the configuration directory if it doesn't exist.'''
-        if not os.path.exists(config.CONFIG_HOME):
-            os.makedirs(config.CONFIG_HOME)
-        if not os.path.exists(config.CACHE_HOME):
-            os.makedirs(config.CACHE_HOME)
+        if not os.path.exists(self.CONFIG_HOME):
+            os.makedirs(self.CONFIG_HOME)
+        if not os.path.exists(self.CACHE_HOME):
+            os.makedirs(self.CACHE_HOME)
 
     @property
     def commit_message_template(self):
