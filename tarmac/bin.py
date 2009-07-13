@@ -1,5 +1,10 @@
 # Copyright 2009 Paul Hummer
+# Copyright 2009 Canonical Ltd.
+#
 # This file is part of Tarmac.
+#
+# Authors: Paul Hummer
+#          Rodney Dawes
 #
 # Tarmac is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License version 3 as
@@ -149,7 +154,7 @@ class TarmacLander(TarmacScript):
     def _get_reviewers(self, candidate):
         '''Get all reviewers who approved the review.'''
         return [comment.reviewer for comment in candidate.all_comments
-            if comment.vote == u'Approve'].join(', ')
+            if comment.vote == u'Approve']
 
     def main(self):
         '''See `TarmacScript.main`.'''
@@ -221,7 +226,8 @@ class TarmacLander(TarmacScript):
                     trunk.cleanup()
                 else:
                     trunk.commit(candidate.commit_message,
-                                 authors=source_branch.authors)
+                                 authors=source_branch.authors,
+                                 reviewers=self._get_reviewers(candidate))
 
                 tarmac_hooks['post_tarmac_commit'].fire(
                     self.options, self.configuration, candidate, trunk)

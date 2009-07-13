@@ -1,5 +1,10 @@
 # Copyright 2009 Paul Hummer
+# Copyright 2009 Canonical Ltd.
+#
 # This file is part of Tarmac.
+#
+# Authors: Paul Hummer
+#          Rodney Dawes
 #
 # Tarmac is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License version 3 as
@@ -93,17 +98,33 @@ class Branch(object):
                 u'%s in %s' % (conflict.typestring, conflict.path))
         return '\n'.join(conflicts)
 
-    def commit(self, commit_message, authors=None, **kw):
+    def commit(self, commit_message, revprops=None, **kwargs):
         '''Commit changes.'''
         if not self.has_tree:
             raise Exception('This branch has no working tree.')
+
+        if not revprops:
+            revprops = {}
+
+        authors = kwargs.pop('authors', None)
+        reviewers = kwargs.pop('reviewers', None)
+
         if not authors:
             authors = self.authors
         elif not self.authors:
             self.author_list = authors
         else:
             self.author_list.append(authors)
-        self.tree.commit(commit_message, committer='Tarmac', authors=authors)
+
+        if reviewers:
+            for reviewer in reviewers:
+                if '\n' in reviewer:
+                    raise AssertionError('\\n is not a valid character in a '
+                                         ' reviewer identity')
+            revprops['reviewers'] = '\n'.join(reviewers)
+
+        self.tree.commit(commit_message, committer='Tarmac',
+                         revprops=revprops, authors=authors)
         self._set_authors()
 
     @property
