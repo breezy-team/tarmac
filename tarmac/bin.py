@@ -153,8 +153,17 @@ class TarmacLander(TarmacScript):
 
     def _get_reviewers(self, candidate):
         '''Get all reviewers who approved the review.'''
-        return [comment.reviewer for comment in candidate.all_comments
-            if comment.vote == u'Approve']
+        reviewers = []
+        for vote in candidate.votes:
+            if not vote.comment:
+                continue
+            elif vote.comment.vote == u'Approve':
+                reviewers.append(vote.reviewer.display_name)
+
+        if len(reviewers) == 0:
+            return None
+
+        return reviewers
 
     def main(self):
         '''See `TarmacScript.main`.'''
