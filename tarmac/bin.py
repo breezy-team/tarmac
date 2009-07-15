@@ -3,9 +3,6 @@
 #
 # This file is part of Tarmac.
 #
-# Authors: Paul Hummer
-#          Rodney Dawes
-#
 # Tarmac is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License version 3 as
 # published by
@@ -24,6 +21,7 @@ import atexit
 import logging
 from optparse import OptionParser
 import os
+import re
 import sys
 
 from bzrlib.errors import PointlessMerge
@@ -157,7 +155,7 @@ class TarmacLander(TarmacScript):
         for vote in candidate.votes:
             if not vote.comment:
                 continue
-            elif vote.comment.vote == u'Approve':
+            elif vote.comment and vote.comment.vote == u'Approve':
                 reviewers.append(vote.reviewer.display_name)
 
         if len(reviewers) == 0:
@@ -227,6 +225,9 @@ class TarmacLander(TarmacScript):
                 trunk.cleanup()
                 continue
 
+            urlp = re.compile('http[s]?://api\.(.*)launchpad\.net/beta/')
+            merge_url = urlp.sub('http://launchpad.net/', candidate.self_link)
+            revprops = { 'merge_url' : merge_url }
             try:
                 tarmac_hooks['pre_tarmac_commit'].fire(
                     self.options, self.configuration, candidate,
@@ -235,6 +236,7 @@ class TarmacLander(TarmacScript):
                     trunk.cleanup()
                 else:
                     trunk.commit(candidate.commit_message,
+                                 revprops=revprops,
                                  authors=source_branch.authors,
                                  reviewers=self._get_reviewers(candidate))
 
