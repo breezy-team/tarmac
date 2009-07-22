@@ -62,7 +62,7 @@ class RunTest(TarmacPlugin):
 
         else:
             self.do_failed(stdout_value, stderr_value)
-            raise HookFailed('runtest hook failed')
+            raise HookFailed('test', 'runtest', '')
 
     def do_failed(self, stdout_value, stderr_value):
         '''Perform failure tests.
