@@ -1,4 +1,6 @@
 # Copyright 2009 Paul Hummer
+# Copyright 2009 Canonical Ltd.
+#
 # This file is part of Tarmac.
 #
 # Tarmac is free software: you can redistribute it and/or modify
@@ -19,6 +21,7 @@ import atexit
 import logging
 from optparse import OptionParser
 import os
+import re
 import sys
 
 from bzrlib.errors import PointlessMerge
@@ -148,8 +151,17 @@ class TarmacLander(TarmacScript):
 
     def _get_reviewers(self, candidate):
         '''Get all reviewers who approved the review.'''
-        return [comment.reviewer for comment in candidate.all_comments
-            if comment.vote == u'Approve'].join(', ')
+        reviewers = []
+        for vote in candidate.votes:
+            if not vote.comment:
+                continue
+            elif vote.comment and vote.comment.vote == u'Approve':
+                reviewers.append(vote.reviewer.display_name)
+
+        if len(reviewers) == 0:
+            return None
+
+        return reviewers
 
     def main(self):
         '''See `TarmacScript.main`.'''
@@ -213,6 +225,9 @@ class TarmacLander(TarmacScript):
                 trunk.cleanup()
                 continue
 
+            urlp = re.compile('http[s]?://api\.(.*)launchpad\.net/beta/')
+            merge_url = urlp.sub('http://launchpad.net/', candidate.self_link)
+            revprops = { 'merge_url' : merge_url }
             try:
                 tarmac_hooks['pre_tarmac_commit'].fire(
                     self.options, self.configuration, candidate,
@@ -221,7 +236,9 @@ class TarmacLander(TarmacScript):
                     trunk.cleanup()
                 else:
                     trunk.commit(candidate.commit_message,
-                                 authors=source_branch.authors)
+                                 revprops=revprops,
+                                 authors=source_branch.authors,
+                                 reviewers=self._get_reviewers(candidate))
 
                 tarmac_hooks['post_tarmac_commit'].fire(
                     self.options, self.configuration, candidate, trunk)

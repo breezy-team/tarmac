@@ -1,4 +1,6 @@
 # Copyright 2009 Paul Hummer
+# Copyright 2009 Canonical Ltd.
+#
 # This file is part of Tarmac.
 #
 # Tarmac is free software: you can redistribute it and/or modify
@@ -98,6 +100,20 @@ class TestBranch(TestCaseInTempDir):
         branch2.merge(branch1)
         branch2.commit('Authors Merge test', authors=branch1.authors)
         self.assertEquals(branch2.authors.sort(), authors.sort())
+
+    def test_merge_with_reviewers(self):
+        '''A merge with reviewers.'''
+        reviewers = [ 'reviewer1', 'reviewer2' ]
+
+        a_branch, another_branch = self.make_two_branches_to_merge()
+        a_branch.merge(another_branch)
+        a_branch.commit('Reviewers test', reviewers=reviewers)
+
+        last_rev = a_branch.lp_branch._internal_bzr_branch.last_revision()
+        self.assertNotEquals(last_rev, 'null:')
+        rev = a_branch.lp_branch._internal_bzr_branch.repository.get_revision(
+            last_rev)
+        self.assertEquals('\n'.join(reviewers), rev.properties['reviewers'])
 
     def test_cleanup(self):
         '''The branch object should clean up after itself.'''
