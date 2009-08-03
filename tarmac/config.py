@@ -38,7 +38,7 @@ class TarmacConfig:
         self.CACHE_HOME = os.path.join(xdg_cache_home, 'tarmac')
         self.PID_FILE = os.path.join(
             self.CACHE_HOME, 'tarmac-%(project)s' % {'project': project })
-        self.CREDENTIALS = os.path.join(self.CACHE_HOME, 'credentials')
+        self.CREDENTIALS = os.path.join(self.CONFIG_HOME, 'credentials')
 
         self._check_config_dirs()
         self._CONFIG_FILE = os.path.join(self.CONFIG_HOME, 'tarmac.conf')
