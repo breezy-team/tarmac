@@ -155,7 +155,8 @@ class TarmacLander(TarmacScript):
         for vote in candidate.votes:
             if not vote.comment:
                 continue
-            elif vote.comment and vote.comment.vote == u'Approve':
+            elif vote.comment and vote.comment.vote == u'Approve' and \
+                    candidate.isPersonValidReviewer(reviewer=vote.reviewer):
                 reviewers.append(vote.reviewer.display_name)
 
         if len(reviewers) == 0:
