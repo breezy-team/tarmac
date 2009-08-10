@@ -75,10 +75,8 @@ class RunTest(TarmacPlugin):
         comment = u'\n'.join([stdout_value, stderr_value])
         self.candidate.createComment(subject="Failed test command",
                                 content=comment)
-        # XXX: rockstar - This should also set the status, but it
-        # appears that this is broken in Launchpad currently.
-        #self.candidate.queue_status = u'Needs review'
-        #self.candidate.lp_save()
+        self.candidate.setStatus(u'Work in progress')
+        self.candidate.lp_save()
 
 
 tarmac_hooks['pre_tarmac_commit'].hook(RunTest(), 'Test run hook')
