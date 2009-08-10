@@ -73,7 +73,9 @@ class Branch(object):
         # Only query for authors if last_rev is not null:
         if last_rev != 'null:':
             rev = self.branch.repository.get_revision(last_rev)
-            self.author_list.extend(rev.get_apparent_authors())
+            apparent_authors = rev.get_apparent_authors()
+            self.author_list.extend(
+                [a.replace('\n', '') for a in apparent_authors])
 
     def merge(self, branch):
         '''Merge from another tarmac.branch.Branch instance.'''
