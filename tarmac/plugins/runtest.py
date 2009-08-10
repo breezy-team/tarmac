@@ -72,13 +72,18 @@ class RunTest(TarmacPlugin):
         doesn't attempt to merge it again without human interaction.  An
         exception is then raised to prevent the commit from happening.
         '''
-        comment = u'\n'.join([stdout_value, stderr_value])
-        self.candidate.createComment(subject="Failed test command",
-                                content=comment)
-        # XXX: rockstar - This should also set the status, but it
-        # appears that this is broken in Launchpad currently.
-        #self.candidate.queue_status = u'Needs review'
-        #self.candidate.lp_save()
+        comment = (u'The attempt to merge %(source)s into %(target)s failed.' +
+                   u'Below is the output from the failed tests.\n\n' +
+                   u'%(output)s') % {
+            'source' : self.candidate.source_branch.display_name,
+            'target' : self.candidate.target_branch.display_name,
+            'output' : u'\n'.join([stdout_value, stderr_value]),
+            }
+        subject = u'Re: [Merge] %s into %s' % (
+            self.candidate.source_branch.display_name,
+            self.candidate.target_branch.display_name)
+        self.candidate.createComment(subject=subject, content=comment)
+        self.candidate.setStatus(status=u'Needs review')
 
 
 tarmac_hooks['pre_tarmac_commit'].hook(RunTest(), 'Test run hook')
