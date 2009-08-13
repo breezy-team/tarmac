@@ -84,6 +84,7 @@ class RunTest(TarmacPlugin):
             self.candidate.target_branch.display_name)
         self.candidate.createComment(subject=subject, content=comment)
         self.candidate.setStatus(status=u'Needs review')
+        self.candidate.lp_save()
 
 
 tarmac_hooks['pre_tarmac_commit'].hook(RunTest(), 'Test run hook')
