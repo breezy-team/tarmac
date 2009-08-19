@@ -28,6 +28,10 @@ except ImportError:
         from bzrlib import win32utils as win
         xdg_config_home = win.get_appdata_location_unicode()
         xdg_cache_home = get_temp_location()
+    else:
+        home = os.environ.get('HOME')
+        xdg_config_home = os.path.join(home, '.config/')
+        xdg_cache_home = os.path.join(home, '.cache/')
 
 
 # XXX This function should be merged into bzrlib.win32utils
