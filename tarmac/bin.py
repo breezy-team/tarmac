@@ -245,7 +245,9 @@ class TarmacLander(TarmacScript):
                     self.options, self.configuration, candidate, trunk)
 
             except Exception, e:
-                print e
+                message = "Oops! Tarmac hooks failed:\n     %s" % e
+                self.logger.error(message)
+                print message
 
             trunk.cleanup()
 
