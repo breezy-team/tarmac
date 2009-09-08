@@ -214,11 +214,11 @@ class TarmacLander(TarmacScript):
                 trunk.merge(source_branch)
 
             except BranchHasConflicts:
-                # XXX: rockstar - This should also set the status, but it
-                # appears that this is broken in Launchpad currently.
                 candidate.createComment(
                     subject=u'Conflicts merging branch',
                     content=trunk.get_conflicts())
+                candidate.setStatus(status=u"Needs review")
+                candidate.lp_save()
                 trunk.cleanup()
                 continue
 
