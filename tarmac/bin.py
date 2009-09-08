@@ -214,9 +214,17 @@ class TarmacLander(TarmacScript):
                 trunk.merge(source_branch)
 
             except BranchHasConflicts:
-                candidate.createComment(
-                    subject=u'Conflicts merging branch',
-                    content=trunk.get_conflicts())
+                subject = (
+                    u"Conflicts merging %(source)s into %(target)s" %
+                    {"source": candidate.source_branch.display_name,
+                     "target": candidate.target_branch.display_name})
+                comment = (
+                    u"Attempt to merge %(source)s into %(target)s failed due "
+                    u"to merge conflicts:\n\n%(output)s" % 
+                    {"source": candidate.source_branch.display_name,
+                     "target": candidate.target_branch.display_name,
+                     "output": trunk.get_conflicts()})
+                candidate.createComment(subject=subject, content=comment)
                 candidate.setStatus(status=u"Needs review")
                 candidate.lp_save()
                 trunk.cleanup()
