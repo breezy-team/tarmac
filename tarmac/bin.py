@@ -156,8 +156,9 @@ class TarmacLander(TarmacScript):
             if not vote.comment:
                 continue
             elif vote.comment and vote.comment.vote == u'Approve' and \
-                    candidate.isPersonTrustedReviewer(reviewer=vote.reviewer):
-                reviewers.append(vote.reviewer.display_name)
+                    candidate.source_branch.isPersonTrustedReviewer(
+                reviewer=vote.reviewer):
+                    reviewers.append(vote.reviewer.display_name)
 
         if len(reviewers) == 0:
             return None
