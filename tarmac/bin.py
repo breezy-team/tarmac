@@ -118,9 +118,9 @@ class TarmacLander(TarmacScript):
         self.project, = self.args
         self.configuration = TarmacConfig(self.project)
 
-        logging.basicConfig(filename=self.configuration.log_file,
-            level=logging.INFO)
         self.logger = logging.getLogger('tarmac-lander')
+        self.logger.addHandler(
+            logging.FileHandler(filename=self.configuration.log_file))
         if self.options.debug:
             stderr_handler = logging.StreamHandler(sys.stderr)
             stderr_handler.setLevel(logging.DEBUG)
