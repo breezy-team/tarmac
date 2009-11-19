@@ -1,0 +1,9 @@
+This file should never make it to trunk.  It's for tracking Tarmac 0.3 tasks
+and will be empty and removed before landing in trunk. spec=tarmac-0.3
+
+Warts
+=====
+
+ - Tarmac should indeed define an API for hooks, but it's still pretty tied to
+   mainline Tarmac work.  It should be tested that plugins can actually live in
+   a $HOME dir and still work, to support third parties.
