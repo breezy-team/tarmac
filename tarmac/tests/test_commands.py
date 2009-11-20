@@ -10,3 +10,7 @@ class TestCommandRegistry(unittest.TestCase):
     def test__init__(self):
         registry = CommandRegistry()
         self.assertEqual(registry._registry, {})
+
+    def test_run(self):
+        registry = CommandRegistry()
+        registry.run()
