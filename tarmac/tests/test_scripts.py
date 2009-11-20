@@ -18,6 +18,7 @@
 # pylint: disable-msg=W0212,W0223
 __metaclass__ = type
 
+import commands
 from optparse import OptionParser
 import sys
 import unittest
@@ -65,3 +66,10 @@ class TestTarmacLander(unittest.TestCase):
         script = TarmacLander(test_mode=True)
         self.assertTrue(script.test_mode)
 
+
+class TestTarmacScript(unittest.TestCase):
+    '''Tests for tarmac-script.'''
+
+    def test_script(self):
+        status, output = commands.getstatusoutput('../tarmac-script')
+        self.assertEqual(output, '')
