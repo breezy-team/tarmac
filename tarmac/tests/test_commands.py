@@ -23,3 +23,7 @@ class TestCommand(unittest.TestCase):
         command_name = u'test'
         command = Command(command_name)
         self.assertEqual(command.name, command_name)
+
+    def test_invoke(self):
+        command = Command('test')
+        self.assertRaises(NotImplementedError, command.invoke)

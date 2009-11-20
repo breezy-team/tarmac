@@ -6,6 +6,10 @@ class Command(object):
     def __init__(self, name):
         self.name = name
 
+    def invoke(self):
+        '''Actually run the command.'''
+        raise NotImplementedError
+
 class CommandRegistry():
     '''Class for handling command dispatch.'''
 
