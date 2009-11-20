@@ -10,6 +10,7 @@ class Command(object):
         '''Actually run the command.'''
         raise NotImplementedError
 
+
 class CommandRegistry():
     '''Class for handling command dispatch.'''
 
@@ -18,6 +19,10 @@ class CommandRegistry():
 
     def run(self):
         '''Execute the command.'''
+
+    def register_command(self, command):
+        '''Register a command in the registry.'''
+        self._registry[command.name] = command.invoke
 
 
 def main():

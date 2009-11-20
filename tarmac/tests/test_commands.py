@@ -15,6 +15,13 @@ class TestCommandRegistry(unittest.TestCase):
         registry = CommandRegistry()
         registry.run()
 
+    def test_register_command(self):
+        command = Command('test')
+        registry = CommandRegistry()
+        registry.register_command(command)
+        self.assertEqual(registry._registry,
+            {'test': command.invoke})
+
 
 class TestCommand(unittest.TestCase):
     '''Test for tarmac.bin2.commands.Command.'''
