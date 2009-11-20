@@ -2,6 +2,7 @@
 import unittest
 
 from tarmac.bin2.commands import Command, CommandRegistry
+from tarmac.exceptions import CommandNotFound
 
 
 class TestCommandRegistry(unittest.TestCase):
@@ -21,6 +22,22 @@ class TestCommandRegistry(unittest.TestCase):
         registry.register_command(command)
         self.assertEqual(registry._registry,
             {'test': command})
+
+    def test__lookup_command(self):
+        command = Command('test')
+        registry = CommandRegistry()
+        registry.register_command(command)
+        self.assertEqual(
+            registry._lookup_command('test'),
+            command)
+
+    def test__lookup_command_notfound(self):
+        command = Command('test')
+        registry = CommandRegistry()
+        registry.register_command(command)
+        self.assertRaises(
+            CommandNotFound,
+            registry._lookup_command, 'test2')
 
 
 class TestCommand(unittest.TestCase):

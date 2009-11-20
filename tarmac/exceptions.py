@@ -18,3 +18,6 @@
 
 class BranchHasConflicts(Exception):
     '''Exception for when a branch merge has conflicts.'''
+
+class CommandNotFound(Exception):
+    '''Exception for calling a command that that hasn't been registered.'''

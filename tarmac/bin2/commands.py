@@ -1,4 +1,5 @@
 '''Command handling for Tarmac.'''
+from tarmac.exceptions import CommandNotFound
 
 class Command(object):
     '''A command class.'''
@@ -23,6 +24,13 @@ class CommandRegistry():
     def register_command(self, command):
         '''Register a command in the registry.'''
         self._registry[command.name] = command
+
+    def _lookup_command(self, name):
+        '''Look up the command by its name.'''
+        try:
+            return self._registry[name]
+        except KeyError:
+            raise CommandNotFound
 
 
 def main():
