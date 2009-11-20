@@ -22,7 +22,7 @@ class CommandRegistry():
 
     def register_command(self, command):
         '''Register a command in the registry.'''
-        self._registry[command.name] = command.invoke
+        self._registry[command.name] = command
 
 
 def main():

@@ -20,7 +20,7 @@ class TestCommandRegistry(unittest.TestCase):
         registry = CommandRegistry()
         registry.register_command(command)
         self.assertEqual(registry._registry,
-            {'test': command.invoke})
+            {'test': command})
 
 
 class TestCommand(unittest.TestCase):
