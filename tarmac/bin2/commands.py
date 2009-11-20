@@ -4,12 +4,22 @@ from tarmac.exceptions import CommandNotFound
 class Command(object):
     '''A command class.'''
 
-    def __init__(self, name):
-        self.name = name
+    NAME = None
 
     def invoke(self):
         '''Actually run the command.'''
         raise NotImplementedError
+
+
+class AuthCommand(object):
+
+    NAME = 'auth'
+
+    def __init__(self):
+        Command.__init__(self)
+
+    def invoke(self):
+        print 'authenticated'
 
 
 class CommandRegistry():
@@ -23,7 +33,7 @@ class CommandRegistry():
 
     def register_command(self, command):
         '''Register a command in the registry.'''
-        self._registry[command.name] = command
+        self._registry[command.NAME] = command
 
     def _lookup_command(self, name):
         '''Look up the command by its name.'''
@@ -36,4 +46,5 @@ class CommandRegistry():
 def main():
     '''Main script handler.'''
     registry = CommandRegistry()
+    registry.register_command(AuthCommand())
     registry.run()

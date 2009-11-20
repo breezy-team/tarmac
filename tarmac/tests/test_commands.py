@@ -17,27 +17,30 @@ class TestCommandRegistry(unittest.TestCase):
         registry.run()
 
     def test_register_command(self):
-        command = Command('test')
+        command = Command()
+        command.NAME = u'test'
         registry = CommandRegistry()
         registry.register_command(command)
         self.assertEqual(registry._registry,
             {'test': command})
 
     def test__lookup_command(self):
-        command = Command('test')
+        command = Command()
+        command.NAME = u'test'
         registry = CommandRegistry()
         registry.register_command(command)
         self.assertEqual(
-            registry._lookup_command('test'),
+            registry._lookup_command(u'test'),
             command)
 
     def test__lookup_command_notfound(self):
-        command = Command('test')
+        command = Command()
+        command.NAME = u'test'
         registry = CommandRegistry()
         registry.register_command(command)
         self.assertRaises(
             CommandNotFound,
-            registry._lookup_command, 'test2')
+            registry._lookup_command, u'test2')
 
 
 class TestCommand(unittest.TestCase):
@@ -45,9 +48,11 @@ class TestCommand(unittest.TestCase):
 
     def test__init__(self):
         command_name = u'test'
-        command = Command(command_name)
-        self.assertEqual(command.name, command_name)
+        command = Command()
+        command.NAME = command_name
+        self.assertEqual(command.NAME, command_name)
 
     def test_invoke(self):
-        command = Command('test')
+        command = Command()
+        command.NAME = u'test'
         self.assertRaises(NotImplementedError, command.invoke)
