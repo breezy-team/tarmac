@@ -35,5 +35,5 @@ class CommandRegistry():
 
 def main():
     '''Main script handler.'''
-    dispatch = CommandDispatch()
-    dispatch.run()
+    registry = CommandRegistry()
+    registry.run()
