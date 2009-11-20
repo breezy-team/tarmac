@@ -1,7 +1,7 @@
 '''Tests for tarmac.bin2.commands.py.'''
 import unittest
 
-from tarmac.bin2.commands import Command, CommandRegistry
+from tarmac.bin2.commands import AuthCommand, Command, CommandRegistry
 from tarmac.exceptions import CommandNotFound
 
 
@@ -56,3 +56,11 @@ class TestCommand(unittest.TestCase):
         command = Command()
         command.NAME = u'test'
         self.assertRaises(NotImplementedError, command.invoke)
+
+
+class TestAuthCommand(unittest.TestCase):
+    '''Test for tarmac.bin2.command.AuthCommand.'''
+
+    def test_invoke(self):
+        command = AuthCommand()
+        command.invoke()
