@@ -1,7 +1,10 @@
 '''Command handling for Tarmac.'''
 
-class CommandDispatch():
+class CommandRegistry():
     '''Class for handling command dispatch.'''
+
+    def __init__(self):
+        self._registry = {}
 
     def run(self):
         '''Execute the command.'''
