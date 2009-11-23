@@ -47,6 +47,14 @@ class TarmacConfig2(ConfigParser):
         except KeyError:
             return os.path.join(xdg_cache_home, 'tarmac')
 
+    @property
+    def PID_FILE(self):
+        '''Return the path to the pid file.'''
+        try:
+            return os.environ['TARMAC_PID_FILE']
+        except KeyError:
+            return os.path.join(self.CACHE_HOME, 'tarmac.pid')
+
 
 class TarmacConfig:
     '''A configuration class.'''
