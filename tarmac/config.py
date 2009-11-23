@@ -24,6 +24,12 @@ from ConfigParser import NoSectionError, NoOptionError
 from ConfigParser import SafeConfigParser as ConfigParser
 from tarmac.xdgdirs import xdg_config_home, xdg_cache_home
 
+
+class TarmacConfig2(ConfigParser):
+    '''A class for handling configuration.'''
+
+
+
 class TarmacConfig:
     '''A configuration class.'''
 
