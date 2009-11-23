@@ -15,9 +15,6 @@ class AuthCommand(object):
 
     NAME = 'auth'
 
-    def __init__(self):
-        Command.__init__(self)
-
     def invoke(self):
         print 'authenticated'
 
