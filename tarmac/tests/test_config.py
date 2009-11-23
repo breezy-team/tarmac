@@ -19,3 +19,10 @@ class TestTarmacConfig2(unittest.TestCase):
         os.environ['TARMAC_CONFIG_HOME'] = '/'
         config = TarmacConfig2()
         self.assertEqual(config.CONFIG_HOME, '/')
+
+    def test_CACHE_HOME(self):
+        '''Return the default CACHE_HOME.'''
+        config = TarmacConfig2()
+        self.assertEqual(
+            config.CACHE_HOME,
+            os.path.expanduser('~/.cache/tarmac'))
