@@ -14,7 +14,7 @@ class TestCommandRegistry(unittest.TestCase):
 
     def test_run(self):
         registry = CommandRegistry()
-        registry.run()
+        self.assertRaises(CommandNotFound, registry.run)
 
     def test_register_command(self):
         command = Command()
