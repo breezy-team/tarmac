@@ -28,6 +28,14 @@ from tarmac.xdgdirs import xdg_config_home, xdg_cache_home
 class TarmacConfig2(ConfigParser):
     '''A class for handling configuration.'''
 
+    def __init__(self):
+        ConfigParser.__init__(self)
+
+    @property
+    def CONFIG_HOME(self):
+        '''Return the base dir for holding the config.'''
+        return os.path.join(xdg_config_home, 'tarmac')
+
 
 
 class TarmacConfig:
