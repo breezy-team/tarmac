@@ -34,8 +34,10 @@ class TarmacConfig2(ConfigParser):
     @property
     def CONFIG_HOME(self):
         '''Return the base dir for holding the config.'''
-        return os.path.join(xdg_config_home, 'tarmac')
-
+        try:
+            return os.environ['TARMAC_CONFIG_HOME']
+        except KeyError:
+            return os.path.join(xdg_config_home, 'tarmac')
 
 
 class TarmacConfig:
