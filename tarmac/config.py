@@ -42,7 +42,10 @@ class TarmacConfig2(ConfigParser):
     @property
     def CACHE_HOME(self):
         '''Return the base dir for cache.'''
-        return os.path.join(xdg_cache_home, 'tarmac')
+        try:
+            return os.environ['TARMAC_CACHE_HOME']
+        except KeyError:
+            return os.path.join(xdg_cache_home, 'tarmac')
 
 
 class TarmacConfig:
