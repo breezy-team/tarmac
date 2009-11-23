@@ -29,7 +29,7 @@ class TestTarmacConfig2(unittest.TestCase):
             os.path.expanduser('~/.cache/tarmac'))
 
     def test_CACHE_HOME_environment(self):
-        '''Return the default CACHE_HOME.'''
+        '''Return the environment set CACHE_HOME.'''
         os.environ['TARMAC_CACHE_HOME'] = '/'
         config = TarmacConfig2()
         self.assertEqual(config.CACHE_HOME, '/')
@@ -42,9 +42,24 @@ class TestTarmacConfig2(unittest.TestCase):
             config.PID_FILE,
             os.path.join(config.CACHE_HOME, 'tarmac.pid'))
 
-    def test_PID_FILE(self):
-        '''Return the default path to the pid file.'''
+    def test_PID_FILE_environment(self):
+        '''Return the environment set path to the pid file.'''
         os.environ['TARMAC_PID_FILE'] = '/tarmac.pid'
         config = TarmacConfig2()
         self.assertEqual(config.PID_FILE, '/tarmac.pid')
         del os.environ['TARMAC_PID_FILE']
+
+    def test_CREDENTIALS(self):
+        '''Return the default path to credentials.'''
+        config = TarmacConfig2()
+        self.assertEqual(
+            config.CREDENTIALS,
+            os.path.join(config.CONFIG_HOME, 'credentials'))
+
+    def test_CREDENTIALS_environment(self):
+        '''Return the environment set path to credentials.'''
+        os.environ['TARMAC_CREDENTIALS'] = '/credentials'
+        config = TarmacConfig2()
+        self.assertEqual(
+            config.CREDENTIALS,
+            '/credentials')

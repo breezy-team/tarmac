@@ -55,6 +55,13 @@ class TarmacConfig2(ConfigParser):
         except KeyError:
             return os.path.join(self.CACHE_HOME, 'tarmac.pid')
 
+    @property
+    def CREDENTIALS(self):
+        '''Return the path to the credentials.'''
+        try:
+            return os.environ['TARMAC_CREDENTIALS']
+        except KeyError:
+            return os.path.join(self.CONFIG_HOME, 'credentials')
 
 class TarmacConfig:
     '''A configuration class.'''
