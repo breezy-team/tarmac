@@ -1,4 +1,6 @@
 '''Command handling for Tarmac.'''
+import sys
+
 from tarmac.exceptions import CommandNotFound
 
 class Command(object):
@@ -27,6 +29,8 @@ class CommandRegistry():
 
     def run(self):
         '''Execute the command.'''
+        command = sys.argv[1]
+        self._lookup_command(command).invoke()
 
     def register_command(self, command):
         '''Register a command in the registry.'''

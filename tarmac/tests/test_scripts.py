@@ -73,3 +73,7 @@ class TestTarmacScript(unittest.TestCase):
     def test_script(self):
         status, output = commands.getstatusoutput('../tarmac-script')
         self.assertEqual(output, '')
+
+    def test_script(self):
+        status, output = commands.getstatusoutput('../tarmac-script auth')
+        self.assertEqual(output, 'authenticated')
