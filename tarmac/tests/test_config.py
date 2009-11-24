@@ -63,3 +63,4 @@ class TestTarmacConfig2(unittest.TestCase):
         self.assertEqual(
             config.CREDENTIALS,
             '/credentials')
+        del os.environ['TARMAC_CREDENTIALS']
