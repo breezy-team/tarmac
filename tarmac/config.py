@@ -64,6 +64,11 @@ class TarmacConfig2(ConfigParser):
         except KeyError:
             return os.path.join(self.CONFIG_HOME, 'credentials')
 
+    @property
+    def CONFIG_FILE(self):
+        '''Return the path to the config file itself.'''
+        return os.path.join(self.CONFIG_HOME, 'tarmac.conf')
+
     def _check_config_dirs(self):
         '''Create the configuration directory if it doesn't exist.'''
         if not os.path.exists(self.CONFIG_HOME):

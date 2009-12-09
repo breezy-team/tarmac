@@ -92,6 +92,25 @@ class TestTarmacConfig2(unittest.TestCase):
             config.CREDENTIALS,
             '/credentials')
 
+    def test_CONFIG_FILE(self):
+        '''Test that the config file is fetched properly.'''
+        del os.environ['TARMAC_CONFIG_HOME']
+        config = TarmacConfig2()
+        self.assertTrue(
+            config.CONFIG_FILE,
+            os.path.join(
+                os.path.expanduser('~/.config/tarmac'),
+                'tarmac.conf'))
+
+    def test_CONFIG_FILE_environment(self):
+        '''Return the config file when the environment is changed.'''
+        config = TarmacConfig2()
+        self.assertTrue(
+            config.CONFIG_FILE,
+            os.path.join(
+                self.tempdir,
+                'config/tarmac.conf'))
+
     def test__check_config_dirs(self):
         '''Create the dirs required for configuration.'''
         config = TarmacConfig2()
