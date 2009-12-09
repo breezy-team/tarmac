@@ -18,6 +18,8 @@
 
 '''Configuration handler.'''
 # pylint: disable-msg=C0103
+__metaclass__ = type
+
 import os
 import sys
 from ConfigParser import NoSectionError, NoOptionError
@@ -31,6 +33,7 @@ class TarmacConfig2(ConfigParser):
     def __init__(self):
         ConfigParser.__init__(self)
         self._check_config_dirs()
+        self.read(self.CONFIG_FILE)
 
     @property
     def CONFIG_HOME(self):

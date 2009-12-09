@@ -34,6 +34,16 @@ class TestTarmacConfig2(unittest.TestCase):
             except KeyError:
                 pass
 
+    def create_fake_config(self, config):
+        '''Write out a fake config file for testing.'''
+        assert not os.path.exists(config.CONFIG_FILE)
+        f = open(config.CONFIG_FILE, 'ab')
+        f.write(''.join([
+            '[lp:~tarmac/tarmac/tarmac]\n',
+            '']))
+        f.close()
+        config.read(config.CONFIG_FILE)
+
     def test_CONFIG_HOME(self):
         '''Return the default CONFIG_HOME.'''
         del os.environ['TARMAC_CONFIG_HOME']
@@ -116,3 +126,9 @@ class TestTarmacConfig2(unittest.TestCase):
         config = TarmacConfig2()
         self.assertTrue(os.path.exists(config.CONFIG_HOME))
         self.assertTrue(os.path.exists(config.CACHE_HOME))
+
+    def test_has_section(self):
+        '''Ensure that the config is being read properly.'''
+        config = TarmacConfig2()
+        self.create_fake_config(config)
+        self.assertTrue(config.has_section('lp:~tarmac/tarmac/tarmac'))
