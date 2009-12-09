@@ -30,6 +30,7 @@ class TarmacConfig2(ConfigParser):
 
     def __init__(self):
         ConfigParser.__init__(self)
+        self._check_config_dirs()
 
     @property
     def CONFIG_HOME(self):
@@ -62,6 +63,17 @@ class TarmacConfig2(ConfigParser):
             return os.environ['TARMAC_CREDENTIALS']
         except KeyError:
             return os.path.join(self.CONFIG_HOME, 'credentials')
+
+    def _check_config_dirs(self):
+        '''Create the configuration directory if it doesn't exist.'''
+        if not os.path.exists(self.CONFIG_HOME):
+            os.makedirs(self.CONFIG_HOME)
+        if not os.path.exists(self.CACHE_HOME):
+            os.makedirs(self.CACHE_HOME)
+        pid_dir = os.path.dirname(self.PID_FILE)
+        if not os.path.exists(pid_dir):
+            os.makedirs(pid_dir)
+
 
 class TarmacConfig:
     '''A configuration class.'''
