@@ -1,5 +1,6 @@
 '''Tests for tarmac.config'''
 import os
+import shutil
 import tempfile
 import unittest
 
@@ -8,20 +9,34 @@ from tarmac.config import TarmacConfig2
 class TestTarmacConfig2(unittest.TestCase):
     '''Testing for tarmac.config.TarmacConfig2.'''
 
-    def _create_test_config_environment(self):
-        tempdir = tempfile.mkdtemp()
+    def setUp(self):
+
+        # Set up the environment.
+        self.tempdir = tempfile.mkdtemp()
         os.environ['TARMAC_CONFIG_HOME'] = os.path.join(
-            tempdir, 'config')
+            self.tempdir, 'config')
         os.environ['TARMAC_CACHE_HOME'] = os.path.join(
-            tempdir, 'cache')
+            self.tempdir, 'cache')
         os.environ['TARMAC_PID_FILE'] = os.path.join(
-            tempdir, 'pid-dir')
+            self.tempdir, 'pid-dir')
         os.environ['TARMAC_CREDENTIALS'] = os.path.join(
-            tempdir, 'credentials')
-        return tempdir
+            self.tempdir, 'credentials')
+
+    def tearDown(self):
+
+        # Clean up environment.
+        shutil.rmtree(self.tempdir)
+        keys = ['TARMAC_CONFIG_HOME', 'TARMAC_CACHE_HOME', 'TARMAC_PID_FILE',
+            'TARMAC_CREDENTIALS']
+        for key in keys:
+            try:
+                del os.environ[key]
+            except KeyError:
+                pass
 
     def test_CONFIG_HOME(self):
         '''Return the default CONFIG_HOME.'''
+        del os.environ['TARMAC_CONFIG_HOME']
         config = TarmacConfig2()
         self.assertEqual(
             config.CONFIG_HOME,
@@ -32,10 +47,10 @@ class TestTarmacConfig2(unittest.TestCase):
         os.environ['TARMAC_CONFIG_HOME'] = '/'
         config = TarmacConfig2()
         self.assertEqual(config.CONFIG_HOME, '/')
-        del os.environ['TARMAC_CONFIG_HOME']
 
     def test_CACHE_HOME(self):
         '''Return the default CACHE_HOME.'''
+        del os.environ['TARMAC_CACHE_HOME']
         config = TarmacConfig2()
         self.assertEqual(
             config.CACHE_HOME,
@@ -46,10 +61,10 @@ class TestTarmacConfig2(unittest.TestCase):
         os.environ['TARMAC_CACHE_HOME'] = '/'
         config = TarmacConfig2()
         self.assertEqual(config.CACHE_HOME, '/')
-        del os.environ['TARMAC_CACHE_HOME']
 
     def test_PID_FILE(self):
         '''Return the default path to the pid file.'''
+        del os.environ['TARMAC_PID_FILE']
         config = TarmacConfig2()
         self.assertEqual(
             config.PID_FILE,
@@ -60,10 +75,10 @@ class TestTarmacConfig2(unittest.TestCase):
         os.environ['TARMAC_PID_FILE'] = '/tarmac.pid'
         config = TarmacConfig2()
         self.assertEqual(config.PID_FILE, '/tarmac.pid')
-        del os.environ['TARMAC_PID_FILE']
 
     def test_CREDENTIALS(self):
         '''Return the default path to credentials.'''
+        del os.environ['TARMAC_CREDENTIALS']
         config = TarmacConfig2()
         self.assertEqual(
             config.CREDENTIALS,
@@ -76,13 +91,9 @@ class TestTarmacConfig2(unittest.TestCase):
         self.assertEqual(
             config.CREDENTIALS,
             '/credentials')
-        del os.environ['TARMAC_CREDENTIALS']
 
     def test__check_config_dirs(self):
         '''Create the dirs required for configuration.'''
-        tempdir = self._create_test_config_environment()
         config = TarmacConfig2()
-        self.assertTrue(os.path.exists(
-            os.path.join(tempdir, 'config')))
-        self.assertTrue(os.path.exists(
-            os.path.join(tempdir, 'cache')))
+        self.assertTrue(os.path.exists(config.CONFIG_HOME))
+        self.assertTrue(os.path.exists(config.CACHE_HOME))
