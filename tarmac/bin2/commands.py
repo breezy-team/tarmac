@@ -46,10 +46,3 @@ class CommandRegistry():
             return self._registry[name]
         except KeyError:
             raise CommandNotFound
-
-
-def main():
-    '''Main script handler.'''
-    registry = CommandRegistry()
-    registry.register_command(AuthCommand())
-    registry.run()

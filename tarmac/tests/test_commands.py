@@ -40,7 +40,6 @@ class TestCommandRegistry(unittest.TestCase):
         command = Command()
         command.NAME = u'test'
         registry = CommandRegistry()
-        registry.register_command(command)
         self.assertRaises(
             CommandNotFound,
             registry._lookup_command, u'test2')
