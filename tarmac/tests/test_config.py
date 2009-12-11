@@ -11,6 +11,10 @@ class TestTarmacConfig2(TarmacTestCaseWithConfig):
 [lp:~tarmac/tarmac/tarmac]
 log_file = /var/log/tarmac/tarmac.log
 tree_dir = /var/cache/tarmac/tarmac
+
+[lp:~tarmac/tarmac/tarmac2]
+[lp:~tarmac/tarmac/tarmac3]
+[lp:~tarmac/tarmac/tarmac4]
 '''
 
     def test_CONFIG_HOME(self):
@@ -101,6 +105,11 @@ tree_dir = /var/cache/tarmac/tarmac
         config = TarmacConfig2()
         self.write_config_file(config)
         self.assertTrue(config.has_section('lp:~tarmac/tarmac/tarmac'))
+
+    def test_get_sections(self):
+        config = TarmacConfig2()
+        self.write_config_file(config)
+        self.assertEqual(len(config.branches), 4)
 
     def test_section_log_file(self):
         '''Ensure that the branch's log file can be read.'''

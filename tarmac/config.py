@@ -76,6 +76,11 @@ class TarmacConfig2(ConfigParser):
         '''Return the path to the config file itself.'''
         return os.path.join(self.CONFIG_HOME, 'tarmac.conf')
 
+    @property
+    def branches(self):
+        '''Return all the branches in the config.'''
+        return self.sections()
+
     def _check_config_dirs(self):
         '''Create the configuration directory if it doesn't exist.'''
         if not os.path.exists(self.CONFIG_HOME):
