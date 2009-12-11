@@ -32,7 +32,8 @@ class TarmacConfig2(ConfigParser):
 
     def __init__(self):
         DEFAULTS = {
-            'log_file': os.path.abspath('.')}
+            'log_file': os.path.abspath('.'),
+            'tree_dir': None}
 
         ConfigParser.__init__(self, DEFAULTS)
         self._check_config_dirs()

@@ -106,7 +106,7 @@ tree_dir = /var/cache/tarmac/tarmac
         '''Ensure that the branch's log file can be read.'''
         config = TarmacConfig2()
         self.write_config_file(config)
-        self.assertTrue(
+        self.assertEqual(
             config.get('lp:~tarmac/tarmac/tarmac', 'log_file'),
             '/var/log/tarmac/tarmac.log')
 
@@ -117,7 +117,7 @@ tree_dir = /var/cache/tarmac/tarmac
 [lp:~tarmac/tarmac/tarmac]
 '''
         self.write_config_file(config)
-        self.assertTrue(
+        self.assertEqual(
             config.get('lp:~tarmac/tarmac/tarmac', 'log_file'),
             os.path.abspath('.'))
 
@@ -125,6 +125,17 @@ tree_dir = /var/cache/tarmac/tarmac
         '''Ensure that the branch's tree cache can be read.'''
         config = TarmacConfig2()
         self.write_config_file(config)
-        self.assertTrue(
-            config.get('lp:~tarmac/tarmac/tarmac', 'log_file'),
+        self.assertEqual(
+            config.get('lp:~tarmac/tarmac/tarmac', 'tree_dir'),
             '/var/cache/tarmac/tarmac')
+
+    def test_section_tree_dir_NOT_SET(self):
+        '''Ensure that the branch's tree cache can be read.'''
+        config = TarmacConfig2()
+        self.CONFIG_TEMPLATE = '''
+[lp:~tarmac/tarmac/tarmac]
+'''
+        self.write_config_file(config)
+        self.assertEqual(
+            config.get('lp:~tarmac/tarmac/tarmac', 'tree_dir'),
+            '')
