@@ -5,7 +5,8 @@ tarmac.bin currently provides. spec=tarmac-0.3
 '''
 def main():
     '''Main script handler.'''
-    from tarmac.bin2.commands import AuthCommand, CommandRegistry
+    from tarmac.bin2.commands import AuthCommand
+    from tarmac.bin2.registry import CommandRegistry
     registry = CommandRegistry()
     registry.register_command(AuthCommand())
     registry.run()
