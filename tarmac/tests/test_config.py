@@ -110,6 +110,17 @@ tree_dir = /var/cache/tarmac/tarmac
             config.get('lp:~tarmac/tarmac/tarmac', 'log_file'),
             '/var/log/tarmac/tarmac.log')
 
+    def test_section_log_file_NOT_SET(self):
+        '''Get the default log file.'''
+        config = TarmacConfig2()
+        self.CONFIG_TEMPLATE = '''
+[lp:~tarmac/tarmac/tarmac]
+'''
+        self.write_config_file(config)
+        self.assertTrue(
+            config.get('lp:~tarmac/tarmac/tarmac', 'log_file'),
+            os.path.abspath('.'))
+
     def test_section_tree_dir(self):
         '''Ensure that the branch's tree cache can be read.'''
         config = TarmacConfig2()
