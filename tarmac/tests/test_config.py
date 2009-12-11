@@ -1,48 +1,15 @@
 '''Tests for tarmac.config'''
 import os
-import shutil
-import tempfile
-import unittest
 
 from tarmac.config import TarmacConfig2
+from tarmac.tests import TarmacTestCaseWithConfig
 
-class TestTarmacConfig2(unittest.TestCase):
+class TestTarmacConfig2(TarmacTestCaseWithConfig):
     '''Testing for tarmac.config.TarmacConfig2.'''
 
-    def setUp(self):
-
-        # Set up the environment.
-        self.tempdir = tempfile.mkdtemp()
-        os.environ['TARMAC_CONFIG_HOME'] = os.path.join(
-            self.tempdir, 'config')
-        os.environ['TARMAC_CACHE_HOME'] = os.path.join(
-            self.tempdir, 'cache')
-        os.environ['TARMAC_PID_FILE'] = os.path.join(
-            self.tempdir, 'pid-dir')
-        os.environ['TARMAC_CREDENTIALS'] = os.path.join(
-            self.tempdir, 'credentials')
-
-    def tearDown(self):
-
-        # Clean up environment.
-        shutil.rmtree(self.tempdir)
-        keys = ['TARMAC_CONFIG_HOME', 'TARMAC_CACHE_HOME', 'TARMAC_PID_FILE',
-            'TARMAC_CREDENTIALS']
-        for key in keys:
-            try:
-                del os.environ[key]
-            except KeyError:
-                pass
-
-    def create_fake_config(self, config):
-        '''Write out a fake config file for testing.'''
-        assert not os.path.exists(config.CONFIG_FILE)
-        f = open(config.CONFIG_FILE, 'ab')
-        f.write(''.join([
-            '[lp:~tarmac/tarmac/tarmac]\n',
-            '']))
-        f.close()
-        config.read(config.CONFIG_FILE)
+    CONFIG_TEMPLATE = '''
+[lp:~tarmac/tarmac/tarmac]
+'''
 
     def test_CONFIG_HOME(self):
         '''Return the default CONFIG_HOME.'''
@@ -130,5 +97,5 @@ class TestTarmacConfig2(unittest.TestCase):
     def test_has_section(self):
         '''Ensure that the config is being read properly.'''
         config = TarmacConfig2()
-        self.create_fake_config(config)
+        self.write_config_file(config)
         self.assertTrue(config.has_section('lp:~tarmac/tarmac/tarmac'))
