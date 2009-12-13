@@ -4,7 +4,7 @@ import sys
 from tarmac.config import TarmacConfig2
 from tarmac.exceptions import CommandNotFound
 
-class Command(object):
+class CommandBase(object):
     '''A command class.'''
 
     NAME = None
@@ -23,6 +23,3 @@ class AuthCommand(Command):
 
     def invoke(self):
         print 'authenticated'
-
-
-
