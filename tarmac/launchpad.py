@@ -33,16 +33,17 @@ def get_launchpad_object(config, filename=None, staging=False):
     else:
         SERVICE_ROOT = EDGE_SERVICE_ROOT
 
+    # XXX: rockstar - 2009 Dec 13 - Ideally, we should be using
+    # Launchpad.login_with, but currently, it doesn't support the option of
+    # putting the credentials file somewhere other than where the cache goes,
+    # and that's kinda nasty (and a security issue according to Kees).
     if not os.path.exists(filename):
-        launchpad = Launchpad.get_token_and_login('Tarmac',
-            SERVICE_ROOT, config.CACHE_HOME)
+        launchpad = Launchpad.get_token_and_login(
+            'Tarmac', SERVICE_ROOT, config.CACHE_HOME)
         launchpad.credentials.save(file(filename, 'w'))
     else:
         credentials = Credentials()
         credentials.load(open(filename))
-        launchpad = Launchpad(credentials, SERVICE_ROOT,
-            config.CACHE_HOME)
+        launchpad = Launchpad(credentials, SERVICE_ROOT, config.CACHE_HOME)
 
     return launchpad
-
-
