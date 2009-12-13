@@ -30,7 +30,7 @@ class TestCommandRegistry(unittest.TestCase):
         registry = CommandRegistry()
         registry.register_command(command)
         self.assertEqual(
-            registry._lookup_command(u'test'),
+            registry._lookup_command(object(), u'test'),
             command)
 
     def test__lookup_command_notfound(self):
@@ -39,7 +39,7 @@ class TestCommandRegistry(unittest.TestCase):
         registry = CommandRegistry()
         self.assertRaises(
             CommandNotFound,
-            registry._lookup_command, u'test2')
+            registry._lookup_command, object(), u'test2')
 
 
 
