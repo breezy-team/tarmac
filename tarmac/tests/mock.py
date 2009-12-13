@@ -23,6 +23,8 @@ import tempfile
 from bzrlib.branch import Branch
 from bzrlib.bzrdir import BzrDir
 
+from tarmac.bin2.commands import Command
+
 
 class MockLPProject(object):
     '''A mock LP Project.'''
@@ -47,3 +49,16 @@ class MockLPBranch(object):
         self.bzr_identity = self._internal_bzr_branch.base
         self.project = MockLPProject()
 
+
+class MockCommand(Command):
+    '''A mock command.'''
+
+    NAME = 'mock'
+
+    def run(): pass
+
+
+class MockModule(object):
+
+    def __init__(self):
+        self.__dict__['MockCommand'] = MockCommand

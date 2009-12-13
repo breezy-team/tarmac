@@ -4,6 +4,7 @@ import unittest
 from tarmac.bin2.commands import AuthCommand, Command
 from tarmac.bin2.registry import CommandRegistry
 from tarmac.exceptions import CommandNotFound
+from tarmac.tests.mock import MockCommand, MockModule
 
 class TestCommandRegistry(unittest.TestCase):
     '''Test for tarmac.bin2.commands.CommandRegistry.'''
@@ -37,5 +38,8 @@ class TestCommandRegistry(unittest.TestCase):
             CommandNotFound,
             registry._lookup_command, object(), u'test2')
 
-
-
+    def test_register_from_module(self):
+        registry = CommandRegistry()
+        registry.register_from_module(MockModule())
+        mock_command = registry._lookup_command(object(), 'mock')
+        self.assertTrue(isinstance(mock_command, MockCommand))
