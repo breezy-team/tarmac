@@ -15,7 +15,7 @@ class CommandRegistry():
     def install_hooks(self):
         '''Use the bzrlib Command support for running commands.'''
         Command.hooks.install_named_hook(
-            'lookup_command', self._lookup_command, '')
+            'lookup_command', self._lookup_command, 'Tarmac commands')
 
     def run(self):
         '''Execute the command.'''
@@ -29,6 +29,8 @@ class CommandRegistry():
     def _lookup_command(self, command, name):
         '''Look up the command by its name.'''
         try:
-            return self._registry[name]
+            _command = self._registry[name]()
         except KeyError:
             raise CommandNotFound
+
+        return _command

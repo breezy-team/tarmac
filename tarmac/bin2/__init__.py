@@ -8,5 +8,5 @@ def main():
     from tarmac.bin2.commands import AuthCommand
     from tarmac.bin2.registry import CommandRegistry
     registry = CommandRegistry()
-    registry.register_command(AuthCommand())
+    registry.register_command(AuthCommand)
     registry.run()
