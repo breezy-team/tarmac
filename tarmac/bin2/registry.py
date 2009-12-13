@@ -38,5 +38,4 @@ class CommandRegistry():
     def register_from_module(self, module):
         for item in module.__dict__:
             if item.endswith("Command"):
-                name = module.__dict__[item].NAME
                 self.register_command(module.__dict__[item])
