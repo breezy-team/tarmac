@@ -3,7 +3,7 @@ from cStringIO import StringIO
 import sys
 import unittest
 
-from tarmac.bin2.commands import AuthCommand, Command
+from tarmac.bin2.commands import AuthCommand, CommandBase
 from tarmac.config import TarmacConfig2
 from tarmac.exceptions import CommandNotFound
 
@@ -13,14 +13,13 @@ class TestCommand(unittest.TestCase):
 
     def test__init__(self):
         command_name = u'test'
-        command = Command()
+        command = CommandBase()
         command.NAME = command_name
         self.assertEqual(command.NAME, command_name)
         self.assertTrue(isinstance(command.config, TarmacConfig2))
 
     def test_invoke(self):
-        command = Command()
-        command.NAME = u'test'
+        command = CommandBase()
         self.assertRaises(NotImplementedError, command.invoke)
 
 

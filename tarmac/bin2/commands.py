@@ -17,7 +17,7 @@ class CommandBase(object):
         raise NotImplementedError
 
 
-class AuthCommand(Command):
+class AuthCommand(CommandBase):
 
     NAME = 'auth'
 

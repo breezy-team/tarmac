@@ -1,7 +1,7 @@
 '''Tests for tarmac.bin2.registry.'''
 import unittest
 
-from tarmac.bin2.commands import AuthCommand, Command
+from tarmac.bin2.commands import AuthCommand, CommandBase
 from tarmac.bin2.registry import CommandRegistry
 from tarmac.exceptions import CommandNotFound
 from tarmac.tests.mock import MockCommand, MockModule
@@ -18,7 +18,7 @@ class TestCommandRegistry(unittest.TestCase):
         self.assertRaises(CommandNotFound, registry.run)
 
     def test_register_command(self):
-        command = Command()
+        command = CommandBase()
         command.NAME = u'test'
         registry = CommandRegistry()
         registry.register_command(command)
