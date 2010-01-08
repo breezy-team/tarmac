@@ -1,5 +1,6 @@
 '''Tests for tarmac.bin2.commands.py.'''
 from cStringIO import StringIO
+import os
 import sys
 import unittest
 
@@ -27,11 +28,14 @@ class TestAuthCommand(unittest.TestCase):
     '''Test for tarmac.bin2.command.AuthCommand.'''
 
     def test_invoke(self):
+        '''Test that calling the auth command gets a Lanuchpad token.'''
+
         tmp_stdout = StringIO()
         old_stdout = sys.stdout
         sys.stdout = tmp_stdout
 
         command = AuthCommand()
+        self.assertFalse(os.path.exists(command.config.CREDENTIALS))
         command.invoke()
         self.assertEqual(tmp_stdout.getvalue(), 'authenticated\n')
 
