@@ -20,13 +20,13 @@ class CommandRegistry():
     def run(self):
         '''Execute the command.'''
         command_name = sys.argv[1]
-        self._lookup_command(object(), command_name).invoke()
+        self._lookup_command(command_name).invoke()
 
     def register_command(self, command):
         '''Register a command in the registry.'''
         self._registry[command.NAME] = command
 
-    def _lookup_command(self, command, name):
+    def _lookup_command(self, name):
         '''Look up the command by its name.'''
         try:
             _command = self._registry[name]()

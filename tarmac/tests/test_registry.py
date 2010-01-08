@@ -28,7 +28,7 @@ class TestCommandRegistry(unittest.TestCase):
     def test__lookup_command(self):
         registry = CommandRegistry()
         registry.register_command(AuthCommand)
-        looked_up_command = registry._lookup_command(object(), u'auth')
+        looked_up_command = registry._lookup_command(u'auth')
         self.assertTrue(
             isinstance(looked_up_command, AuthCommand))
 
@@ -36,10 +36,10 @@ class TestCommandRegistry(unittest.TestCase):
         registry = CommandRegistry()
         self.assertRaises(
             CommandNotFound,
-            registry._lookup_command, object(), u'test2')
+            registry._lookup_command, u'test2')
 
     def test_register_from_module(self):
         registry = CommandRegistry()
         registry.register_from_module(MockModule())
-        mock_command = registry._lookup_command(object(), 'mock')
+        mock_command = registry._lookup_command('mock')
         self.assertTrue(isinstance(mock_command, MockCommand))
