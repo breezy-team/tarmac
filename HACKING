@@ -1,0 +1,22 @@
+=============
+Writing Tests
+=============
+
+  To write tests, there are a few convenience test classes that can be used to
+help out.  These test cases can be found in the ``tarmac.tests`` package.
+These test cases are:
+
+TarmacTestCase
+==============
+
+  Any test written should at least inherit from this test case.  It sets up a
+test environment for configuration, etc.  It also makes sure that the test
+environment is cleaned up when everything is completed.
+
+
+TarmacTestCaseWithConfig
+========================
+
+  This test case allows one to specify a ``CONFIG_TEMPLATE`` attribute for the
+test, and will write that template out to the tarmac config file when
+``TarmacTestCaseWithConfig.write_config_file`` is called.
