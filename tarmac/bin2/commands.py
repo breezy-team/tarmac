@@ -57,3 +57,10 @@ class AuthCommand(CommandBase):
             print 'You have already been authenticated.'
         else:
             launchpad = self.get_launchpad_object()
+
+class HelpCommand(CommandBase):
+
+    NAME = 'help'
+
+    def invoke(self):
+        print 'You need help.'
