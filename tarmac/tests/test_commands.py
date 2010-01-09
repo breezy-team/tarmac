@@ -3,7 +3,7 @@ from cStringIO import StringIO
 import os
 import sys
 
-from tarmac.bin2.commands import AuthCommand, CommandBase
+from tarmac.bin2 import commands
 from tarmac.config import TarmacConfig2
 from tarmac.exceptions import CommandNotFound
 from tarmac.tests import TarmacTestCase
@@ -14,13 +14,13 @@ class TestCommand(TarmacTestCase):
 
     def test__init__(self):
         command_name = u'test'
-        command = CommandBase()
+        command = commands.CommandBase()
         command.NAME = command_name
         self.assertEqual(command.NAME, command_name)
         self.assertTrue(isinstance(command.config, TarmacConfig2))
 
     def test_invoke(self):
-        command = CommandBase()
+        command = commands.CommandBase()
         self.assertRaises(NotImplementedError, command.invoke)
 
 
@@ -49,11 +49,28 @@ class TestAuthCommand(TarmacTestCase):
         old_stdout = sys.stdout
         sys.stdout = tmp_stdout
 
-        command = AuthCommand()
+        command = commands.AuthCommand()
         self.write_credentials_file(command.config)
         command.invoke()
         self.assertEqual(
             tmp_stdout.getvalue(),
             'You have already been authenticated.\n')
+
+        sys.stdout = old_stdout
+
+
+class TestHelpCommand(TarmacTestCase):
+
+    def test_invoke(self):
+        tmp_stdout = StringIO()
+        old_stdout = sys.stdout
+        sys.stdout = tmp_stdout
+
+        command = commands.HelpCommand()
+        self.write_credentials_file(command.config)
+        command.invoke()
+        self.assertEqual(
+            tmp_stdout.getvalue(),
+            'You need help.\n')
 
         sys.stdout = old_stdout

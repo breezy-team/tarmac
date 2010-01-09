@@ -22,7 +22,6 @@ class CommandRegistry():
         try:
             command_name = sys.argv[1]
         except IndexError:
-            # TODO: Add help printing code.
             command_name = 'help'
         self._lookup_command(command_name).invoke()
 
