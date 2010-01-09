@@ -73,7 +73,7 @@ class TestTarmacScript(TarmacTestCaseWithConfig):
 
     def test_script(self):
         status, output = commands.getstatusoutput('../tarmac-script')
-        self.assertEqual(output, '')
+        self.assertEqual(output, 'You need help.')
 
     # XXX: rockstar - 10 Jan 2010 - How do I test this with the OAuth request,
     # etc?

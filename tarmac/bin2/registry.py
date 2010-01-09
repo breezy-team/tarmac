@@ -19,8 +19,12 @@ class CommandRegistry():
 
     def run(self):
         '''Execute the command.'''
-        command_name = sys.argv[1]
-        self._lookup_command(command_name).invoke()
+        try:
+            command_name = sys.argv[1]
+            self._lookup_command(command_name).invoke()
+        except IndexError:
+            # TODO: Add help printing code.
+            print 'You need help.'
 
     def register_command(self, command):
         '''Register a command in the registry.'''
