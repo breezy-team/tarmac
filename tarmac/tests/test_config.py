@@ -7,16 +7,6 @@ from tarmac.tests import TarmacTestCase
 class TestTarmacConfig2(TarmacTestCase):
     '''Testing for tarmac.config.TarmacConfig2.'''
 
-    CONFIG_TEMPLATE = '''
-[lp:~tarmac/tarmac/tarmac]
-log_file = /var/log/tarmac/tarmac.log
-tree_dir = /var/cache/tarmac/tarmac
-
-[lp:~tarmac/tarmac/tarmac2]
-[lp:~tarmac/tarmac/tarmac3]
-[lp:~tarmac/tarmac/tarmac4]
-'''
-
     def test_CONFIG_HOME(self):
         '''Return the default CONFIG_HOME.'''
         del os.environ['TARMAC_CONFIG_HOME']

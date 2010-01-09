@@ -71,4 +71,5 @@ class MergeCommand(CommandBase):
     NAME = 'merge'
 
     def invoke(self):
-        print 'Merging.'
+        for branch in self.config.branches:
+            print 'Merging %(branch)s' % {'branch': branch}

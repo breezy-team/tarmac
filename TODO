@@ -9,3 +9,4 @@ Warts
    a $HOME dir and still work, to support third parties.
  - The new Tarmac commands don't accomodate command line options at all.  Fix
    that.
+ - The new Tarmac commands don't support aliases.

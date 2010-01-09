@@ -27,6 +27,8 @@ class TestCommand(TarmacTestCase):
 class TestAuthCommand(TarmacTestCase):
     '''Test for tarmac.bin2.command.AuthCommand.'''
 
+    NEEDS_SAMPLE_DATA = True
+
     # XXX: rockstar - 10 Jan 2010 - How do I test this with the OAuth request,
     # etc?
     #def test_invoke(self):
@@ -50,7 +52,6 @@ class TestAuthCommand(TarmacTestCase):
         sys.stdout = tmp_stdout
 
         command = commands.AuthCommand()
-        self.write_credentials_file(command.config)
         command.invoke()
         self.assertEqual(
             tmp_stdout.getvalue(),
@@ -67,7 +68,6 @@ class TestHelpCommand(TarmacTestCase):
         sys.stdout = tmp_stdout
 
         command = commands.HelpCommand()
-        self.write_credentials_file(command.config)
         command.invoke()
         self.assertEqual(
             tmp_stdout.getvalue(),
@@ -77,16 +77,20 @@ class TestHelpCommand(TarmacTestCase):
 
 class TestMergeCommand(TarmacTestCase):
 
+    NEEDS_SAMPLE_DATA = True
+
     def test_invoke(self):
         tmp_stdout = StringIO()
         old_stdout = sys.stdout
         sys.stdout = tmp_stdout
 
         command = commands.MergeCommand()
-        self.write_credentials_file(command.config)
         command.invoke()
         self.assertEqual(
             tmp_stdout.getvalue(),
-            'Merging.\n')
+            'Merging lp:~tarmac/tarmac/tarmac\n'
+            'Merging lp:~tarmac/tarmac/tarmac3\n'
+            'Merging lp:~tarmac/tarmac/tarmac2\n'
+            'Merging lp:~tarmac/tarmac/tarmac4\n')
 
         sys.stdout = old_stdout

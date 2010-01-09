@@ -70,6 +70,8 @@ class TestTarmacLander(TarmacTestCase):
 class TestTarmacScript(TarmacTestCase):
     '''Tests for tarmac-script.'''
 
+    NEEDS_SAMPLE_DATA = True
+
     def test_script(self):
         status, output = commands.getstatusoutput('../tarmac-script')
         self.assertEqual(output, 'You need help.')
@@ -86,4 +88,9 @@ class TestTarmacScript(TarmacTestCase):
 
     def test_script_merge(self):
         status, output = commands.getstatusoutput('../tarmac-script merge')
-        self.assertEqual(output, 'Merging.')
+        self.assertEqual(
+            output,
+            'Merging lp:~tarmac/tarmac/tarmac\n'
+            'Merging lp:~tarmac/tarmac/tarmac3\n'
+            'Merging lp:~tarmac/tarmac/tarmac2\n'
+            'Merging lp:~tarmac/tarmac/tarmac4')

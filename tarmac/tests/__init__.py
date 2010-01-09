@@ -20,9 +20,13 @@ import shutil
 import tempfile
 import unittest
 
+from tarmac.config import TarmacConfig2
+
 
 class TarmacTestCase(unittest.TestCase):
     '''A base TestCase for all Tarmac tests.'''
+
+    NEEDS_SAMPLE_DATA = False
 
     def setUp(self):
 
@@ -37,6 +41,11 @@ class TarmacTestCase(unittest.TestCase):
         os.environ['TARMAC_CREDENTIALS'] = os.path.join(
             self.tempdir, 'credentials')
 
+        if self.NEEDS_SAMPLE_DATA:
+            config = TarmacConfig2()
+            self.write_config_file(config)
+            self.write_credentials_file(config)
+
     def tearDown(self):
 
         # Clean up environment.
@@ -49,9 +58,16 @@ class TarmacTestCase(unittest.TestCase):
             except KeyError:
                 pass
 
-    @property
-    def CONFIG_TEMPLATE(self):
-        raise NotImplementedError
+
+    CONFIG_TEMPLATE = '''
+[lp:~tarmac/tarmac/tarmac]
+log_file = /var/log/tarmac/tarmac.log
+tree_dir = /var/cache/tarmac/tarmac
+
+[lp:~tarmac/tarmac/tarmac2]
+[lp:~tarmac/tarmac/tarmac3]
+[lp:~tarmac/tarmac/tarmac4]
+'''
 
     def write_credentials_file(self, config=None):
         if not config:
