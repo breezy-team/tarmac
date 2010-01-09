@@ -7,3 +7,5 @@ Warts
  - Tarmac should indeed define an API for hooks, but it's still pretty tied to
    mainline Tarmac work.  It should be tested that plugins can actually live in
    a $HOME dir and still work, to support third parties.
+ - The new Tarmac commands don't accomodate command line options at all.  Fix
+   that.

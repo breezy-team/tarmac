@@ -83,3 +83,7 @@ class TestTarmacScript(TarmacTestCase):
     def test_script_help(self):
         status, output = commands.getstatusoutput('../tarmac-script help')
         self.assertEqual(output, 'You need help.')
+
+    def test_script_merge(self):
+        status, output = commands.getstatusoutput('../tarmac-script merge')
+        self.assertEqual(output, 'Merging.')

@@ -74,3 +74,19 @@ class TestHelpCommand(TarmacTestCase):
             'You need help.\n')
 
         sys.stdout = old_stdout
+
+class TestMergeCommand(TarmacTestCase):
+
+    def test_invoke(self):
+        tmp_stdout = StringIO()
+        old_stdout = sys.stdout
+        sys.stdout = tmp_stdout
+
+        command = commands.MergeCommand()
+        self.write_credentials_file(command.config)
+        command.invoke()
+        self.assertEqual(
+            tmp_stdout.getvalue(),
+            'Merging.\n')
+
+        sys.stdout = old_stdout

@@ -64,3 +64,11 @@ class HelpCommand(CommandBase):
 
     def invoke(self):
         print 'You need help.'
+
+
+class MergeCommand(CommandBase):
+
+    NAME = 'merge'
+
+    def invoke(self):
+        print 'Merging.'
