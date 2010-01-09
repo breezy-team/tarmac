@@ -21,13 +21,12 @@ __metaclass__ = type
 import commands
 from optparse import OptionParser
 import sys
-import unittest
 
 from tarmac.bin import TarmacLander, TarmacScript
-from tarmac.tests import TarmacTestCase, TarmacTestCaseWithConfig
+from tarmac.tests import TarmacTestCase
 
 
-class TestTarmacScript(unittest.TestCase):
+class TestTarmacScript(TarmacTestCase):
     '''Tests for tarmac.bin.TarmacScript.'''
 
     class TarmacDummyScript(TarmacScript):
@@ -47,7 +46,7 @@ class TestTarmacScript(unittest.TestCase):
         self.assertTrue(isinstance(script, self.TarmacDummyScript))
 
 
-class TestTarmacLander(unittest.TestCase):
+class TestTarmacLander(TarmacTestCase):
     '''Tests for TarmacLander.'''
 
     def test_lander_dry_run(self):
@@ -68,7 +67,7 @@ class TestTarmacLander(unittest.TestCase):
         self.assertTrue(script.test_mode)
 
 
-class TestTarmacScript(TarmacTestCaseWithConfig):
+class TestTarmacScript(TarmacTestCase):
     '''Tests for tarmac-script.'''
 
     def test_script(self):

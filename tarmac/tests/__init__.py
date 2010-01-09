@@ -49,15 +49,6 @@ class TarmacTestCase(unittest.TestCase):
             except KeyError:
                 pass
 
-
-class TarmacTestCaseWithConfig(TarmacTestCase):
-    '''A TestCase for Tarmac with helpers for dealing with config.
-
-    To use this test, set the CONFIG_TEMPLATE property with the template that
-    can be created, and then when write_config_file is called, it'll create
-    the config file based on the template provided.
-    '''
-
     @property
     def CONFIG_TEMPLATE(self):
         raise NotImplementedError

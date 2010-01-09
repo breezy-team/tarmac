@@ -6,7 +6,7 @@ import sys
 from tarmac.bin2.commands import AuthCommand, CommandBase
 from tarmac.config import TarmacConfig2
 from tarmac.exceptions import CommandNotFound
-from tarmac.tests import TarmacTestCase, TarmacTestCaseWithConfig
+from tarmac.tests import TarmacTestCase
 
 
 class TestCommand(TarmacTestCase):
@@ -24,7 +24,7 @@ class TestCommand(TarmacTestCase):
         self.assertRaises(NotImplementedError, command.invoke)
 
 
-class TestAuthCommand(TarmacTestCaseWithConfig):
+class TestAuthCommand(TarmacTestCase):
     '''Test for tarmac.bin2.command.AuthCommand.'''
 
     # XXX: rockstar - 10 Jan 2010 - How do I test this with the OAuth request,

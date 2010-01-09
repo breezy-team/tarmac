@@ -2,9 +2,9 @@
 import os
 
 from tarmac.config import TarmacConfig2
-from tarmac.tests import TarmacTestCaseWithConfig
+from tarmac.tests import TarmacTestCase
 
-class TestTarmacConfig2(TarmacTestCaseWithConfig):
+class TestTarmacConfig2(TarmacTestCase):
     '''Testing for tarmac.config.TarmacConfig2.'''
 
     CONFIG_TEMPLATE = '''
