@@ -57,5 +57,3 @@ class TestAuthCommand(TarmacTestCaseWithConfig):
             'You have already been authenticated.\n')
 
         sys.stdout = old_stdout
-
-

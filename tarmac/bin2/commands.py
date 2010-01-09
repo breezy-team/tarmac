@@ -2,9 +2,11 @@
 import os
 import sys
 
+from launchpadlib.launchpad import (Credentials, Launchpad, EDGE_SERVICE_ROOT,
+    STAGING_SERVICE_ROOT)
+
 from tarmac.config import TarmacConfig2
 from tarmac.exceptions import CommandNotFound
-from tarmac.launchpad import get_launchpad_object
 
 
 class CommandBase(object):
@@ -19,11 +21,31 @@ class CommandBase(object):
         '''Actually run the command.'''
         raise NotImplementedError
 
-    def get_launchpad_object(self):
+    def get_launchpad_object(self, filename=None, staging=True):
         '''Return a Launchpad object for making API requests.'''
-        # XXX: rockstar - I assume that the code from
-        # tarmac.launchpad.get_launchpad_object can go away because of this.
-        return get_launchpad_object(self.config)
+        # XXX: rockstar - 2009 Dec 13 - Ideally, we should be using
+        # Launchpad.login_with, but currently, it doesn't support the option of
+        # putting the credentials file somewhere other than where the cache
+        # goes, and that's kinda nasty (and a security issue according to
+        # Kees).
+        if not filename:
+            filename = self.config.CREDENTIALS
+
+        if staging:
+            SERVICE_ROOT = STAGING_SERVICE_ROOT
+        else:
+            SERVICE_ROOT = EDGE_SERVICE_ROOT
+
+        if not os.path.exists(filename):
+            launchpad = Launchpad.get_token_and_login(
+                'Tarmac', SERVICE_ROOT, self.config.CACHE_HOME)
+            launchpad.credentials.save(file(filename, 'w'))
+        else:
+            credentials = Credentials()
+            credentials.load(open(filename))
+            launchpad = Launchpad(
+                credentials, SERVICE_ROOT, self.config.CACHE_HOME)
+        return launchpad
 
 
 class AuthCommand(CommandBase):

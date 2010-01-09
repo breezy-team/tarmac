@@ -24,6 +24,7 @@ import sys
 import unittest
 
 from tarmac.bin import TarmacLander, TarmacScript
+from tarmac.tests import TarmacTestCase, TarmacTestCaseWithConfig
 
 
 class TestTarmacScript(unittest.TestCase):
@@ -67,13 +68,15 @@ class TestTarmacLander(unittest.TestCase):
         self.assertTrue(script.test_mode)
 
 
-class TestTarmacScript(unittest.TestCase):
+class TestTarmacScript(TarmacTestCaseWithConfig):
     '''Tests for tarmac-script.'''
 
     def test_script(self):
         status, output = commands.getstatusoutput('../tarmac-script')
         self.assertEqual(output, '')
 
-    def test_script(self):
-        status, output = commands.getstatusoutput('../tarmac-script auth')
-        self.assertEqual(output, 'authenticated')
+    # XXX: rockstar - 10 Jan 2010 - How do I test this with the OAuth request,
+    # etc?
+    #def test_script_auth(self):
+    #    status, output = commands.getstatusoutput('../tarmac-script auth')
+    #    self.assertEqual(output, 'authenticated')
