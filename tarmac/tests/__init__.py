@@ -62,6 +62,17 @@ class TarmacTestCaseWithConfig(TarmacTestCase):
     def CONFIG_TEMPLATE(self):
         raise NotImplementedError
 
+    def write_credentials_file(self, config=None):
+        if not config:
+            try:
+                config = self.config
+            except AttributeError:
+                raise Exception('No config provided.')
+
+        credentials = open(config.CREDENTIALS, 'ab')
+        credentials.write('')
+        credentials.close()
+
     def write_config_file(self, config=None):
         '''Write out a fake config file for testing.'''
         if not config:

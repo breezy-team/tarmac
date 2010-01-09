@@ -1,4 +1,5 @@
 '''Command handling for Tarmac.'''
+import os
 import sys
 
 from tarmac.config import TarmacConfig2
@@ -22,4 +23,7 @@ class AuthCommand(CommandBase):
     NAME = 'auth'
 
     def invoke(self):
-        print 'authenticated'
+        if os.path.exists(self.config.CREDENTIALS):
+            print 'You have already been authenticated.'
+        else:
+            print 'authenticated'

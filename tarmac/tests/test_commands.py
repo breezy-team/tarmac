@@ -2,14 +2,14 @@
 from cStringIO import StringIO
 import os
 import sys
-import unittest
 
 from tarmac.bin2.commands import AuthCommand, CommandBase
 from tarmac.config import TarmacConfig2
 from tarmac.exceptions import CommandNotFound
+from tarmac.tests import TarmacTestCase, TarmacTestCaseWithConfig
 
 
-class TestCommand(unittest.TestCase):
+class TestCommand(TarmacTestCase):
     '''Test for tarmac.bin2.commands.Command.'''
 
     def test__init__(self):
@@ -24,7 +24,7 @@ class TestCommand(unittest.TestCase):
         self.assertRaises(NotImplementedError, command.invoke)
 
 
-class TestAuthCommand(unittest.TestCase):
+class TestAuthCommand(TarmacTestCaseWithConfig):
     '''Test for tarmac.bin2.command.AuthCommand.'''
 
     def test_invoke(self):
@@ -40,3 +40,20 @@ class TestAuthCommand(unittest.TestCase):
         self.assertEqual(tmp_stdout.getvalue(), 'authenticated\n')
 
         sys.stdout = old_stdout
+
+    def test_invoke_already_authenticated(self):
+        '''If the user has already been authenticated, don't try again.'''
+        tmp_stdout = StringIO()
+        old_stdout = sys.stdout
+        sys.stdout = tmp_stdout
+
+        command = AuthCommand()
+        self.write_credentials_file(command.config)
+        command.invoke()
+        self.assertEqual(
+            tmp_stdout.getvalue(),
+            'You have already been authenticated.\n')
+
+        sys.stdout = old_stdout
+
+
