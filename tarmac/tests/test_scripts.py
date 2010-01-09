@@ -89,7 +89,6 @@ class TestTarmacScript(TarmacTestCase):
 
     def test_script_help(self):
         status, output = self.exec_tarmac_script('help')
-        status, output = commands.getstatusoutput('../tarmac-script help')
         self.assertEqual(output, 'You need help.')
 
     def test_script_merge(self):
