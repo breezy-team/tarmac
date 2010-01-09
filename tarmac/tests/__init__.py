@@ -27,6 +27,15 @@ class TarmacTestCase(unittest.TestCase):
     '''A base TestCase for all Tarmac tests.'''
 
     NEEDS_SAMPLE_DATA = False
+    CONFIG_TEMPLATE = '''
+[lp:~tarmac/tarmac/tarmac]
+log_file = /var/log/tarmac/tarmac.log
+tree_dir = /var/cache/tarmac/tarmac
+
+[lp:~tarmac/tarmac/tarmac2]
+[lp:~tarmac/tarmac/tarmac3]
+[lp:~tarmac/tarmac/tarmac4]
+'''
 
     def setUp(self):
 
@@ -57,17 +66,6 @@ class TarmacTestCase(unittest.TestCase):
                 del os.environ[key]
             except KeyError:
                 pass
-
-
-    CONFIG_TEMPLATE = '''
-[lp:~tarmac/tarmac/tarmac]
-log_file = /var/log/tarmac/tarmac.log
-tree_dir = /var/cache/tarmac/tarmac
-
-[lp:~tarmac/tarmac/tarmac2]
-[lp:~tarmac/tarmac/tarmac3]
-[lp:~tarmac/tarmac/tarmac4]
-'''
 
     def write_credentials_file(self, config=None):
         if not config:
