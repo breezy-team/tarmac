@@ -72,22 +72,28 @@ class TestTarmacScript(TarmacTestCase):
 
     NEEDS_SAMPLE_DATA = True
 
+    def exec_tarmac_script(self, args):
+        '''Execute the file tarmac-script with the provided arguments.'''
+        return commands.getstatusoutput('../tarmac-script %(args)s' % {
+            'args': args})
+
     def test_script(self):
-        status, output = commands.getstatusoutput('../tarmac-script')
+        status, output = self.exec_tarmac_script('')
         self.assertEqual(output, 'You need help.')
 
     # XXX: rockstar - 10 Jan 2010 - How do I test this with the OAuth request,
     # etc?
     #def test_script_auth(self):
-    #    status, output = commands.getstatusoutput('../tarmac-script auth')
+    #    status, output = self.exec_tarmac_script('auth')
     #    self.assertEqual(output, 'authenticated')
 
     def test_script_help(self):
+        status, output = self.exec_tarmac_script('help')
         status, output = commands.getstatusoutput('../tarmac-script help')
         self.assertEqual(output, 'You need help.')
 
     def test_script_merge(self):
-        status, output = commands.getstatusoutput('../tarmac-script merge')
+        status, output = self.exec_tarmac_script('merge')
         self.assertEqual(
             output,
             'Merging lp:~tarmac/tarmac/tarmac\n'
