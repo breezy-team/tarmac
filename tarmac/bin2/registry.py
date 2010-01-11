@@ -27,7 +27,11 @@ class CommandRegistry():
 
     def register_command(self, command):
         '''Register a command in the registry.'''
-        self._registry[command.NAME] = command
+        try:
+            self._registry[command.NAME] = command
+        except AttributeError:
+            # The NAME attribute isn't set, so is invalid
+            return
 
     def _lookup_command(self, name):
         '''Look up the command by its name.'''

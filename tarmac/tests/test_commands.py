@@ -14,13 +14,13 @@ class TestCommand(TarmacTestCase):
 
     def test__init__(self):
         command_name = u'test'
-        command = commands.CommandBase()
+        command = commands.TarmacCommand()
         command.NAME = command_name
         self.assertEqual(command.NAME, command_name)
         self.assertTrue(isinstance(command.config, TarmacConfig2))
 
     def test_invoke(self):
-        command = commands.CommandBase()
+        command = commands.TarmacCommand()
         self.assertRaises(NotImplementedError, command.invoke)
 
 

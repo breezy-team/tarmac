@@ -23,7 +23,7 @@ import tempfile
 from bzrlib.branch import Branch
 from bzrlib.bzrdir import BzrDir
 
-from tarmac.bin2.commands import CommandBase
+from tarmac.bin2.commands import TarmacCommand
 
 
 class MockLPProject(object):
@@ -50,7 +50,7 @@ class MockLPBranch(object):
         self.project = MockLPProject()
 
 
-class MockCommand(CommandBase):
+class MockCommand(TarmacCommand):
     '''A mock command.'''
 
     NAME = 'mock'

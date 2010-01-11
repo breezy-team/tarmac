@@ -2,6 +2,8 @@
 import os
 import sys
 
+from bzrlib.commands import Command
+from bzrlib.help import help_commands
 from launchpadlib.launchpad import (Credentials, Launchpad, EDGE_SERVICE_ROOT,
     STAGING_SERVICE_ROOT)
 
@@ -9,7 +11,7 @@ from tarmac.config import TarmacConfig2
 from tarmac.exceptions import CommandNotFound
 
 
-class CommandBase(object):
+class TarmacCommand(Command):
     '''A command class.'''
 
     NAME = None
@@ -48,7 +50,7 @@ class CommandBase(object):
         return launchpad
 
 
-class AuthCommand(CommandBase):
+class AuthCommand(TarmacCommand):
 
     NAME = 'auth'
 
@@ -58,7 +60,7 @@ class AuthCommand(CommandBase):
         else:
             launchpad = self.get_launchpad_object()
 
-class HelpCommand(CommandBase):
+class HelpCommand(TarmacCommand):
 
     NAME = 'help'
 
@@ -66,7 +68,7 @@ class HelpCommand(CommandBase):
         print 'You need help.'
 
 
-class MergeCommand(CommandBase):
+class MergeCommand(TarmacCommand):
 
     NAME = 'merge'
 
