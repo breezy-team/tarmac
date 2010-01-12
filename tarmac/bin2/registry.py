@@ -16,6 +16,8 @@ class CommandRegistry():
         '''Use the bzrlib Command support for running commands.'''
         Command.hooks.install_named_hook(
             'get_command', self._get_command, 'Tarmac commands')
+        Command.hooks.install_name_hook(
+            'list_commands', self._list_commands, 'Tarmac commands')
 
     def run(self):
         '''Execute the command.'''
@@ -40,6 +42,12 @@ class CommandRegistry():
             raise CommandNotFound
 
         return _command
+
+    # TODO: rockstar - This is entirely untested right now, since I don't know
+    # how it works.
+    def _list_commands(self, names):
+        names.update(self._registry.iterkeys())
+        return names
 
     def register_from_module(self, module):
         for item in module.__dict__:

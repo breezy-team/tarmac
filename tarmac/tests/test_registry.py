@@ -43,3 +43,10 @@ class TestCommandRegistry(unittest.TestCase):
         registry.register_from_module(MockModule())
         mock_command = registry._get_command(TarmacCommand(), 'mock')
         self.assertTrue(isinstance(mock_command, MockCommand))
+
+    def DISABLEDtest__list_commands(self):
+        registry = CommandRegistry()
+        registry.register_command(AuthCommand)
+        names = {}
+        names = registry._list_commands(names)
+        self.assertEqual(names.iterkeys(), registry._commands.iterkeys())
