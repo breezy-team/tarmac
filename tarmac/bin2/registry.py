@@ -15,7 +15,7 @@ class CommandRegistry():
     def install_hooks(self):
         '''Use the bzrlib Command support for running commands.'''
         Command.hooks.install_named_hook(
-            'lookup_command', self._lookup_command, 'Tarmac commands')
+            'get_command', self._get_command, 'Tarmac commands')
 
     def run(self):
         '''Execute the command.'''
@@ -23,7 +23,6 @@ class CommandRegistry():
             command_name = sys.argv[1]
         except IndexError:
             command_name = 'help'
-        self._lookup_command(command_name).invoke()
 
     def register_command(self, command):
         '''Register a command in the registry.'''
@@ -33,8 +32,8 @@ class CommandRegistry():
             # The NAME attribute isn't set, so is invalid
             return
 
-    def _lookup_command(self, name):
-        '''Look up the command by its name.'''
+    def _get_command(self, command, name):
+        '''Return the command.'''
         try:
             _command = self._registry[name]()
         except KeyError:

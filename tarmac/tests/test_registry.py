@@ -25,21 +25,21 @@ class TestCommandRegistry(unittest.TestCase):
         self.assertEqual(registry._registry,
             {'test': command})
 
-    def test__lookup_command(self):
+    def test__get_command(self):
         registry = CommandRegistry()
         registry.register_command(AuthCommand)
-        looked_up_command = registry._lookup_command(u'auth')
+        looked_up_command = registry._get_command(AuthCommand(), u'auth')
         self.assertTrue(
             isinstance(looked_up_command, AuthCommand))
 
-    def test__lookup_command_notfound(self):
+    def test__get_command_notfound(self):
         registry = CommandRegistry()
         self.assertRaises(
             CommandNotFound,
-            registry._lookup_command, u'test2')
+            registry._get_command, TarmacCommand(), u'test2')
 
     def test_register_from_module(self):
         registry = CommandRegistry()
         registry.register_from_module(MockModule())
-        mock_command = registry._lookup_command('mock')
+        mock_command = registry._get_command(TarmacCommand(), 'mock')
         self.assertTrue(isinstance(mock_command, MockCommand))
