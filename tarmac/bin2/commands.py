@@ -16,6 +16,10 @@ class TarmacCommand(Command):
 
     NAME = None
 
+    def _usage(self):
+        # TODO Handle args and such...
+        return ''
+
     def __init__(self):
         self.config = TarmacConfig2()
 
@@ -50,28 +54,31 @@ class TarmacCommand(Command):
         return launchpad
 
 
-class AuthCommand(TarmacCommand):
+class cmd_auth(TarmacCommand):
 
-    NAME = 'auth'
+    aliases = []
+    takes_args = []
 
-    def invoke(self):
+    def run(self):
         if os.path.exists(self.config.CREDENTIALS):
             print 'You have already been authenticated.'
         else:
             launchpad = self.get_launchpad_object()
 
-class HelpCommand(TarmacCommand):
+class cmd_help(TarmacCommand):
 
-    NAME = 'help'
+    aliases = []
+    takes_args = []
 
-    def invoke(self):
+    def run(self):
         print 'You need help.'
 
 
-class MergeCommand(TarmacCommand):
+class cmd_merge(TarmacCommand):
 
-    NAME = 'merge'
+    aliases = []
+    takes_args = []
 
-    def invoke(self):
+    def run(self):
         for branch in self.config.branches:
             print 'Merging %(branch)s' % {'branch': branch}

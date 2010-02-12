@@ -1,7 +1,7 @@
 '''A command registry for Tarmac commands.'''
 import sys
 
-from bzrlib.commands import Command
+from bzrlib.commands import Command, run_bzr
 
 from tarmac.exceptions import CommandNotFound
 
@@ -25,11 +25,12 @@ class CommandRegistry():
             command_name = sys.argv[1]
         except IndexError:
             command_name = 'help'
+        run_bzr(sys.argv[1:])
 
-    def register_command(self, command):
+    def register_command(self, name, command_class):
         '''Register a command in the registry.'''
         try:
-            self._registry[command.NAME] = command
+            self._registry[name] = command_class
         except AttributeError:
             # The NAME attribute isn't set, so is invalid
             return
@@ -50,6 +51,15 @@ class CommandRegistry():
         return names
 
     def register_from_module(self, module):
+
+        for name in module.__dict__:
+            if name.startswith("cmd_"):
+                sanitized_name = name[4:].replace("_", "-")
+                self.register_command(sanitized_name, module.__dict__[name])
+            elif name.startswith("topic_"):
+                sanitized_name = name[6:].replace("_", "-")
+                self.register_help_topic(sanitized_name, module.__dict__[name])
+
         for item in module.__dict__:
-            if item.endswith("Command"):
+            if item.startswith("cmd"):
                 self.register_command(module.__dict__[item])
