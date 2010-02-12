@@ -21,6 +21,7 @@ class TarmacCommand(Command):
         return ''
 
     def __init__(self):
+        Command.__init__(self)
         self.config = TarmacConfig2()
 
     def invoke(self):

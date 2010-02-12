@@ -16,8 +16,16 @@
 
 '''Tarmac specific exceptions.'''
 
+from bzrlib.errors import BzrCommandError
+
+
 class BranchHasConflicts(Exception):
     '''Exception for when a branch merge has conflicts.'''
 
+
 class CommandNotFound(Exception):
     '''Exception for calling a command that that hasn't been registered.'''
+
+
+class TarmacCommandError(BzrCommandError):
+    '''Exception for various command errors.'''
