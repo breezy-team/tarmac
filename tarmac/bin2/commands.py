@@ -24,7 +24,7 @@ class TarmacCommand(Command):
         Command.__init__(self)
         self.config = TarmacConfig2()
 
-    def invoke(self):
+    def run(self):
         '''Actually run the command.'''
         raise NotImplementedError
 

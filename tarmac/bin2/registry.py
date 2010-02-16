@@ -2,8 +2,9 @@
 import sys
 
 from bzrlib.commands import Command, run_bzr
+from bzrlib.errors import BzrCommandError
 
-from tarmac.exceptions import CommandNotFound, TarmacCommandError
+from tarmac.exceptions import CommandNotFound
 
 
 class CommandRegistry(object):
@@ -28,6 +29,10 @@ class CommandRegistry(object):
         names.update(self._registry.iterkeys())
         return names
 
+    def _run(self, args):
+        '''Execute the command.'''
+        run_bzr(args)
+
     def install_hooks(self):
         '''Use the bzrlib Command support for running commands.'''
         Command.hooks.install_named_hook(
@@ -35,15 +40,11 @@ class CommandRegistry(object):
         Command.hooks.install_named_hook(
             'list_commands', self._list_commands, 'Tarmac commands')
 
-    def run(self):
+    def run(self, args):
         '''Execute the command.'''
-        args = sys.argv[1:]
-        if not args:
-            args = ['help']
-
         try:
-            run_bzr(args)
-        except TarmacCommandError, e:
+            self._run(args)
+        except BzrCommandError, e:
             sys.exit('tarmac: ERROR: ' + str(e))
 
     def register_command(self, name, command_class):

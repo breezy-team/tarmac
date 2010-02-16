@@ -19,4 +19,10 @@ def main():
     registry.install_hooks()
     registry.register_from_module(commands)
 
-    registry.run()
+    # I hate that args have to be handled here, instead of in CommandRegistry,
+    # but otherwise the tests for CommandRegistry.run try and use tarmac.tests
+    # as the command to run.  :/
+    args = sys.argv[1:]
+    if not args:
+        args = ['help']
+    registry.run(args)

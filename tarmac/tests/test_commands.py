@@ -19,40 +19,40 @@ class TestCommand(TarmacTestCase):
         self.assertEqual(command.NAME, command_name)
         self.assertTrue(isinstance(command.config, TarmacConfig2))
 
-    def test_invoke(self):
+    def test_run(self):
         command = commands.TarmacCommand()
-        self.assertRaises(NotImplementedError, command.invoke)
+        self.assertRaises(NotImplementedError, command.run)
 
 
 class TestAuthCommand(TarmacTestCase):
-    '''Test for tarmac.bin2.command.AuthCommand.'''
+    '''Test for tarmac.bin2.command.cmd_auth.'''
 
     NEEDS_SAMPLE_DATA = True
 
     # XXX: rockstar - 10 Jan 2010 - How do I test this with the OAuth request,
     # etc?
-    #def test_invoke(self):
+    #def test_run(self):
     #    '''Test that calling the auth command gets a Lanuchpad token.'''
 
     #    tmp_stdout = StringIO()
     #    old_stdout = sys.stdout
     #    sys.stdout = tmp_stdout
 
-    #    command = AuthCommand()
+    #    command = cmd_auth()
     #    self.assertFalse(os.path.exists(command.config.CREDENTIALS))
-    #    command.invoke()
+    #    command.run()
     #    self.assertEqual(tmp_stdout.getvalue(), '')
 
     #    sys.stdout = old_stdout
 
-    def test_invoke_already_authenticated(self):
+    def test_run_already_authenticated(self):
         '''If the user has already been authenticated, don't try again.'''
         tmp_stdout = StringIO()
         old_stdout = sys.stdout
         sys.stdout = tmp_stdout
 
-        command = commands.AuthCommand()
-        command.invoke()
+        command = commands.cmd_auth()
+        command.run()
         self.assertEqual(
             tmp_stdout.getvalue(),
             'You have already been authenticated.\n')
@@ -62,13 +62,13 @@ class TestAuthCommand(TarmacTestCase):
 
 class TestHelpCommand(TarmacTestCase):
 
-    def test_invoke(self):
+    def test_run(self):
         tmp_stdout = StringIO()
         old_stdout = sys.stdout
         sys.stdout = tmp_stdout
 
-        command = commands.HelpCommand()
-        command.invoke()
+        command = commands.cmd_help()
+        command.run()
         self.assertEqual(
             tmp_stdout.getvalue(),
             'You need help.\n')
@@ -79,13 +79,13 @@ class TestMergeCommand(TarmacTestCase):
 
     NEEDS_SAMPLE_DATA = True
 
-    def test_invoke(self):
+    def test_run(self):
         tmp_stdout = StringIO()
         old_stdout = sys.stdout
         sys.stdout = tmp_stdout
 
-        command = commands.MergeCommand()
-        command.invoke()
+        command = commands.cmd_merge()
+        command.run()
         self.assertEqual(
             tmp_stdout.getvalue(),
             'Merging lp:~tarmac/tarmac/tarmac\n'

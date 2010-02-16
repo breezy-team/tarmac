@@ -50,10 +50,8 @@ class MockLPBranch(object):
         self.project = MockLPProject()
 
 
-class MockCommand(TarmacCommand):
+class cmd_mock(TarmacCommand):
     '''A mock command.'''
-
-    NAME = 'mock'
 
     def run(): pass
 
@@ -61,4 +59,4 @@ class MockCommand(TarmacCommand):
 class MockModule(object):
 
     def __init__(self):
-        self.__dict__['MockCommand'] = MockCommand
+        self.__dict__['cmd_mock'] = cmd_mock

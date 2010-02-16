@@ -1,10 +1,12 @@
 '''Tests for tarmac.bin2.registry.'''
 import unittest
 
-from tarmac.bin2.commands import AuthCommand, TarmacCommand
+from bzrlib.errors import BzrCommandError
+
+from tarmac.bin2.commands import cmd_auth, TarmacCommand
 from tarmac.bin2.registry import CommandRegistry
 from tarmac.exceptions import CommandNotFound
-from tarmac.tests.mock import MockCommand, MockModule
+from tarmac.tests.mock import cmd_mock, MockModule
 
 class TestCommandRegistry(unittest.TestCase):
     '''Test for tarmac.bin2.commands.CommandRegistry.'''
@@ -13,24 +15,23 @@ class TestCommandRegistry(unittest.TestCase):
         registry = CommandRegistry()
         self.assertEqual(registry._registry, {})
 
-    def test_run(self):
+    def test__run(self):
         registry = CommandRegistry()
-        self.assertRaises(CommandNotFound, registry.run)
+        self.assertRaises(BzrCommandError, registry._run, ['nothing'])
 
     def test_register_command(self):
         command = TarmacCommand()
-        command.NAME = u'test'
         registry = CommandRegistry()
-        registry.register_command(command)
+        registry.register_command(u'test', command)
         self.assertEqual(registry._registry,
             {'test': command})
 
     def test__get_command(self):
         registry = CommandRegistry()
-        registry.register_command(AuthCommand)
-        looked_up_command = registry._get_command(AuthCommand(), u'auth')
+        registry.register_command('auth', cmd_auth)
+        looked_up_command = registry._get_command(cmd_auth, 'auth')
         self.assertTrue(
-            isinstance(looked_up_command, AuthCommand))
+            isinstance(looked_up_command, cmd_auth))
 
     def test__get_command_notfound(self):
         registry = CommandRegistry()
@@ -41,8 +42,8 @@ class TestCommandRegistry(unittest.TestCase):
     def test_register_from_module(self):
         registry = CommandRegistry()
         registry.register_from_module(MockModule())
-        mock_command = registry._get_command(TarmacCommand(), 'mock')
-        self.assertTrue(isinstance(mock_command, MockCommand))
+        mock_command = registry._get_command(TarmacCommand, 'mock')
+        self.assertTrue(isinstance(mock_command, cmd_mock))
 
     def DISABLEDtest__list_commands(self):
         registry = CommandRegistry()
