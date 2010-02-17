@@ -65,12 +65,14 @@ class cmd_auth(TarmacCommand):
         options.staging_option,]
 
     def run(self, filename=None, staging=False):
-        if staging:
-            import pdb; pdb.set_trace()
+        # XXX: rockstar - DON'T RELEASE with staging as the default!!!!!!
+        staging = True
         if os.path.exists(self.config.CREDENTIALS):
             print 'You have already been authenticated.'
         else:
-            launchpad = self.get_launchpad_object(filename=filename)
+            launchpad = self.get_launchpad_object(filename=filename,
+                staging=staging)
+
 
 class cmd_help(TarmacCommand):
 
