@@ -28,6 +28,7 @@ class TarmacCommand(Command):
         '''Actually run the command.'''
         raise NotImplementedError
 
+    # XXX: rockstar - DON'T RELEASE with staging as the default!!!!!!
     def get_launchpad_object(self, filename=None, staging=True):
         '''Return a Launchpad object for making API requests.'''
         # XXX: rockstar - 2009 Dec 13 - Ideally, we should be using
@@ -58,13 +59,13 @@ class TarmacCommand(Command):
 class cmd_auth(TarmacCommand):
 
     aliases = []
-    takes_args = []
+    takes_args = ['filename?']
 
-    def run(self):
+    def run(self, filename=None):
         if os.path.exists(self.config.CREDENTIALS):
             print 'You have already been authenticated.'
         else:
-            launchpad = self.get_launchpad_object()
+            launchpad = self.get_launchpad_object(filename=filename)
 
 class cmd_help(TarmacCommand):
 
