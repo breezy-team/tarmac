@@ -7,6 +7,7 @@ from bzrlib.help import help_commands
 from launchpadlib.launchpad import (Credentials, Launchpad, EDGE_SERVICE_ROOT,
     STAGING_SERVICE_ROOT)
 
+from tarmac.bin2 import options
 from tarmac.config import TarmacConfig2
 from tarmac.exceptions import CommandNotFound
 
@@ -60,8 +61,12 @@ class cmd_auth(TarmacCommand):
 
     aliases = []
     takes_args = ['filename?']
+    takes_options = [
+        options.staging_option,]
 
-    def run(self, filename=None):
+    def run(self, filename=None, staging=False):
+        if staging:
+            import pdb; pdb.set_trace()
         if os.path.exists(self.config.CREDENTIALS):
             print 'You have already been authenticated.'
         else:
