@@ -27,7 +27,7 @@ import tempfile
 from bzrlib import branch as bzr_branch, revision
 from bzrlib.workingtree import WorkingTree
 
-from tarmac.config import TarmacConfig
+from tarmac.config import BranchConfig
 from tarmac.exceptions import BranchHasConflicts
 
 
@@ -66,7 +66,7 @@ class Branch(object):
 
     def _set_authors(self):
         '''Get the authors from the last revision and use it.'''
-        # XXX Need to get all authors from revisions not in target
+        # XXX: Need to get all authors from revisions not in target.
         last_rev = self.branch.last_revision()
         # Empty the list first since we're going to refresh it
         self.author_list = []
@@ -150,9 +150,10 @@ class Branch(object):
 class Branch2(object):
 
     def __init__(self, lp_branch, config):
+        assert config.has_section(lp_branch.bzr_identity)
+
         self.lp_branch = lp_branch
-        self.config = config
-        self.tree_dir = None
+        self.config = BranchConfig(lp_branch.bzr_identity, config)
 
     @classmethod
     def create(cls, lp_branch, config, create_tree=False):
@@ -163,16 +164,17 @@ class Branch2(object):
 
     def create_tree(self):
         '''Create the dir and working tree.'''
-        # TODO: Support the tree_dir config.
-        # TODO: mkdtemp is probably better for scramblin' things up.
-        self.tree_dir = os.path.join(tempfile.gettempdir(),
-            self.lp_branch.project.name)
-
-        if os.path.exists(self.tree_dir):
-            self.tree = WorkingTree.open(self.tree_dir)
+        if self.config.tree_dir:
+            if os.path.exists(self.config.tree_dir):
+                self.tree = WorkingTree.open(self.config.tree_dir)
+            else:
+                _branch = bzr_branch.Branch.open(self.lp_branch.bzr_identity)
+                self.tree = _branch.create_checkout(self.tree_dir)
         else:
+            self.tree_dir = tempfile.mkdtemp()
             _branch = bzr_branch.Branch.open(self.lp_branch.bzr_identity)
             self.tree = _branch.create_checkout(self.tree_dir)
+
         self.cleanup()
 
     def cleanup(self):

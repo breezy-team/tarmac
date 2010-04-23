@@ -92,6 +92,18 @@ class TarmacConfig2(ConfigParser):
             os.makedirs(pid_dir)
 
 
+class BranchConfig:
+    '''A Branch specific config.
+
+    Instead of providing the whole config for branches, it's better to provide
+    it with only its specific config vars.
+    '''
+
+    def __init__(self, branch_name, config):
+        for key, val in config.items(branch_name):
+            setattr(self, key, val)
+
+
 class TarmacConfig:
     '''A configuration class.'''
 
