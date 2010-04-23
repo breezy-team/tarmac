@@ -145,3 +145,47 @@ class Branch(object):
         if not self.has_tree:
             return False
         return self.tree.changes_from(self.tree.basis_tree())
+
+
+class Branch2(object):
+
+    def __init__(self, lp_branch, config):
+        self.lp_branch = lp_branch
+        self.config = config
+        self.tree_dir = None
+
+    @classmethod
+    def create(cls, lp_branch, config, create_tree=False):
+        clazz = cls(lp_branch, config)
+        if create_tree:
+            clazz.create_tree()
+        return clazz
+
+    def create_tree(self):
+        '''Create the dir and working tree.'''
+        # TODO: Support the tree_dir config.
+        # TODO: mkdtemp is probably better for scramblin' things up.
+        self.tree_dir = os.path.join(tempfile.gettempdir(),
+            self.lp_branch.project.name)
+
+        if os.path.exists(self.tree_dir):
+            self.tree = WorkingTree.open(self.tree_dir)
+        else:
+            _branch = bzr_branch.Branch.open(self.lp_branch.bzr_identity)
+            self.tree = _branch.create_checkout(self.tree_dir)
+        self.cleanup()
+
+    def cleanup(self):
+        '''Remove the working tree from the temp dir.'''
+        if self.tree_dir:
+            self.tree.revert()
+            self.tree.update()
+
+    def merge(self, branch):
+        '''Merge from another tarmac.branch.Branch instance.'''
+        if not self.tree_dir:
+            raise Exception('This branch wasn\'t set up to do merging,')
+        branch = bzr_branch.Branch.open(branch.lp_branch.bzr_identity)
+        conflict_list = self.tree.merge_from_branch(branch)
+        if conflict_list:
+            raise BranchHasConflicts

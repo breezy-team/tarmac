@@ -1,15 +1,15 @@
 '''Command handling for Tarmac.'''
 import os
-import sys
+import re
 
 from bzrlib.commands import Command
-from bzrlib.help import help_commands
 from launchpadlib.launchpad import (Credentials, Launchpad, EDGE_SERVICE_ROOT,
     STAGING_SERVICE_ROOT)
 
 from tarmac.bin2 import options
+from tarmac.branch import Branch2
 from tarmac.config import TarmacConfig2
-from tarmac.exceptions import CommandNotFound
+from tarmac.exceptions import BranchHasConflicts, TarmacCommandError
 
 
 class TarmacCommand(Command):
@@ -24,6 +24,7 @@ class TarmacCommand(Command):
     def __init__(self):
         Command.__init__(self)
         self.config = TarmacConfig2()
+        # TODO: What, no logger?
 
     def run(self):
         '''Actually run the command.'''
@@ -51,7 +52,10 @@ class TarmacCommand(Command):
             launchpad.credentials.save(file(filename, 'w'))
         else:
             credentials = Credentials()
-            credentials.load(open(filename))
+            try:
+                credentials.load(open(filename))
+            except Exception, e:
+                raise Exception('Something is wrong at %s' % (filename))
             launchpad = Launchpad(
                 credentials, SERVICE_ROOT, self.config.CACHE_HOME)
         return launchpad
@@ -86,8 +90,85 @@ class cmd_help(TarmacCommand):
 class cmd_merge(TarmacCommand):
 
     aliases = []
-    takes_args = []
+    takes_args = ['branch_url?']
+    takes_options = []
 
-    def run(self):
-        for branch in self.config.branches:
-            print 'Merging %(branch)s' % {'branch': branch}
+    def _do_merges(self, branch_url):
+
+        lp_branch = self.launchpad.branches.getByUrl(url=branch_url)
+
+        candidates = [entry for entry in lp_branch.landing_candidates
+                        if entry.queue_status == u'Approved' and
+                        entry.commit_message]
+        if not candidates:
+            #TODO: No print pleeeeease!!!
+            print 'no candidates'
+            return
+
+        target = Branch2.create(lp_branch, self.config, create_tree=True)
+        for candidate in candidates:
+
+            source = Branch2.create(
+                candidate.source_branch, self.config)
+
+            try:
+                target.merge(source)
+
+            except BranchHasConflicts:
+                subject = (
+                    u"Conflicts merging %(source)s into %(target)s" %
+                    {"source": candidate.source_branch.display_name,
+                     "target": candidate.target_branch.display_name})
+                comment = (
+                    u"Attempt to merge %(source)s into %(target)s failed due "
+                    u"to merge conflicts:\n\n%(output)s" % {
+                        "source": candidate.source_branch.display_name,
+                        "target": candidate.target_branch.display_name,
+                        "output": trunk.get_conflicts()})
+                candidate.createComment(subject=subject, content=comment)
+                candidate.setStatus(status=u"Needs review")
+                candidate.lp_save()
+                trunk.cleanup()
+                continue
+
+            except PointlessMerge:
+                trunk.cleanup()
+                continue
+
+            urlp = re.compile('http[s]?://api\.(.*)launchpad\.net/beta/')
+            merge_url = urlp.sub('http://launchpad.net/', candidate.self_link)
+            revprops = { 'merge_url' : merge_url }
+            try:
+                tarmac_hooks['pre_tarmac_commit'].fire(
+                    self.options, self.configuration, candidate,
+                    trunk)
+                if self.dry_run:
+                    trunk.cleanup()
+                else:
+                    trunk.commit(candidate.commit_message,
+                                 revprops=revprops,
+                                 authors=source_branch.authors,
+                                 reviewers=self._get_reviewers(candidate))
+
+                tarmac_hooks['post_tarmac_commit'].fire(
+                    self.options, self.configuration, candidate, trunk)
+
+            except Exception, e:
+                message = "Oops! Tarmac hooks failed:\n     %s" % e
+                self.logger.error(message)
+                print message
+
+            trunk.cleanup()
+
+    def run(self, branch_url=None):
+
+        self.launchpad = self.get_launchpad_object()
+        if branch_url:
+            if not branch_url.startswith('lp:'):
+                raise TarmacCommandError('Branch urls must start with lp:')
+            self._do_merges(branch_url)
+
+        else:
+            for branch in self.config.branches:
+                print 'Merging %(branch)s' % {'branch': branch}
+                self._do_merges(branch)
