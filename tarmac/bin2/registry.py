@@ -15,15 +15,21 @@ class CommandRegistry(object):
 
     def _get_command(self, command, name):
         '''Return the command.'''
+        _command = None
         try:
             _command = self._registry[name]()
         except KeyError:
-            #TODO: Add support for command aliases.
+            for cmd in self._registry.itervalues():
+                if name in cmd.aliases:
+                    _command = cmd()
+                    break
+
+        if not _command:
             raise CommandNotFound
 
         return _command
 
-    # TODO: rockstar - This is entirely untested right now, since I don't know
+    # XXX: rockstar - This is entirely untested right now, since I don't know
     # how it works.
     def _list_commands(self, names):
         names.update(self._registry.iterkeys())

@@ -61,9 +61,9 @@ class TarmacCommand(Command):
         return launchpad
 
 
-class cmd_auth(TarmacCommand):
+class cmd_authenticate(TarmacCommand):
 
-    aliases = []
+    aliases = ['auth']
     takes_args = ['filename?']
     takes_options = [
         options.staging_option,]
@@ -80,7 +80,7 @@ class cmd_auth(TarmacCommand):
 
 class cmd_help(TarmacCommand):
 
-    aliases = []
+    aliases = ['fubar']
     takes_args = []
 
     def run(self):
@@ -89,7 +89,7 @@ class cmd_help(TarmacCommand):
 
 class cmd_merge(TarmacCommand):
 
-    aliases = []
+    aliases = ['land',]
     takes_args = ['branch_url?']
     takes_options = []
 
