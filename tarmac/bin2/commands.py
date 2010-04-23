@@ -18,7 +18,6 @@ class TarmacCommand(Command):
     NAME = None
 
     def _usage(self):
-        # TODO Handle args and such...
         return ''
 
     def __init__(self):
