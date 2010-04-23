@@ -26,7 +26,6 @@ class CommandRegistry(object):
 
         if not _command:
             raise CommandNotFound
-
         return _command
 
     # XXX: rockstar - This is entirely untested right now, since I don't know

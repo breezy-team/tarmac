@@ -69,7 +69,7 @@ class cmd_authenticate(TarmacCommand):
         options.staging_option,]
 
     def run(self, filename=None, staging=False):
-        # XXX: rockstar - DON'T RELEASE with staging as the default!!!!!!
+        # TODO: rockstar - DON'T RELEASE with staging as the default!!!!!!
         staging = True
         if os.path.exists(self.config.CREDENTIALS):
             print 'You have already been authenticated.'
