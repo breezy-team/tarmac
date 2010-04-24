@@ -27,20 +27,20 @@ class CommitMessageTemplate(TarmacPlugin):
     template.
     '''
 
-    def __call__(self, options, configuration, candidate, trunk):
+    def __call__(self, command, target, source, proposal):
     # pylint: disable-msg=W0613
 
-        if configuration.commit_message_template:
-            self.template = configuration.commit_message_template
+        if command.config.commit_message_template:
+            self.template = command.config.commit_message_template
             self.template = self.template.replace('<', '%(').replace(
                 '>', ')s')
         else:
             self.template = '%(commit_message)s'
 
-        candidate.commit_message = self.template % {
-            'author': candidate.source_branch.owner.display_name,
-            'commit_message': candidate.commit_message,
-            'reviewer': candidate.reviewer.display_name}
+        source.lp_branch.commit_message = self.template % {
+            'author': proposal.source_branch.owner.display_name,
+            'commit_message': proposal.commit_message,
+            'reviewer': proposal.reviewer.display_name}
 
 tarmac_hooks['tarmac_pre_commit'].hook(CommitMessageTemplate(),
     'Commit messsage template editor.')

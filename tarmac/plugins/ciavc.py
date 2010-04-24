@@ -32,21 +32,18 @@ from tarmac import __version__ as version_string
 class CIAVC(TarmacPlugin):
     '''Tarmac plugin for notifying CIA.vc of new commits.'''
 
-    def __call__(self, options, configuration, candidate, trunk):
+    def __call__(self, command, target, source, proposal):
     # pylint: disable-msg=W0613,W0104,C0324
 
-        if options.dry_run:
-            return
-
-        if (configuration.cia_project and configuration.cia_server):
-            cia_project = configuration.cia_project
-            cia_server = configuration.cia_server
+        if (command.config.cia_project and command.config.cia_server):
+            cia_project = command.config.cia_project
+            cia_server = command.config.cia_server
         else:
             return
 
-        revno = trunk.branch.revno()
+        revno = target.branch.revno()
         files = []
-        delta = trunk.branch.get_revision_delta(revno)
+        delta = target.branch.get_revision_delta(revno)
 
         [files.append(f) for (f,_x,_x) in delta.added]
         [files.append(f) for (f,_x,_x) in delta.removed]
@@ -76,13 +73,13 @@ class CIAVC(TarmacPlugin):
         ''' % {
             'version': version_string,
             'project': cia_project,
-            'branch': trunk.lp_branch.bzr_identity,
+            'branch': target.lp_branch.bzr_identity,
             'revision': revno,
             'files': '\n'.join([
                 '<file>%s</file>' % saxutils.escape(f) for f in files]),
             'author': saxutils.escape(
-                candidate.source_branch.owner.display_name),
-            'commit_message': saxutils.escape(candidate.commit_message)}
+                proposal.owner.display_name),
+            'commit_message': saxutils.escape(proposal.commit_message)}
 
         print "Updating cvs.vc for project " + cia_project
         xmlrpclib.ServerProxy(cia_server).hub.deliver(message)

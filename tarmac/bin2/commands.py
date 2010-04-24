@@ -154,8 +154,7 @@ class cmd_merge(TarmacCommand):
             try:
                 self.logger.debug('Firing tarmac_pre_commit hook')
                 tarmac_hooks['tarmac_pre_commit'].fire(
-                    self.options, self.configuration, candidate,
-                    target)
+                    self, target, source, candidate)
                 if self.dry_run:
                     target.cleanup()
                 else:
@@ -166,7 +165,7 @@ class cmd_merge(TarmacCommand):
 
                 self.logger.debug('Firing tarmac_post_commit hook')
                 tarmac_hooks['tarmac_post_commit'].fire(
-                    self.options, self.configuration, candidate, target)
+                    self, target, source, candidate)
 
             except Exception, e:
                 self.logger.error("Oops! Tarmac hooks failed:\n%s" % e)

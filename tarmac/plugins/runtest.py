@@ -34,19 +34,17 @@ class RunTest(TarmacPlugin):
     #TODO: Add the specific config it checks for.
     #TODO: Add the ability to override the test command in the command line.
 
-    def __call__(self, options, configuration, candidate, trunk):
+    def __call__(self, command, target, source, proposal):
 
-        if options.test_command:
-            self.test_command = options.test_command
-        elif configuration.test_command:
-            self.test_command = configuration.test_command
+        if command.config.test_command:
+            self.test_command = command.config.test_command
         else:
             return True
 
-        self.candidate = candidate
+        self.proposal = proposal
 
         cwd = os.getcwd()
-        os.chdir(trunk.tree_dir)
+        os.chdir(target.tree_dir)
         print 'Running test command: %s' % self.test_command
         proc = subprocess.Popen(
             self.test_command,
@@ -57,12 +55,9 @@ class RunTest(TarmacPlugin):
         return_code = proc.wait()
         os.chdir(cwd)
 
-        if return_code == 0:
-            return
-
-        else:
+        if return_code != 0:
             self.do_failed(stdout_value, stderr_value)
-            #XXX matsubara: this line will always fail with 
+            #XXX matsubara: this line will always fail with
             # IndexError: string index out of range. HookFailed expects a
             # a (exc_type, exc_value, exc_tb) object. Maybe use
             # sys.exc_info() here? See bug 424466
@@ -79,16 +74,16 @@ class RunTest(TarmacPlugin):
         comment = (u'The attempt to merge %(source)s into %(target)s failed.' +
                    u'Below is the output from the failed tests.\n\n' +
                    u'%(output)s') % {
-            'source' : self.candidate.source_branch.display_name,
-            'target' : self.candidate.target_branch.display_name,
+            'source' : self.proposal.source_branch.display_name,
+            'target' : self.proposal.target_branch.display_name,
             'output' : u'\n'.join([stdout_value, stderr_value]),
             }
         subject = u'Re: [Merge] %s into %s' % (
-            self.candidate.source_branch.display_name,
-            self.candidate.target_branch.display_name)
-        self.candidate.createComment(subject=subject, content=comment)
-        self.candidate.setStatus(status=u'Needs review')
-        self.candidate.lp_save()
+            self.proposal.source_branch.display_name,
+            self.proposal.target_branch.display_name)
+        self.proposal.createComment(subject=subject, content=comment)
+        self.proposal.setStatus(status=u'Needs review')
+        self.proposal.lp_save()
 
 
 tarmac_hooks['tarmac_pre_commit'].hook(RunTest(), 'Test run hook')
