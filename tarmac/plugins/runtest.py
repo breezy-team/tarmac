@@ -31,8 +31,6 @@ class RunTest(TarmacPlugin):
     finds one, it will run that command pre-commit.  On fail, it calls the
     do_failed method, and on success, continues.
     '''
-    #TODO: Add the specific config it checks for.
-    #TODO: Add the ability to override the test command in the command line.
 
     def __call__(self, command, target, source, proposal):
 
