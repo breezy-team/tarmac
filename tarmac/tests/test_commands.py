@@ -1,11 +1,9 @@
 '''Tests for tarmac.bin.commands.py.'''
 from cStringIO import StringIO
-import os
 import sys
 
 from tarmac.bin import commands
-from tarmac.config import TarmacConfig2
-from tarmac.exceptions import CommandNotFound
+from tarmac.config import TarmacConfig
 from tarmac.tests import TarmacTestCase
 
 
@@ -17,7 +15,7 @@ class TestCommand(TarmacTestCase):
         command = commands.TarmacCommand()
         command.NAME = command_name
         self.assertEqual(command.NAME, command_name)
-        self.assertTrue(isinstance(command.config, TarmacConfig2))
+        self.assertTrue(isinstance(command.config, TarmacConfig))
 
     def test_run(self):
         command = commands.TarmacCommand()

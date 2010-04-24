@@ -22,13 +22,12 @@ __metaclass__ = type
 
 import os
 import sys
-from ConfigParser import NoSectionError, NoOptionError
 from ConfigParser import SafeConfigParser as ConfigParser
 
 from tarmac.xdgdirs import xdg_config_home, xdg_cache_home
 
 
-class TarmacConfig2(ConfigParser):
+class TarmacConfig(ConfigParser):
     '''A class for handling configuration.'''
 
     def __init__(self):

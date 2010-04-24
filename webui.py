@@ -19,7 +19,7 @@
 
 import sys
 import subprocess
-from tarmac.config import TarmacConfig2
+from tarmac.config import TarmacConfig
 import web
 
 urls = (
@@ -32,7 +32,7 @@ class index(object):
     """The main page of the status site."""
 
     def __init__(self):
-        config = TarmacConfig2()
+        config = TarmacConfig()
         self.statusfile = config.get('Tarmac', 'log_file')
 
     def GET(self):

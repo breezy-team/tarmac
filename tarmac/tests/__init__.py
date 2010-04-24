@@ -20,7 +20,7 @@ import shutil
 import tempfile
 import unittest
 
-from tarmac.config import TarmacConfig2
+from tarmac.config import TarmacConfig
 
 
 class TarmacTestCase(unittest.TestCase):
@@ -51,7 +51,7 @@ tree_dir = /var/cache/tarmac/tarmac
             self.tempdir, 'credentials')
 
         if self.NEEDS_SAMPLE_DATA:
-            config = TarmacConfig2()
+            config = TarmacConfig()
             self.write_config_file(config)
             self.write_credentials_file(config)
 
