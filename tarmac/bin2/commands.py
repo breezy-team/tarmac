@@ -2,6 +2,7 @@
 import logging
 import os
 import re
+import sys
 
 from bzrlib.commands import Command
 from bzrlib.errors import PointlessMerge
@@ -30,7 +31,8 @@ class TarmacCommand(Command):
         # Set up logging.
         self.logger = logging.getLogger('tarmac')
         self.logger.addHandler(
-            logging.FileHandler(filename=self.config.log_file))
+            logging.FileHandler(
+                filename=self.config.get('Tarmac', 'log_file')))
 
         # If debugging. uncomment these lines.
         stderr_handler = logging.StreamHandler(sys.stderr)
