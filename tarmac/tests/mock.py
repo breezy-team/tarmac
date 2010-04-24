@@ -20,7 +20,6 @@ import math
 import os
 import tempfile
 
-from bzrlib.branch import Branch
 from bzrlib.bzrdir import BzrDir
 
 from tarmac.bin.commands import TarmacCommand

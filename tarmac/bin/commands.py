@@ -11,7 +11,7 @@ from launchpadlib.launchpad import (Credentials, Launchpad, EDGE_SERVICE_ROOT,
     STAGING_SERVICE_ROOT)
 
 from tarmac.bin import options
-from tarmac.branch import Branch2
+from tarmac.branch import Branch
 from tarmac.config import TarmacConfig
 from tarmac.hooks import tarmac_hooks
 from tarmac.exceptions import BranchHasConflicts, TarmacCommandError
@@ -139,10 +139,10 @@ class cmd_merge(TarmacCommand):
                     'branch_url': branch_url,})
             return
 
-        target = Branch2.create(lp_branch, self.config, create_tree=True)
+        target = Branch.create(lp_branch, self.config, create_tree=True)
         for proposal in proposals:
 
-            source = Branch2.create(
+            source = Branch.create(
                 proposal.source_branch, self.config)
 
             try:
