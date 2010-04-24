@@ -6,6 +6,7 @@ import sys
 
 from bzrlib.commands import Command
 from bzrlib.errors import PointlessMerge
+from bzrlib.help import help_commands
 from launchpadlib.launchpad import (Credentials, Launchpad, EDGE_SERVICE_ROOT,
     STAGING_SERVICE_ROOT)
 
@@ -21,12 +22,11 @@ class TarmacCommand(Command):
 
     NAME = None
 
-    def _usage(self):
-        return ''
-
-    def __init__(self):
+    def __init__(self, registry):
         Command.__init__(self)
+
         self.config = TarmacConfig2()
+        self.registry = registry
 
         # Set up logging.
         self.logger = logging.getLogger('tarmac')
@@ -73,9 +73,14 @@ class TarmacCommand(Command):
 
 
 class cmd_authenticate(TarmacCommand):
+    '''Create an OAuth token to be used by Tarmac.
+
+    In order to use Tarmac at all, one must authenticate with Launchpad.  This
+    command facilitates the process of getting an OAuth token from Launchpad.
+    '''
 
     aliases = ['auth']
-    takes_args = ['filename?']
+    takes_args = ['filename?',]
     takes_options = [
         options.staging_option,]
 
@@ -90,15 +95,32 @@ class cmd_authenticate(TarmacCommand):
 
 
 class cmd_help(TarmacCommand):
+    '''Get help for Tarmac commands.'''
 
     aliases = ['fubar']
-    takes_args = []
+    takes_args = ['command?']
 
-    def run(self):
-        print 'You need help.'
+    def run(self, command=None):
+        if command is None:
+            self.outf.write('Usage:     tarmac <command> <options>\n\n')
+            self.outf.write('Available commands:\n')
+            self.help_commands()
+        else:
+            cmd = self.registry._get_command(None, command)
+            if cmd is None:
+                self.outf.write('Unknown command "%{command}s"\n' % {
+                    'command': command,})
+                return
+            text = cmd.get_help_text()
+            if text:
+                self.outf.write(text)
+
+    def help_commands(self):
+        help_commands(self.outf)
 
 
 class cmd_merge(TarmacCommand):
+    '''Automatically merge approved merge proposal branches.'''
 
     aliases = ['land',]
     takes_args = ['branch_url?']

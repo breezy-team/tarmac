@@ -17,16 +17,16 @@ class CommandRegistry(object):
         '''Return the command.'''
         _command = None
         try:
-            _command = self._registry[name]()
+            _command = self._registry[name]
         except KeyError:
             for cmd in self._registry.itervalues():
                 if name in cmd.aliases:
-                    _command = cmd()
+                    _command = cmd
                     break
 
         if not _command:
             raise CommandNotFound
-        return _command
+        return _command(self)
 
     # XXX: rockstar - This is entirely untested right now, since I don't know
     # how it works.
