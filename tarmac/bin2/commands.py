@@ -1,14 +1,17 @@
 '''Command handling for Tarmac.'''
+import logging
 import os
 import re
 
 from bzrlib.commands import Command
+from bzrlib.errors import PointlessMerge
 from launchpadlib.launchpad import (Credentials, Launchpad, EDGE_SERVICE_ROOT,
     STAGING_SERVICE_ROOT)
 
 from tarmac.bin2 import options
 from tarmac.branch import Branch2
 from tarmac.config import TarmacConfig2
+from tarmac.hooks import tarmac_hooks
 from tarmac.exceptions import BranchHasConflicts, TarmacCommandError
 
 
@@ -23,7 +26,17 @@ class TarmacCommand(Command):
     def __init__(self):
         Command.__init__(self)
         self.config = TarmacConfig2()
-        # TODO: What, no logger?
+
+        # Set up logging.
+        self.logger = logging.getLogger('tarmac')
+        self.logger.addHandler(
+            logging.FileHandler(filename=self.config.log_file))
+
+        # If debugging. uncomment these lines.
+        stderr_handler = logging.StreamHandler(sys.stderr)
+        stderr_handler.setLevel(logging.DEBUG)
+        self.logger.addHandler(stderr_handler)
+
 
     def run(self):
         '''Actually run the command.'''
@@ -71,7 +84,7 @@ class cmd_authenticate(TarmacCommand):
         # TODO: rockstar - DON'T RELEASE with staging as the default!!!!!!
         staging = True
         if os.path.exists(self.config.CREDENTIALS):
-            print 'You have already been authenticated.'
+            self.logger.error('You have already been authenticated.')
         else:
             launchpad = self.get_launchpad_object(filename=filename,
                 staging=staging)
@@ -100,8 +113,9 @@ class cmd_merge(TarmacCommand):
                         if entry.queue_status == u'Approved' and
                         entry.commit_message]
         if not candidates:
-            #TODO: No print pleeeeease!!!
-            print 'no candidates'
+            self.logger.info(
+                'No landing candidates found for %{branch_url}s' % {
+                    'branch_url': branch_url,})
             return
 
         target = Branch2.create(lp_branch, self.config, create_tree=True)
@@ -123,41 +137,42 @@ class cmd_merge(TarmacCommand):
                     u"to merge conflicts:\n\n%(output)s" % {
                         "source": candidate.source_branch.display_name,
                         "target": candidate.target_branch.display_name,
-                        "output": trunk.get_conflicts()})
+                        "output": target.get_conflicts()})
                 candidate.createComment(subject=subject, content=comment)
                 candidate.setStatus(status=u"Needs review")
                 candidate.lp_save()
-                trunk.cleanup()
+                target.cleanup()
                 continue
 
             except PointlessMerge:
-                trunk.cleanup()
+                target.cleanup()
                 continue
 
             urlp = re.compile('http[s]?://api\.(.*)launchpad\.net/beta/')
             merge_url = urlp.sub('http://launchpad.net/', candidate.self_link)
             revprops = { 'merge_url' : merge_url }
             try:
+                self.logger.debug('Firing tarmac_pre_commit hook')
                 tarmac_hooks['pre_tarmac_commit'].fire(
                     self.options, self.configuration, candidate,
-                    trunk)
+                    target)
                 if self.dry_run:
-                    trunk.cleanup()
+                    target.cleanup()
                 else:
-                    trunk.commit(candidate.commit_message,
+                    target.commit(candidate.commit_message,
                                  revprops=revprops,
-                                 authors=source_branch.authors,
+                                 authors=source.authors,
                                  reviewers=self._get_reviewers(candidate))
 
+                self.logger.debug('Firing tarmac_post_commit hook')
                 tarmac_hooks['post_tarmac_commit'].fire(
-                    self.options, self.configuration, candidate, trunk)
+                    self.options, self.configuration, candidate, target)
 
             except Exception, e:
                 message = "Oops! Tarmac hooks failed:\n     %s" % e
                 self.logger.error(message)
-                print message
 
-            trunk.cleanup()
+            target.cleanup()
 
     def run(self, branch_url=None):
 
@@ -169,5 +184,6 @@ class cmd_merge(TarmacCommand):
 
         else:
             for branch in self.config.branches:
-                print 'Merging %(branch)s' % {'branch': branch}
+                self.logger.info(
+                    'Merging %(branch)s' % {'branch': branch})
                 self._do_merges(branch)

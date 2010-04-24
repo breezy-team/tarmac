@@ -24,6 +24,7 @@ import os
 import sys
 from ConfigParser import NoSectionError, NoOptionError
 from ConfigParser import SafeConfigParser as ConfigParser
+
 from tarmac.xdgdirs import xdg_config_home, xdg_cache_home
 
 
@@ -32,7 +33,7 @@ class TarmacConfig2(ConfigParser):
 
     def __init__(self):
         DEFAULTS = {
-            'log_file': os.path.abspath('.'),
+            'log_file': os.path.join(self.CONFIG_HOME, 'tarmac.log'),
             'tree_dir': None}
 
         ConfigParser.__init__(self, DEFAULTS)
@@ -79,7 +80,8 @@ class TarmacConfig2(ConfigParser):
     @property
     def branches(self):
         '''Return all the branches in the config.'''
-        return self.sections()
+        return [section for section in self.sections() if
+                section.startswith('lp:')]
 
     def _check_config_dirs(self):
         '''Create the configuration directory if it doesn't exist.'''
