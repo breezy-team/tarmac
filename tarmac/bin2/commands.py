@@ -33,12 +33,9 @@ class TarmacCommand(Command):
         self.logger.addHandler(
             logging.FileHandler(
                 filename=self.config.get('Tarmac', 'log_file')))
-
-        # If debugging. uncomment these lines.
         stderr_handler = logging.StreamHandler(sys.stderr)
-        stderr_handler.setLevel(logging.DEBUG)
         self.logger.addHandler(stderr_handler)
-
+        stderr_handler.setLevel(logging.DEBUG)
 
     def run(self):
         '''Actually run the command.'''
