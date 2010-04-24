@@ -1,15 +1,15 @@
-'''Tests for tarmac.bin2.registry.'''
+'''Tests for tarmac.bin.registry.'''
 import unittest
 
 from bzrlib.errors import BzrCommandError
 
-from tarmac.bin2.commands import cmd_auth, TarmacCommand
-from tarmac.bin2.registry import CommandRegistry
+from tarmac.bin.commands import cmd_auth, TarmacCommand
+from tarmac.bin.registry import CommandRegistry
 from tarmac.exceptions import CommandNotFound
 from tarmac.tests.mock import cmd_mock, MockModule
 
 class TestCommandRegistry(unittest.TestCase):
-    '''Test for tarmac.bin2.commands.CommandRegistry.'''
+    '''Test for tarmac.bin.commands.CommandRegistry.'''
 
     def test__init__(self):
         registry = CommandRegistry()

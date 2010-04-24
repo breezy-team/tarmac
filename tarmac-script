@@ -2,5 +2,5 @@
 # vim:filetype=python
 '''Main tarmac script.'''
 
-from tarmac.bin2 import main
+from tarmac.bin import main
 main()

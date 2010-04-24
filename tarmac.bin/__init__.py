@@ -9,8 +9,8 @@ def main():
 
     from bzrlib import ui
 
-    from tarmac.bin2 import commands
-    from tarmac.bin2.registry import CommandRegistry
+    from tarmac.bin import commands
+    from tarmac.bin.registry import CommandRegistry
 
     ui.ui_factory = ui.make_ui_for_terminal(
         sys.stdin, sys.stdout, sys.stderr)

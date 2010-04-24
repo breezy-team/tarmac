@@ -10,7 +10,7 @@ from bzrlib.help import help_commands
 from launchpadlib.launchpad import (Credentials, Launchpad, EDGE_SERVICE_ROOT,
     STAGING_SERVICE_ROOT)
 
-from tarmac.bin2 import options
+from tarmac.bin import options
 from tarmac.branch import Branch2
 from tarmac.config import TarmacConfig2
 from tarmac.hooks import tarmac_hooks

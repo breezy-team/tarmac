@@ -1,16 +1,16 @@
-'''Tests for tarmac.bin2.commands.py.'''
+'''Tests for tarmac.bin.commands.py.'''
 from cStringIO import StringIO
 import os
 import sys
 
-from tarmac.bin2 import commands
+from tarmac.bin import commands
 from tarmac.config import TarmacConfig2
 from tarmac.exceptions import CommandNotFound
 from tarmac.tests import TarmacTestCase
 
 
 class TestCommand(TarmacTestCase):
-    '''Test for tarmac.bin2.commands.Command.'''
+    '''Test for tarmac.bin.commands.Command.'''
 
     def test__init__(self):
         command_name = u'test'
@@ -25,7 +25,7 @@ class TestCommand(TarmacTestCase):
 
 
 class TestAuthCommand(TarmacTestCase):
-    '''Test for tarmac.bin2.command.cmd_auth.'''
+    '''Test for tarmac.bin.command.cmd_auth.'''
 
     NEEDS_SAMPLE_DATA = True
 
