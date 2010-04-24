@@ -109,20 +109,20 @@ class cmd_merge(TarmacCommand):
 
         lp_branch = self.launchpad.branches.getByUrl(url=branch_url)
 
-        candidates = [entry for entry in lp_branch.landing_candidates
+        proposals = [entry for entry in lp_branch.landing_candidates
                         if entry.queue_status == u'Approved' and
                         entry.commit_message]
-        if not candidates:
+        if not proposals:
             self.logger.info(
-                'No landing candidates found for %{branch_url}s' % {
+                'No approved proposals found for %{branch_url}s' % {
                     'branch_url': branch_url,})
             return
 
         target = Branch2.create(lp_branch, self.config, create_tree=True)
-        for candidate in candidates:
+        for proposal in proposals:
 
             source = Branch2.create(
-                candidate.source_branch, self.config)
+                proposal.source_branch, self.config)
 
             try:
                 target.merge(source)
@@ -130,17 +130,17 @@ class cmd_merge(TarmacCommand):
             except BranchHasConflicts:
                 subject = (
                     u"Conflicts merging %(source)s into %(target)s" %
-                    {"source": candidate.source_branch.display_name,
-                     "target": candidate.target_branch.display_name})
+                    {"source": proposal.source_branch.display_name,
+                     "target": proposal.target_branch.display_name})
                 comment = (
                     u"Attempt to merge %(source)s into %(target)s failed due "
                     u"to merge conflicts:\n\n%(output)s" % {
-                        "source": candidate.source_branch.display_name,
-                        "target": candidate.target_branch.display_name,
+                        "source": proposal.source_branch.display_name,
+                        "target": proposal.target_branch.display_name,
                         "output": target.get_conflicts()})
-                candidate.createComment(subject=subject, content=comment)
-                candidate.setStatus(status=u"Needs review")
-                candidate.lp_save()
+                proposal.createComment(subject=subject, content=comment)
+                proposal.setStatus(status=u"Needs review")
+                proposal.lp_save()
                 target.cleanup()
                 continue
 
@@ -149,23 +149,23 @@ class cmd_merge(TarmacCommand):
                 continue
 
             urlp = re.compile('http[s]?://api\.(.*)launchpad\.net/beta/')
-            merge_url = urlp.sub('http://launchpad.net/', candidate.self_link)
+            merge_url = urlp.sub('http://launchpad.net/', proposal.self_link)
             revprops = { 'merge_url' : merge_url }
             try:
                 self.logger.debug('Firing tarmac_pre_commit hook')
                 tarmac_hooks['tarmac_pre_commit'].fire(
-                    self, target, source, candidate)
+                    self, target, source, proposal)
                 if self.dry_run:
                     target.cleanup()
                 else:
-                    target.commit(candidate.commit_message,
+                    target.commit(proposal.commit_message,
                                  revprops=revprops,
                                  authors=source.authors,
-                                 reviewers=self._get_reviewers(candidate))
+                                 reviewers=self._get_reviewers(proposal))
 
                 self.logger.debug('Firing tarmac_post_commit hook')
                 tarmac_hooks['tarmac_post_commit'].fire(
-                    self, target, source, candidate)
+                    self, target, source, proposal)
 
             except Exception, e:
                 self.logger.error("Oops! Tarmac hooks failed:\n%s" % e)
