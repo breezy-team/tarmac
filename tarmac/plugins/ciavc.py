@@ -87,5 +87,4 @@ class CIAVC(TarmacPlugin):
         print "Updating cvs.vc for project " + cia_project
         xmlrpclib.ServerProxy(cia_server).hub.deliver(message)
 
-tarmac_hooks['post_tarmac_commit'].hook(CIAVC(), 'CIA.vc plugin.')
-
+tarmac_hooks['tarmac_post_commit'].hook(CIAVC(), 'CIA.vc plugin.')

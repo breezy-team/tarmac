@@ -153,7 +153,7 @@ class cmd_merge(TarmacCommand):
             revprops = { 'merge_url' : merge_url }
             try:
                 self.logger.debug('Firing tarmac_pre_commit hook')
-                tarmac_hooks['pre_tarmac_commit'].fire(
+                tarmac_hooks['tarmac_pre_commit'].fire(
                     self.options, self.configuration, candidate,
                     target)
                 if self.dry_run:
@@ -165,12 +165,11 @@ class cmd_merge(TarmacCommand):
                                  reviewers=self._get_reviewers(candidate))
 
                 self.logger.debug('Firing tarmac_post_commit hook')
-                tarmac_hooks['post_tarmac_commit'].fire(
+                tarmac_hooks['tarmac_post_commit'].fire(
                     self.options, self.configuration, candidate, target)
 
             except Exception, e:
-                message = "Oops! Tarmac hooks failed:\n     %s" % e
-                self.logger.error(message)
+                self.logger.error("Oops! Tarmac hooks failed:\n%s" % e)
 
             target.cleanup()
 

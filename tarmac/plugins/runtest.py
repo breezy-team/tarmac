@@ -91,4 +91,4 @@ class RunTest(TarmacPlugin):
         self.candidate.lp_save()
 
 
-tarmac_hooks['pre_tarmac_commit'].hook(RunTest(), 'Test run hook')
+tarmac_hooks['tarmac_pre_commit'].hook(RunTest(), 'Test run hook')

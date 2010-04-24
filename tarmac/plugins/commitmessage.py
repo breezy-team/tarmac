@@ -42,6 +42,5 @@ class CommitMessageTemplate(TarmacPlugin):
             'commit_message': candidate.commit_message,
             'reviewer': candidate.reviewer.display_name}
 
-tarmac_hooks['pre_tarmac_commit'].hook(CommitMessageTemplate(),
+tarmac_hooks['tarmac_pre_commit'].hook(CommitMessageTemplate(),
     'Commit messsage template editor.')
-

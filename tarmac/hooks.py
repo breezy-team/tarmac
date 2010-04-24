@@ -39,15 +39,14 @@ class TarmacHookRegistry(hooks.Hooks):
     def __init__(self):
         hooks.Hooks.__init__(self)
 
-        self.create_hook(TarmacHookPoint('pre_tarmac_commit',
+        self.create_hook(TarmacHookPoint('tarmac_pre_commit',
             'Called right after Tarmac checks out and merges in a new '
             'branch, but before committing.',
             (1, 14, 0), False))
 
-        self.create_hook(TarmacHookPoint('post_tarmac_commit',
+        self.create_hook(TarmacHookPoint('tarmac_post_commit',
             'Called right after Tarmac commits the merged revision',
             (1, 14, 0), False))
 
 
 tarmac_hooks = TarmacHookRegistry()
-
