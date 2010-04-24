@@ -19,7 +19,7 @@
 
 import sys
 import subprocess
-from tarmac.config import TarmacConfig
+from tarmac.config import TarmacConfig2
 import web
 
 urls = (
@@ -32,9 +32,8 @@ class index(object):
     """The main page of the status site."""
 
     def __init__(self):
-        from tarmac.config import TarmacConfig
-        config = TarmacConfig(sys.argv[2])
-        self.statusfile = config.log_file
+        config = TarmacConfig2()
+        self.statusfile = config.get('Tarmac', 'log_file')
 
     def GET(self):
         tail = subprocess.Popen(('tail', '-n40', self.statusfile),
