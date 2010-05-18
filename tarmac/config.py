@@ -21,7 +21,6 @@
 __metaclass__ = type
 
 import os
-import sys
 from ConfigParser import SafeConfigParser as ConfigParser
 
 from tarmac.xdgdirs import xdg_config_home, xdg_cache_home

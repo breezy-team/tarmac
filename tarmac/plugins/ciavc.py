@@ -41,9 +41,9 @@ class CIAVC(TarmacPlugin):
         else:
             return
 
-        revno = target.branch.revno()
+        revno = target.bzr_branch.revno()
         files = []
-        delta = target.branch.get_revision_delta(revno)
+        delta = target.bzr_branch.get_revision_delta(revno)
 
         [files.append(f) for (f,_x,_x) in delta.added]
         [files.append(f) for (f,_x,_x) in delta.removed]

@@ -28,14 +28,21 @@ class TarmacCommand(Command):
         self.config = TarmacConfig()
         self.registry = registry
 
+        # XXX: bzrlib.commands.Command must be masking the logger stuff, since
+        # I can only get logging output if I set up a logger called 'bzr'
+        # instead of 'tarmac'
         # Set up logging.
-        self.logger = logging.getLogger('tarmac')
-        self.logger.addHandler(
-            logging.FileHandler(
-                filename=self.config.get('Tarmac', 'log_file')))
+        self.logger = logging.getLogger('bzr')
+
         stderr_handler = logging.StreamHandler(sys.stderr)
-        self.logger.addHandler(stderr_handler)
         stderr_handler.setLevel(logging.DEBUG)
+        self.logger.addHandler(stderr_handler)
+
+        log_file = self.config.get('Tarmac', 'log_file')
+        if log_file:
+            file_handler = logging.FileHandler(filename=log_file)
+            file_handler.setLevel(logging.DEBUG)
+            self.logger.addHandler(file_handler)
 
     def run(self):
         '''Actually run the command.'''
@@ -135,13 +142,16 @@ class cmd_merge(TarmacCommand):
                         entry.commit_message]
         if not proposals:
             self.logger.info(
-                'No approved proposals found for %{branch_url}s' % {
+                'No approved proposals found for %(branch_url)s' % {
                     'branch_url': branch_url,})
             return
 
         target = Branch.create(lp_branch, self.config, create_tree=True)
         for proposal in proposals:
 
+            self.logger.info(
+                u'Preparing to merge %(source_branch)s' % {
+                    'source_branch': proposal.source_branch.bzr_identity})
             source = Branch.create(
                 proposal.source_branch, self.config)
 
@@ -158,7 +168,7 @@ class cmd_merge(TarmacCommand):
                     u"to merge conflicts:\n\n%(output)s" % {
                         "source": proposal.source_branch.display_name,
                         "target": proposal.target_branch.display_name,
-                        "output": target.get_conflicts()})
+                        "output": target.conflicts})
                 proposal.createComment(subject=subject, content=comment)
                 proposal.setStatus(status=u"Needs review")
                 proposal.lp_save()
@@ -172,26 +182,35 @@ class cmd_merge(TarmacCommand):
             urlp = re.compile('http[s]?://api\.(.*)launchpad\.net/beta/')
             merge_url = urlp.sub('http://launchpad.net/', proposal.self_link)
             revprops = { 'merge_url' : merge_url }
-            try:
-                self.logger.debug('Firing tarmac_pre_commit hook')
-                tarmac_hooks['tarmac_pre_commit'].fire(
-                    self, target, source, proposal)
-                if self.dry_run:
-                    target.cleanup()
-                else:
-                    target.commit(proposal.commit_message,
-                                 revprops=revprops,
-                                 authors=source.authors,
-                                 reviewers=self._get_reviewers(proposal))
+            self.logger.info('Firing tarmac_pre_commit hook')
+            tarmac_hooks['tarmac_pre_commit'].fire(
+                self, target, source, proposal)
+            target.commit(proposal.commit_message,
+                         revprops=revprops,
+                         authors=source.authors,
+                         reviewers=self._get_reviewers(proposal))
 
-                self.logger.debug('Firing tarmac_post_commit hook')
-                tarmac_hooks['tarmac_post_commit'].fire(
-                    self, target, source, proposal)
-
-            except Exception, e:
-                self.logger.error("Oops! Tarmac hooks failed:\n%s" % e)
+            self.logger.info('Firing tarmac_post_commit hook')
+            tarmac_hooks['tarmac_post_commit'].fire(
+                self, target, source, proposal)
 
             target.cleanup()
+
+    def _get_reviewers(self, candidate):
+        '''Get all reviewers who approved the review.'''
+        reviewers = []
+        for vote in candidate.votes:
+            if not vote.comment:
+                continue
+            elif vote.comment and vote.comment.vote == u'Approve' and \
+                    candidate.source_branch.isPersonTrustedReviewer(
+                reviewer=vote.reviewer):
+                    reviewers.append(vote.reviewer.display_name)
+
+        if len(reviewers) == 0:
+            return None
+
+        return reviewers
 
     def run(self, branch_url=None):
 
@@ -204,5 +223,6 @@ class cmd_merge(TarmacCommand):
         else:
             for branch in self.config.branches:
                 self.logger.info(
-                    'Merging %(branch)s' % {'branch': branch})
+                    'Merging approved branches against %(branch)s' % {
+                        'branch': branch})
                 self._do_merges(branch)
