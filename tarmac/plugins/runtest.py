@@ -34,8 +34,8 @@ class RunTest(TarmacPlugin):
 
     def __call__(self, command, target, source, proposal):
 
-        if command.config.test_command:
-            self.test_command = command.config.test_command
+        if target.config.test_command:
+            self.test_command = target.config.test_command
         else:
             return True
 
