@@ -50,6 +50,10 @@ class CommitMessageTemplateInfo(object):
         self._proposal = proposal
 
     def __getitem__(self, name):
+        """Return the value of the attribute with the given name.
+
+        Never returns None; the empty string is substituted.
+        """
         if name.startswith('_'):
             value = None
         else:
