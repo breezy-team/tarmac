@@ -37,10 +37,8 @@ class CommitMessageTemplate(TarmacPlugin):
         else:
             self.template = '%(commit_message)s'
 
-        source.lp_branch.commit_message = self.template % {
-            'author': proposal.source_branch.owner.display_name,
-            'commit_message': proposal.commit_message,
-            'reviewer': proposal.reviewer.display_name}
+        source.lp_branch.commit_message = self.render(
+            self.template, CommitMessageTemplateInfo(proposal))
 
     def render(self, template, info):
         return template % info
