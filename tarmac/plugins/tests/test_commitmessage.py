@@ -23,10 +23,12 @@ class TestCommitMessageTemplateInfo(TarmacTestCase):
             votes=[
                 thing(
                     comment=thing(vote=u"Approve"),
-                    reviewer=thing(display_name="Virgil Voter")),
+                    reviewer=thing(
+                        display_name="Virgil Voter", name="virgil")),
                 thing(
                     comment=thing(vote=u"Approve"),
-                    reviewer=thing(display_name="Virginia Voter")),
+                    reviewer=thing(
+                        display_name="Virginia Voter", name="virginia")),
                 ])
         self.info = CommitMessageTemplateInfo(self.proposal)
 
@@ -43,6 +45,11 @@ class TestCommitMessageTemplateInfo(TarmacTestCase):
         self.assertEqual(
             "Virgil Voter, Virginia Voter",
             self.info.approved_by)
+
+    def test_approved_by_nicks(self):
+        self.assertEqual(
+            "virgil,virginia",
+            self.info.approved_by_nicks)
 
     def test___getitem__(self):
         """Subscripts can be used to look up attributes too.
