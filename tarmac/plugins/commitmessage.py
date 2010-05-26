@@ -58,14 +58,17 @@ class CommitMessageTemplateInfo(object):
 
     @property
     def author(self):
+        """The display name of the source branch author."""
         return self._proposal.source_branch.owner.display_name
 
     @property
     def commit_message(self):
+        """The commit message set in the merge proposal."""
         return self._proposal.commit_message
 
     @property
     def reviewer(self):
+        """The display name of the merge proposal reviewer."""
         return self._proposal.reviewer.display_name
 
 
