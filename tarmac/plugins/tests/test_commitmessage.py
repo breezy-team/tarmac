@@ -57,21 +57,17 @@ class FakeInfo(object):
 
 class TestCommitMessageTemplate(TarmacTestCase):
 
-    def setUp(self):
-        super(TestCommitMessageTemplate, self).setUp()
-        self.template = CommitMessageTemplate()
-        self.info = FakeInfo()
-
     def test_render(self):
         message_template = CommitMessageTemplate()
+        message_info = FakeInfo()
         render = message_template.render
         # Render without replacement.
-        self.assertEqual("", render("", self.info))
-        self.assertEqual("foo", render("foo", self.info))
+        self.assertEqual("", render("", message_info))
+        self.assertEqual("foo", render("foo", message_info))
         # Render with replacement.
         self.assertEqual(
             "{info:author}",
-            render("%(author)s", self.info))
+            render("%(author)s", message_info))
         self.assertEqual(
             "{info:author} {info:reviewer}",
-            render("%(author)s %(reviewer)s", self.info))
+            render("%(author)s %(reviewer)s", message_info))
