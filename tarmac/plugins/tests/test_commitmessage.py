@@ -17,11 +17,17 @@ class TestCommitMessageTemplateInfo(TarmacTestCase):
         super(TestCommitMessageTemplateInfo, self).setUp()
         self.proposal = thing(
             source_branch=thing(
-                owner=thing(
-                    display_name="Arthur Author")),
+                owner=thing(display_name="Arthur Author")),
             commit_message="Awesome",
-            reviewer=thing(
-                display_name="Randy Reviewer"))
+            reviewer=thing(display_name="Randy Reviewer"),
+            votes=[
+                thing(
+                    comment=thing(vote=u"Approve"),
+                    reviewer=thing(display_name="Virgil Voter")),
+                thing(
+                    comment=thing(vote=u"Approve"),
+                    reviewer=thing(display_name="Virginia Voter")),
+                ])
         self.info = CommitMessageTemplateInfo(self.proposal)
 
     def test_author(self):
@@ -32,6 +38,11 @@ class TestCommitMessageTemplateInfo(TarmacTestCase):
 
     def test_reviewer(self):
         self.assertEqual("Randy Reviewer", self.info.reviewer)
+
+    def test_approved_by(self):
+        self.assertEqual(
+            "Virgil Voter, Virginia Voter",
+            self.info.approved_by)
 
     def test___getitem__(self):
         """Subscripts can be used to look up attributes too.
@@ -45,7 +56,7 @@ class TestCommitMessageTemplateInfo(TarmacTestCase):
             if name.startswith('_'):
                 self.assertEqual("", item)
             else:
-                self.assertTrue(attr is item, "%r is not %r" % (attr, item))
+                self.assertEqual(attr, item)
 
 
 class FakeCommitMessageTemplateInfo(object):

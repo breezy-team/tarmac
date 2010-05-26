@@ -75,6 +75,20 @@ class CommitMessageTemplateInfo(object):
         """The display name of the merge proposal reviewer."""
         return self._proposal.reviewer.display_name
 
+    @property
+    def approved_by(self):
+        """Display name of reviewer_names who approved the review."""
+        reviewer_names = []
+        for vote in self._proposal.votes:
+            comment = vote.comment
+            if comment is not None and comment.vote == u'Approve':
+                reviewer_names.append(vote.reviewer.display_name)
+
+        if len(reviewer_names) == 0:
+            return None
+        else:
+            return ", ".join(reviewer_names)
+
 
 tarmac_hooks['tarmac_pre_commit'].hook(CommitMessageTemplate(),
     'Commit messsage template editor.')
