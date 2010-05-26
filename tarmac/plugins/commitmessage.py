@@ -42,6 +42,9 @@ class CommitMessageTemplate(TarmacPlugin):
             'commit_message': proposal.commit_message,
             'reviewer': proposal.reviewer.display_name}
 
+    def render(self, template, info):
+        return template % info
+
 
 class CommitMessageTemplateInfo(object):
 

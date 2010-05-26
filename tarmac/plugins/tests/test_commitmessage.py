@@ -1,6 +1,7 @@
 """Tests for the commitmessage plugin."""
 
-from tarmac.plugins.commitmessage import CommitMessageTemplateInfo
+from tarmac.plugins.commitmessage import (
+    CommitMessageTemplate, CommitMessageTemplateInfo)
 from tarmac.tests import TarmacTestCase
 
 
@@ -44,3 +45,33 @@ class TestCommitMessageTemplateInfo(TarmacTestCase):
                 self.assertEqual("", item)
             else:
                 self.assertTrue(attr is item, "%r is not %r" % (attr, item))
+
+
+class FakeInfo(object):
+    def __getitem__(self, name):
+        if name.startswith("_"):
+            return ""
+        else:
+            return "{info:%s}" % name
+
+
+class TestCommitMessageTemplate(TarmacTestCase):
+
+    def setUp(self):
+        super(TestCommitMessageTemplate, self).setUp()
+        self.template = CommitMessageTemplate()
+        self.info = FakeInfo()
+
+    def test_render(self):
+        message_template = CommitMessageTemplate()
+        render = message_template.render
+        # Render without replacement.
+        self.assertEqual("", render("", self.info))
+        self.assertEqual("foo", render("foo", self.info))
+        # Render with replacement.
+        self.assertEqual(
+            "{info:author}",
+            render("%(author)s", self.info))
+        self.assertEqual(
+            "{info:author} {info:reviewer}",
+            render("%(author)s %(reviewer)s", self.info))
