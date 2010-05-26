@@ -34,11 +34,13 @@ class TestCommitMessageTemplateInfo(TarmacTestCase):
     def test___getitem__(self):
         """Subscripts can be used to look up attributes too.
 
-        Names beginning with __ always have a value of None.
+        None is never returned; the empty string is substituted. Names
+        beginning with _ always resolve to the empty string.
         """
         for name in dir(self.info):
             attr, item = getattr(self.info, name), self.info[name]
+            self.assertTrue(item is not None, "%r is not None" % (item,))
             if name.startswith('_'):
-                self.assertTrue(item is None, "%r is not None" % (item,))
+                self.assertEqual("", item)
             else:
                 self.assertTrue(attr is item, "%r is not %r" % (attr, item))

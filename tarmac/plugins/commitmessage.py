@@ -50,9 +50,10 @@ class CommitMessageTemplateInfo(object):
 
     def __getitem__(self, name):
         if name.startswith('_'):
-            return None
+            value = None
         else:
-            return getattr(self, name)
+            value = getattr(self, name, None)
+        return ("" if value is None else value)
 
     @property
     def author(self):
