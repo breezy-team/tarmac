@@ -33,16 +33,15 @@ class RunTest(TarmacPlugin):
     '''
 
     def __call__(self, command, target, source, proposal):
-
-        if target.config.test_command:
+        try:
             self.test_command = target.config.test_command
-        else:
+        except AttributeError:
             return True
 
         self.proposal = proposal
 
         cwd = os.getcwd()
-        os.chdir(target.tree_dir)
+        os.chdir(target.config.tree_dir)
         print 'Running test command: %s' % self.test_command
         proc = subprocess.Popen(
             self.test_command,

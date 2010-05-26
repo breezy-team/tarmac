@@ -15,6 +15,7 @@ from tarmac.branch import Branch
 from tarmac.config import TarmacConfig
 from tarmac.hooks import tarmac_hooks
 from tarmac.exceptions import BranchHasConflicts, TarmacCommandError
+from tarmac.plugin import load_plugins
 
 
 class TarmacCommand(Command):
@@ -213,7 +214,7 @@ class cmd_merge(TarmacCommand):
         return reviewers
 
     def run(self, branch_url=None):
-
+        load_plugins()
         self.launchpad = self.get_launchpad_object()
         if branch_url:
             if not branch_url.startswith('lp:'):
