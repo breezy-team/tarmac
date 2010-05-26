@@ -6,6 +6,7 @@ from tarmac.tests import TarmacTestCase
 
 
 class thing(object):
+    """Quickly create an object with given attributes."""
     def __init__(self, **names):
         self.__dict__.update(names)
 
@@ -47,7 +48,7 @@ class TestCommitMessageTemplateInfo(TarmacTestCase):
                 self.assertTrue(attr is item, "%r is not %r" % (attr, item))
 
 
-class FakeInfo(object):
+class FakeCommitMessageTemplateInfo(object):
     def __getitem__(self, name):
         if name.startswith("_"):
             return ""
@@ -59,7 +60,7 @@ class TestCommitMessageTemplate(TarmacTestCase):
 
     def test_render(self):
         message_template = CommitMessageTemplate()
-        message_info = FakeInfo()
+        message_info = FakeCommitMessageTemplateInfo()
         render = message_template.render
         # Render without replacement.
         self.assertEqual("", render("", message_info))
