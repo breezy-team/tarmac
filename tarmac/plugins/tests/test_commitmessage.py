@@ -38,7 +38,7 @@ class TestCommitMessageTemplateInfo(TarmacTestCase):
         """
         for name in dir(self.info):
             attr, item = getattr(self.info, name), self.info[name]
-            if name.startswith('__'):
+            if name.startswith('_'):
                 self.assertTrue(item is None, "%r is not None" % (item,))
             else:
                 self.assertTrue(attr is item, "%r is not %r" % (attr, item))

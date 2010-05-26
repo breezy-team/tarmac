@@ -46,25 +46,25 @@ class CommitMessageTemplate(TarmacPlugin):
 class CommitMessageTemplateInfo(object):
 
     def __init__(self, proposal):
-        self.proposal = proposal
+        self._proposal = proposal
 
     def __getitem__(self, name):
-        if name.startswith('__'):
+        if name.startswith('_'):
             return None
         else:
             return getattr(self, name)
 
     @property
     def author(self):
-        return self.proposal.source_branch.owner.display_name
+        return self._proposal.source_branch.owner.display_name
 
     @property
     def commit_message(self):
-        return self.proposal.commit_message
+        return self._proposal.commit_message
 
     @property
     def reviewer(self):
-        return self.proposal.reviewer.display_name
+        return self._proposal.reviewer.display_name
 
 
 tarmac_hooks['tarmac_pre_commit'].hook(CommitMessageTemplate(),
