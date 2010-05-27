@@ -17,7 +17,8 @@ class TestCommitMessageTemplateInfo(TarmacTestCase):
         super(TestCommitMessageTemplateInfo, self).setUp()
         self.proposal = thing(
             source_branch=thing(
-                owner=thing(display_name="Arthur Author")),
+                owner=thing(display_name="Arthur Author"),
+                linked_bugs=[thing(id=1234), thing(id=5678)]),
             commit_message="Awesome",
             reviewer=thing(display_name="Randy Reviewer"),
             votes=[
@@ -50,6 +51,9 @@ class TestCommitMessageTemplateInfo(TarmacTestCase):
         self.assertEqual(
             "virgil,virginia",
             self.info.approved_by_nicks)
+
+    def test_bugs_fixed(self):
+        self.assertEqual("1234,5678", self.info.bugs_fixed)
 
     def test___getitem__(self):
         """Subscripts can be used to look up attributes too.

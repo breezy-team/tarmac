@@ -103,6 +103,16 @@ class CommitMessageTemplateInfo(object):
         else:
             return ",".join(reviewer_nicks)
 
+    @property
+    def bugs_fixed(self):
+        bug_ids = [
+            bug.id for bug in self._proposal.source_branch.linked_bugs
+            ]
+        if len(bug_ids) == 0:
+            return None
+        else:
+            return ",".join(str(bug_id) for bug_id in bug_ids)
+
 
 tarmac_hooks['tarmac_pre_commit'].hook(CommitMessageTemplate(),
     'Commit messsage template editor.')
