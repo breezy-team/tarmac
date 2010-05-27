@@ -95,13 +95,13 @@ class CommitMessageTemplateInfo(object):
     @property
     def approved_by_nicks(self):
         """Short names of reviewers who approved the review."""
-        reviewer_short_names = [
+        reviewer_nicks = [
             reviewer.name for reviewer in self._get_approvers()
             ]
-        if len(reviewer_short_names) == 0:
+        if len(reviewer_nicks) == 0:
             return None
         else:
-            return ",".join(reviewer_short_names)
+            return ",".join(reviewer_nicks)
 
 
 tarmac_hooks['tarmac_pre_commit'].hook(CommitMessageTemplate(),
