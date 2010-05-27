@@ -84,34 +84,19 @@ class CommitMessageTemplateInfo(object):
     @property
     def approved_by(self):
         """Display name of reviewers who approved the review."""
-        reviewer_names = [
-            reviewer.display_name for reviewer in self._get_approvers()
-            ]
-        if len(reviewer_names) == 0:
-            return None
-        else:
-            return ", ".join(reviewer_names)
+        return ", ".join(
+            reviewer.display_name for reviewer in self._get_approvers())
 
     @property
     def approved_by_nicks(self):
         """Short names of reviewers who approved the review."""
-        reviewer_nicks = [
-            reviewer.name for reviewer in self._get_approvers()
-            ]
-        if len(reviewer_nicks) == 0:
-            return None
-        else:
-            return ",".join(reviewer_nicks)
+        return ",".join(
+            reviewer.name for reviewer in self._get_approvers())
 
     @property
     def bugs_fixed(self):
-        bug_ids = [
-            bug.id for bug in self._proposal.source_branch.linked_bugs
-            ]
-        if len(bug_ids) == 0:
-            return None
-        else:
-            return ",".join(str(bug_id) for bug_id in bug_ids)
+        return ",".join(
+            str(bug.id) for bug in self._proposal.source_branch.linked_bugs)
 
 
 tarmac_hooks['tarmac_pre_commit'].hook(CommitMessageTemplate(),
