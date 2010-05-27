@@ -77,7 +77,11 @@ class CommitMessageTemplateInfo(object):
 
     @property
     def reviewer(self):
-        """The display name of the merge proposal reviewer."""
+        """The display name of the merge proposal reviewer.
+
+        This is the person that marked the *whole* proposal as
+        approved, not necessarily an individual voter.
+        """
         return self._proposal.reviewer.display_name
 
     def _get_approvers(self):
