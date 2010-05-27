@@ -40,6 +40,7 @@ class CommitMessageTemplate(TarmacPlugin):
             template, CommitMessageTemplateInfo(proposal))
 
     def render(self, template, info):
+        """Render a template using the given information."""
         return template % info
 
 
