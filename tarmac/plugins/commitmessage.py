@@ -67,7 +67,7 @@ class CommitMessageTemplateInfo(object):
 
     @property
     def author_nick(self):
-        """The display name of the source branch author."""
+        """The short name of the source branch author."""
         return self._proposal.source_branch.owner.name
 
     @property
