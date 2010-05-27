@@ -17,7 +17,7 @@ class TestCommitMessageTemplateInfo(TarmacTestCase):
         super(TestCommitMessageTemplateInfo, self).setUp()
         self.proposal = thing(
             source_branch=thing(
-                owner=thing(display_name="Arthur Author"),
+                owner=thing(display_name="Arthur Author", name="arthur"),
                 linked_bugs=[thing(id=1234), thing(id=5678)]),
             commit_message="Awesome",
             reviewer=thing(display_name="Randy Reviewer"),
@@ -35,6 +35,9 @@ class TestCommitMessageTemplateInfo(TarmacTestCase):
 
     def test_author(self):
         self.assertEqual("Arthur Author", self.info.author)
+
+    def test_author_nick(self):
+        self.assertEqual("arthur", self.info.author_nick)
 
     def test_commit_message(self):
         self.assertEqual("Awesome", self.info.commit_message)
