@@ -10,6 +10,8 @@ from bzrlib.help import help_commands
 from launchpadlib.launchpad import (Credentials, Launchpad, EDGE_SERVICE_ROOT,
     STAGING_SERVICE_ROOT)
 
+from ConfigParser import NoSectionError
+
 from tarmac.bin import options
 from tarmac.branch import Branch
 from tarmac.config import TarmacConfig
@@ -39,8 +41,11 @@ class TarmacCommand(Command):
         stderr_handler.setLevel(logging.DEBUG)
         self.logger.addHandler(stderr_handler)
 
-        log_file = self.config.get('Tarmac', 'log_file')
-        if log_file:
+        try:
+            log_file = self.config.get('Tarmac', 'log_file')
+        except NoSectionError:
+            pass
+        else:
             file_handler = logging.FileHandler(filename=log_file)
             file_handler.setLevel(logging.DEBUG)
             self.logger.addHandler(file_handler)
@@ -49,8 +54,7 @@ class TarmacCommand(Command):
         '''Actually run the command.'''
         raise NotImplementedError
 
-    # XXX: rockstar - DON'T RELEASE with staging as the default!!!!!!
-    def get_launchpad_object(self, filename=None, staging=True):
+    def get_launchpad_object(self, filename=None, staging=False):
         '''Return a Launchpad object for making API requests.'''
         # XXX: rockstar - 2009 Dec 13 - Ideally, we should be using
         # Launchpad.login_with, but currently, it doesn't support the option of
@@ -71,10 +75,7 @@ class TarmacCommand(Command):
             launchpad.credentials.save(file(filename, 'w'))
         else:
             credentials = Credentials()
-            try:
-                credentials.load(open(filename))
-            except Exception, e:
-                raise Exception('Something is wrong at %s' % (filename))
+            credentials.load(open(filename))
             launchpad = Launchpad(
                 credentials, SERVICE_ROOT, self.config.CACHE_HOME)
         return launchpad
@@ -93,13 +94,11 @@ class cmd_authenticate(TarmacCommand):
         options.staging_option,]
 
     def run(self, filename=None, staging=False):
-        # TODO: rockstar - DON'T RELEASE with staging as the default!!!!!!
-        staging = True
         if os.path.exists(self.config.CREDENTIALS):
             self.logger.error('You have already been authenticated.')
         else:
-            launchpad = self.get_launchpad_object(filename=filename,
-                staging=staging)
+            self.get_launchpad_object(filename=filename,
+                                      staging=staging)
 
 
 class cmd_help(TarmacCommand):
@@ -213,9 +212,13 @@ class cmd_merge(TarmacCommand):
 
         return reviewers
 
-    def run(self, branch_url=None):
+    def run(self, branch_url=None, launchpad=None):
         load_plugins()
-        self.launchpad = self.get_launchpad_object()
+
+        self.launchpad = launchpad
+        if self.launchpad is None:
+            self.launchpad = self.get_launchpad_object()
+
         if branch_url:
             if not branch_url.startswith('lp:'):
                 raise TarmacCommandError('Branch urls must start with lp:')
