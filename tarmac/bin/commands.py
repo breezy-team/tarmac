@@ -53,8 +53,7 @@ class TarmacCommand(Command):
         '''Actually run the command.'''
         raise NotImplementedError
 
-    # XXX: rockstar - DON'T RELEASE with staging as the default!!!!!!
-    def get_launchpad_object(self, filename=None, staging=True):
+    def get_launchpad_object(self, filename=None, staging=False):
         '''Return a Launchpad object for making API requests.'''
         # XXX: rockstar - 2009 Dec 13 - Ideally, we should be using
         # Launchpad.login_with, but currently, it doesn't support the option of
@@ -94,8 +93,6 @@ class cmd_authenticate(TarmacCommand):
         options.staging_option,]
 
     def run(self, filename=None, staging=False):
-        # TODO: rockstar - DON'T RELEASE with staging as the default!!!!!!
-        staging = True
         if os.path.exists(self.config.CREDENTIALS):
             self.logger.error('You have already been authenticated.')
         else:
