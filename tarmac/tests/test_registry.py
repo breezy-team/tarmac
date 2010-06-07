@@ -3,7 +3,7 @@ import unittest
 
 from bzrlib.errors import BzrCommandError
 
-from tarmac.bin.commands import cmd_auth, TarmacCommand
+from tarmac.bin.commands import cmd_authenticate, TarmacCommand
 from tarmac.bin.registry import CommandRegistry
 from tarmac.exceptions import CommandNotFound
 from tarmac.tests.mock import cmd_mock, MockModule
@@ -20,24 +20,25 @@ class TestCommandRegistry(unittest.TestCase):
         self.assertRaises(BzrCommandError, registry._run, ['nothing'])
 
     def test_register_command(self):
-        command = TarmacCommand()
         registry = CommandRegistry()
+        command = TarmacCommand(registry)
         registry.register_command(u'test', command)
         self.assertEqual(registry._registry,
             {'test': command})
 
     def test__get_command(self):
         registry = CommandRegistry()
-        registry.register_command('auth', cmd_auth)
-        looked_up_command = registry._get_command(cmd_auth, 'auth')
+        registry.register_command('authenticate', cmd_authenticate)
+        looked_up_command = registry._get_command(cmd_authenticate,
+                                                  'authenticate')
         self.assertTrue(
-            isinstance(looked_up_command, cmd_auth))
+            isinstance(looked_up_command, cmd_authenticate))
 
     def test__get_command_notfound(self):
         registry = CommandRegistry()
         self.assertRaises(
             CommandNotFound,
-            registry._get_command, TarmacCommand(), u'test2')
+            registry._get_command, TarmacCommand(registry), u'test2')
 
     def test_register_from_module(self):
         registry = CommandRegistry()
@@ -47,7 +48,7 @@ class TestCommandRegistry(unittest.TestCase):
 
     def DISABLEDtest__list_commands(self):
         registry = CommandRegistry()
-        registry.register_command(AuthCommand)
+        registry.register_command('authenticate', cmd_authenticate)
         names = {}
         names = registry._list_commands(names)
         self.assertEqual(names.iterkeys(), registry._commands.iterkeys())
