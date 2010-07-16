@@ -31,11 +31,9 @@ class TarmacCommand(Command):
         self.config = TarmacConfig()
         self.registry = registry
 
-        # XXX: bzrlib.commands.Command must be masking the logger stuff, since
-        # I can only get logging output if I set up a logger called 'bzr'
-        # instead of 'tarmac'
         # Set up logging.
-        self.logger = logging.getLogger('bzr')
+        self.logger = logging.getLogger('tarmac')
+        self.logger.setLevel(logging.DEBUG)
 
         stderr_handler = logging.StreamHandler(sys.stderr)
         stderr_handler.setLevel(logging.DEBUG)
