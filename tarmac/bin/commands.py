@@ -42,6 +42,9 @@ class TarmacCommand(Command):
         else:
             file_handler = logging.FileHandler(filename=log_file)
             file_handler.setLevel(logging.WARNING)
+            file_handler.setFormatter(
+                logging.Formatter('%(asctime)s %(levelname)-8s %(message)s',
+                                  '%Y-%m-%d %H:%M:%S'))
             self.logger.addHandler(file_handler)
 
     def run(self):
