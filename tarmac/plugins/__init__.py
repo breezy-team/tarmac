@@ -15,8 +15,11 @@
 # along with Tarmac.  If not, see <http://www.gnu.org/licenses/>.
 
 '''Tarmac supported plugins.'''
+import logging
 
 
 class TarmacPlugin(object):
     '''Abstract class for Tarmac plugins.'''
 
+    def __init__(self):
+        self.logger = logging.getLogger('tarmac')

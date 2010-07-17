@@ -42,12 +42,13 @@ class RunTest(TarmacPlugin):
 
         cwd = os.getcwd()
         os.chdir(target.config.tree_dir)
-        print 'Running test command: %s' % self.test_command
+        self.logger.debug('Running test command: %s' % self.test_command)
         proc = subprocess.Popen(
             self.test_command,
             shell=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE)
+        self.logger.debug('Completed test command: %s' % self.test_command)
         stdout_value, stderr_value = proc.communicate()
         return_code = proc.wait()
         os.chdir(cwd)
