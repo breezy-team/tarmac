@@ -151,53 +151,57 @@ class cmd_merge(TarmacCommand):
             return
 
         target = Branch.create(lp_branch, self.config, create_tree=True)
-        for proposal in proposals:
+        try:
+            for proposal in proposals:
 
-            self.logger.info(
-                u'Preparing to merge %(source_branch)s' % {
-                    'source_branch': proposal.source_branch.bzr_identity})
-            source = Branch.create(
-                proposal.source_branch, self.config)
+                self.logger.info(
+                    u'Preparing to merge %(source_branch)s' % {
+                        'source_branch': proposal.source_branch.bzr_identity})
+                source = Branch.create(
+                    proposal.source_branch, self.config)
 
-            try:
-                target.merge(source)
+                try:
+                    target.merge(source)
 
-            except BranchHasConflicts:
-                subject = (
-                    u"Conflicts merging %(source)s into %(target)s" %
-                    {"source": proposal.source_branch.display_name,
-                     "target": proposal.target_branch.display_name})
-                comment = (
-                    u"Attempt to merge %(source)s into %(target)s failed due "
-                    u"to merge conflicts:\n\n%(output)s" % {
-                        "source": proposal.source_branch.display_name,
-                        "target": proposal.target_branch.display_name,
-                        "output": target.conflicts})
-                proposal.createComment(subject=subject, content=comment)
-                proposal.setStatus(status=u"Needs review")
-                proposal.lp_save()
+                except BranchHasConflicts:
+                    subject = (
+                        u"Conflicts merging %(source)s into %(target)s" % {
+                             "source": proposal.source_branch.display_name,
+                             "target": proposal.target_branch.display_name})
+                    comment = (
+                        u'Attempt to merge %(source)s into %(target)s failed '
+                        u'due to merge conflicts:\n\n%(output)s' % {
+                            "source": proposal.source_branch.display_name,
+                            "target": proposal.target_branch.display_name,
+                            "output": target.conflicts})
+                    proposal.createComment(subject=subject, content=comment)
+                    proposal.setStatus(status=u"Needs review")
+                    proposal.lp_save()
+                    target.cleanup()
+                    continue
+
+                except PointlessMerge:
+                    target.cleanup()
+                    continue
+
+                urlp = re.compile('http[s]?://api\.(.*)launchpad\.net/beta/')
+                merge_url = urlp.sub(
+                    'http://launchpad.net/', proposal.self_link)
+                revprops = { 'merge_url' : merge_url }
+                self.logger.info('Firing tarmac_pre_commit hook')
+                tarmac_hooks['tarmac_pre_commit'].fire(
+                    self, target, source, proposal)
+                target.commit(proposal.commit_message,
+                             revprops=revprops,
+                             authors=source.authors,
+                             reviewers=self._get_reviewers(proposal))
+
+                self.logger.info('Firing tarmac_post_commit hook')
+                tarmac_hooks['tarmac_post_commit'].fire(
+                    self, target, source, proposal)
+
                 target.cleanup()
-                continue
-
-            except PointlessMerge:
-                target.cleanup()
-                continue
-
-            urlp = re.compile('http[s]?://api\.(.*)launchpad\.net/beta/')
-            merge_url = urlp.sub('http://launchpad.net/', proposal.self_link)
-            revprops = { 'merge_url' : merge_url }
-            self.logger.info('Firing tarmac_pre_commit hook')
-            tarmac_hooks['tarmac_pre_commit'].fire(
-                self, target, source, proposal)
-            target.commit(proposal.commit_message,
-                         revprops=revprops,
-                         authors=source.authors,
-                         reviewers=self._get_reviewers(proposal))
-
-            self.logger.info('Firing tarmac_post_commit hook')
-            tarmac_hooks['tarmac_post_commit'].fire(
-                self, target, source, proposal)
-
+        finally:
             target.cleanup()
 
     def _get_reviewers(self, candidate):
