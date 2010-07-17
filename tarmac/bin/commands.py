@@ -33,11 +33,7 @@ class TarmacCommand(Command):
 
         # Set up logging.
         self.logger = logging.getLogger('tarmac')
-        self.logger.setLevel(logging.DEBUG)
-
-        stderr_handler = logging.StreamHandler(sys.stderr)
-        stderr_handler.setLevel(logging.DEBUG)
-        self.logger.addHandler(stderr_handler)
+        self.logger.setLevel(logging.WARNING)
 
         try:
             log_file = self.config.get('Tarmac', 'log_file')
@@ -45,7 +41,7 @@ class TarmacCommand(Command):
             pass
         else:
             file_handler = logging.FileHandler(filename=log_file)
-            file_handler.setLevel(logging.DEBUG)
+            file_handler.setLevel(logging.WARNING)
             self.logger.addHandler(file_handler)
 
     def run(self):
@@ -77,6 +73,12 @@ class TarmacCommand(Command):
             launchpad = Launchpad(
                 credentials, SERVICE_ROOT, self.config.CACHE_HOME)
         return launchpad
+
+    def set_debugging(self):
+        stderr_handler = logging.StreamHandler(sys.stderr)
+        stderr_handler.setLevel(logging.DEBUG)
+        self.logger.addHandler(stderr_handler)
+
 
 
 class cmd_authenticate(TarmacCommand):
@@ -129,7 +131,8 @@ class cmd_merge(TarmacCommand):
 
     aliases = ['land',]
     takes_args = ['branch_url?']
-    takes_options = []
+    takes_options = [
+        options.debug_option]
 
     def _do_merges(self, branch_url):
 
@@ -210,7 +213,9 @@ class cmd_merge(TarmacCommand):
 
         return reviewers
 
-    def run(self, branch_url=None, launchpad=None):
+    def run(self, branch_url=None, launchpad=None, debug=False):
+        if debug:
+            self.set_debugging()
         load_plugins()
 
         self.launchpad = launchpad
