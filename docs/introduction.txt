@@ -1,0 +1,20 @@
+==================
+Introducing Tarmac
+==================
+
+Merging branches is boring.  Really, it is.  After humans have looked over a
+merge, it should really just magically be merged.  That's what Tarmac does, and
+it does it well.
+
+How it works
+============
+
+Tarmac uses Launchpad to manage merging branches.  It does this by checking
+over all the branches configured to have Tarmac manage them for merge proposals
+that are approved and have commit messages set.  It then merges those branches,
+one by one, and automatically commits them.
+
+What's more, Tarmac supports plugins that can prevent a branch from landing if
+it doesn't meet specific requirements, or perform specific tasks after the
+branch has landed.  This opens up all sorts of branch landing options that can
+happen behind the scenes, while you can safely do more exciting work.
