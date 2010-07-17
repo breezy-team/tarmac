@@ -18,7 +18,7 @@
 import os
 import subprocess
 
-from bzrlib.errors import HookFailed
+from bzrlib.errors import TipChangeRejected
 
 from tarmac.hooks import tarmac_hooks
 from tarmac.plugins import TarmacPlugin
@@ -54,11 +54,8 @@ class RunTest(TarmacPlugin):
 
         if return_code != 0:
             self.do_failed(stdout_value, stderr_value)
-            #XXX matsubara: this line will always fail with
-            # IndexError: string index out of range. HookFailed expects a
-            # a (exc_type, exc_value, exc_tb) object. Maybe use
-            # sys.exc_info() here? See bug 424466
-            raise HookFailed('test', 'runtest', '')
+            raise TipChangeRejected(
+                'Test command "%s" failed' % self.test_command)
 
     def do_failed(self, stdout_value, stderr_value):
         '''Perform failure tests.
