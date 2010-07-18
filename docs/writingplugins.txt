@@ -2,10 +2,14 @@
 Writing Tarmac Plugins
 ======================
 
-Writing the Hook
+What's the point in having a plugin system if you can't actually write plugins
+easily?  Tarmac's plugins make it easy for you to bend Tarmac's functionality
+to your will.  This document describes the process of writing the plugins.
+
+Writing a Plugin
 ================
 
-  A plugin is merely a python class inheriting from
+A plugin is merely a python class inheriting from
 ``tarmac.plugins.TarmacPlugin``.  It has a pre-determined API, but is very
 trivial to connect.  For example, a basic HelloWorldPlugin would start like
 this::
@@ -16,58 +20,53 @@ this::
       '''A basic plugin that prints "Hello World" when fired.'''
 
 
-  When the hook is imported from the plugins directories (either
-``tarmac.plugins`` or ``$HOME/.config/tarmac/plugins``), the plugin should
-register itself with either the pre-commit or post-commit HookPoint, regardless
-of where the code for the plugin itself is.  For example, with the
-HelloWorldPlugin above, the plugin would be registered with the following
-code::
+This is an entirely plausible/valid plugin.  It's worthless, it's true, but
+it's still valid.  The plugin does need to be registered with before it can be
+used.  For instance, in order to register the plugin to be fired before commit,
+you would use the following code:
 
   from tarmac.hooks import tarmac_hooks
+  tarmac_hooks['tarmac_pre_commit'].hook(
+      HelloWorldPlugin(), 'HelloWorld plugin')
 
-  tarmac_hooks['post_tarmac_commit'].hook(HelloWorldPlugin(),
-      'Hello World Plugin')
 
+You can put this into helloworld.py and pop it into
+`$HOME/.config/tarmac/plugins/``.  The plugin is now available at
+``tarmac.plugins.helloworld.HelloWorldPlugin`` and is registered to be fired
+after the merge and before the commit.  You can use this plugin to make sure
+the merge creates a kosher tree and reject it if it doesn't make you happy.
 
-  Now that the hook is registered, it needs to have some actually functionality
-to it.  Because TarmacPlugins are merely callables, the ``__call__`` method
-should be implemented.  For HelloWorldPlugin, it would look like this::
+Now that we have our hook registered and available, we can make it actually do
+something!  Let's have print "Hello World!"  TarmacPlugins are merely
+callables, the ``__call__`` method should be implemented.  For
+HelloWorldPlugin, it would look like this::
 
   class HelloWorldPlugin(TarmacPlugin):
       '''A basic plugin that prints "Hello World" when fired.'''
 
-      def __call__(self, options, configuration, candidate, trunk):
+      def __call__(self, command, target, source, proposal):
           print 'Hello World!'
 
-  Because this plugin was registered as a post-commit plugin, after each time a
-merge is committed, Tarmac will print "Hello World!" to the terminal.  This is
-a trivial example, but one that demonstrates how it works.  The arguments to
-the plugin are explained below.
+Now when we run the plugin, it will print "Hello World!" before each commit.
+This is a trivial example, but one that demonstrates how it works.  The
+arguments to the plugin are explained below.
 
-options
-  The command line option specified.
+command
+  The tarmac command.  For instance, a ``tarmac land`` call.
 
-configuration
-  An instance of ``tarmac.config.TarmacConfig``.
-
-candidate
-  A Launchpad REST representation of the branch merge proposal being processed.
-
-trunk
+target
   An instance of ``tarmac.branch.Branch`` containing details about the target
   branch.
 
+source
+  An instance of ``tarmac.branch.Branch`` containing details about the source
+  branch.
 
-Ideas for future plugins
-========================
+proposal
+  The merge proposal that proposes the source branch for merge into the target.
 
-  There have been many ideas for plugins.  Among them are the following...
-
-PPA Plugin
-  On each commit, trigger a build of a source package and send it off to a PPA.
-
-Buildbot Plugin
-  Trigger a run of a buildbot slave on each commit.
+  An instance of ``tarmac.branch.Branch`` containing details about the target
+  branch.
 
 
 Caveats
