@@ -32,7 +32,7 @@ class Command(TarmacPlugin):
     do_failed method, and on success, continues.
     '''
 
-    def __call__(self, command, target, source, proposal):
+    def run(self, command, target, source, proposal):
         try:
             self.verify_command = target.config.verify_command
         except AttributeError:

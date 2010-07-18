@@ -23,3 +23,9 @@ class TarmacPlugin(object):
 
     def __init__(self):
         self.logger = logging.getLogger('tarmac')
+
+    def __call__(self, *args, **kwargs):
+        self.run(*args, **kwargs)
+
+    def run(self, *args, **kwargs):
+        '''Run the hook.'''

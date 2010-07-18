@@ -27,7 +27,7 @@ class CommitMessageTemplate(TarmacPlugin):
     template.
     '''
 
-    def __call__(self, command, target, source, proposal):
+    def run(self, command, target, source, proposal):
     # pylint: disable-msg=W0613
         try:
             self.template = target.config.commit_message_template

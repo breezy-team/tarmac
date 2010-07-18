@@ -32,7 +32,7 @@ from tarmac import __version__ as version_string
 class CIAVC(TarmacPlugin):
     '''Tarmac plugin for notifying CIA.vc of new commits.'''
 
-    def __call__(self, command, target, source, proposal):
+    def run(self, command, target, source, proposal):
     # pylint: disable-msg=W0613,W0104,C0324
 
         try:

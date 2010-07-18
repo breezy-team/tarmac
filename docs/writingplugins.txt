@@ -39,13 +39,13 @@ the merge creates a kosher tree and reject it if it doesn't make you happy.
 
 Now that we have our hook registered and available, we can make it actually do
 something!  Let's have print "Hello World!"  TarmacPlugins are merely
-callables, the ``__call__`` method should be implemented.  For
+callables, the ``run`` method should be implemented.  For
 HelloWorldPlugin, it would look like this::
 
   class HelloWorldPlugin(TarmacPlugin):
       '''A basic plugin that prints "Hello World" when fired.'''
 
-      def __call__(self, command, target, source, proposal):
+      def run(self, command, target, source, proposal):
           print 'Hello World!'
 
 Now when we run the plugin, it will print "Hello World!" before each commit.
