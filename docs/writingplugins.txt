@@ -2,14 +2,6 @@
 Writing Tarmac Plugins
 ======================
 
-Introduction
-============
-
-  Tarmac has an event driven plugin system.  This plugin system allows a user
-to drop code into ``$HOME/.config/tarmac/plugins`` and have it detected by
-Tarmac, and executed either before the merge commit, or after it.
-
-
 Writing the Hook
 ================
 

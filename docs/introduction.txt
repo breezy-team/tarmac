@@ -120,3 +120,13 @@ This configuration looks like this:
   [lp:tarmac]
   cia_project = tarmac
   cia_server = http://cia.vc
+
+
+========================
+Installing other plugins
+========================
+
+Tarmac's plugin system is very clever, because it's based on Bazaar's plugin
+system.  In order to install extra plugins, place them
+``$HOME/.config/tarmac/plugins``.  They will then be available for import in
+python at tarmac.plugins.
