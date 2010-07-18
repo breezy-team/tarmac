@@ -113,6 +113,18 @@ the config, like so::
 In this example, we're using Tarmac's distutils script to run our tests.  If
 the tests fail, then the branch won't be merged, ensuring a pristine trunk.
 
+**Important note:** When running commands like this, one must stop and think
+about the potential of merging in questionable code that may be executed by
+your command.  This means that a malicious user could execute code on the
+tarmac machine that could read files on your system.  This is generally bad.
+Okay, well, more than generally, it's quite specifically bad.
+
+What the instance specifically does is use ``schroot`` to run the command
+inside a chrooted jail.  It is configured to provide the tree in a neutral
+place in the chroot.  The chroot is configured in /etc/schroot/schroot.conf as
+"tarmac-jail" and is run in the schroot with ``schroot -c tarmac-jail
+<script-to-run-in-chroot>``.
+
 CIA.vc Notifier
 ===============
 
