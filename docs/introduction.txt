@@ -63,3 +63,60 @@ like this:
   tree_dir = /var/cache/tarmac
 
 If this directory or tree doesn't exist, Tarmac will go ahead and create it.
+
+
+================
+Built-in Plugins
+================
+
+Tarmac ships with a few built-in plugins available.  They can be enabled by
+setting some config options on the branch's config.  The following are the
+plugins available, and the config options required to set it properly.
+
+Commit Message Formatter
+========================
+
+The Commit Message Formatter allows a user to specify a template for how a
+commit message should appear.  In order to use it, you must set the
+``commit_message_template`` config option on the branch, like so:
+
+  [lp:tarmac]
+  commit_message_template = <commit_message> by <author> review by <reviewer>
+
+The formatter can take a few different items available and re-format the commit
+message.  Among those items are the following:
+
+  - **commit_message** - This is the commit message that is set on the merge
+    proposal itself.
+  - **author** - This is the owner of the source branch.
+  - **reviewer** - This is the person who reviewed the branch.
+
+Command
+=======
+
+The Command plugin takes the merged tree result and runs a command on that
+tree.  If the command fails, then it raises an exception that causes the merge
+to be abandoned, a comment on the merge proposal to be added, and the merge
+proposal set to "Needs Review" (so that Tarmac doesn't try to merge it in the
+next run).  This command can be a script that runs tests, verifies certain
+files aren't changed, a script that verifies a proper build, etc.  In order to
+use the Command plugin, your branch must have a ``verify_command`` option in
+the config, like so:
+
+  [lp:tarmac]
+  verify_command = python setup.py test
+
+In this example, we're using Tarmac's distutils script to run our tests.  If
+the tests fail, then the branch won't be merged, ensuring a pristine trunk.
+
+CIA.vc Notifier
+===============
+
+The CIA.vc Notifier can be configured to notify the CIA.vc service of
+successful merges.  Tarmac has already been configured to work with the CIA.vc
+service and is set up to notify those in the #tarmac IRC channel on Freenode.
+This configuration looks like this:
+
+  [lp:tarmac]
+  cia_project = tarmac
+  cia_server = http://cia.vc
