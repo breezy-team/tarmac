@@ -33,7 +33,6 @@ class TarmacCommand(Command):
 
     def run(self):
         '''Actually run the command.'''
-        raise NotImplementedError
 
     def get_launchpad_object(self, filename=None, staging=False):
         '''Return a Launchpad object for making API requests.'''
