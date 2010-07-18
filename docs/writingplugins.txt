@@ -26,8 +26,7 @@ used.  For instance, in order to register the plugin to be fired before commit,
 you would use the following code:
 
   from tarmac.hooks import tarmac_hooks
-  tarmac_hooks['tarmac_pre_commit'].hook(
-      HelloWorldPlugin(), 'HelloWorld plugin')
+  tarmac_hooks['tarmac_pre_commit'].hook(HelloWorldPlugin(), 'HelloWorld plugin')
 
 
 You can put this into helloworld.py and pop it into
@@ -65,13 +64,10 @@ source
 proposal
   The merge proposal that proposes the source branch for merge into the target.
 
-  An instance of ``tarmac.branch.Branch`` containing details about the target
-  branch.
-
 
 Caveats
 =======
 
-  Since Tarmac is still a young project, the API for plugins is subject to
+Since Tarmac is still a young project, the API for plugins is subject to
 drastic change in the next few versions of Tarmac, but is planned to be stable
 when Tarmac reaches 1.0.
