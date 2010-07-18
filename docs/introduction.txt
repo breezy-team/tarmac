@@ -34,14 +34,14 @@ doesn't exist already).::
 
 This doesn't mean much by itself.  Optionally, we can also specify where to
 write the log (by default, it logs to ~/tarmac.log).  A basic log file setting
-would look like this:
+would look like this::
 
   [Tarmac]
   log_file = /var/log/tarmac.log
 
 Now let's provide some branches for Tarmac to manage.  How about Tarmac's
 development focus first?  Specifying this is REALLY easy.  Now my config file
-will look like this:
+will look like this::
 
   [Tarmac]
   log_file = /var/log/tarmac.log
@@ -54,7 +54,7 @@ merge proposals.  However, this means that Tarmac has to make a new tree of
 lp:tarmac every time it makes a landing run.  This is rather inefficient.  We
 can actually have Tarmac cache a tree, and just update it on every run.  This
 path to the cache tree can be specified by changing the config file to look
-like this:
+like this::
 
   [Tarmac]
   log_file = /var/log/tarmac.log
@@ -78,7 +78,7 @@ Commit Message Formatter
 
 The Commit Message Formatter allows a user to specify a template for how a
 commit message should appear.  In order to use it, you must set the
-``commit_message_template`` config option on the branch, like so:
+``commit_message_template`` config option on the branch, like so::
 
   [lp:tarmac]
   commit_message_template = <commit_message> by <author> review by <reviewer>
@@ -86,10 +86,14 @@ commit message should appear.  In order to use it, you must set the
 The formatter can take a few different items available and re-format the commit
 message.  Among those items are the following:
 
-  - **commit_message** - This is the commit message that is set on the merge
-    proposal itself.
-  - **author** - This is the owner of the source branch.
-  - **reviewer** - This is the person who reviewed the branch.
+**commit_message**
+  This is the commit message that is set on the merge proposal itself.
+
+**author**
+  This is the owner of the source branch.
+
+**reviewer**
+  This is the person who reviewed the branch.
 
 Command
 =======
@@ -101,7 +105,7 @@ proposal set to "Needs Review" (so that Tarmac doesn't try to merge it in the
 next run).  This command can be a script that runs tests, verifies certain
 files aren't changed, a script that verifies a proper build, etc.  In order to
 use the Command plugin, your branch must have a ``verify_command`` option in
-the config, like so:
+the config, like so::
 
   [lp:tarmac]
   verify_command = python setup.py test
@@ -115,7 +119,7 @@ CIA.vc Notifier
 The CIA.vc Notifier can be configured to notify the CIA.vc service of
 successful merges.  Tarmac has already been configured to work with the CIA.vc
 service and is set up to notify those in the #tarmac IRC channel on Freenode.
-This configuration looks like this:
+This configuration looks like this::
 
   [lp:tarmac]
   cia_project = tarmac

@@ -23,10 +23,12 @@ this::
 This is an entirely plausible/valid plugin.  It's worthless, it's true, but
 it's still valid.  The plugin does need to be registered with before it can be
 used.  For instance, in order to register the plugin to be fired before commit,
-you would use the following code:
+you would use the following code::
 
   from tarmac.hooks import tarmac_hooks
-  tarmac_hooks['tarmac_pre_commit'].hook(HelloWorldPlugin(), 'HelloWorld plugin')
+
+  tarmac_hooks['tarmac_pre_commit'].hook(
+      HelloWorldPlugin(), 'HelloWorld plugin')
 
 
 You can put this into helloworld.py and pop it into
@@ -50,18 +52,18 @@ Now when we run the plugin, it will print "Hello World!" before each commit.
 This is a trivial example, but one that demonstrates how it works.  The
 arguments to the plugin are explained below.
 
-command
+**command**
   The tarmac command.  For instance, a ``tarmac land`` call.
 
-target
+**target**
   An instance of ``tarmac.branch.Branch`` containing details about the target
   branch.
 
-source
+**source**
   An instance of ``tarmac.branch.Branch`` containing details about the source
   branch.
 
-proposal
+**proposal**
   The merge proposal that proposes the source branch for merge into the target.
 
 
