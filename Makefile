@@ -15,6 +15,6 @@ docs/introduction.html: build
 doc: docs/introduction.html
 
 clean:
-	rm -rf clean
+	rm -rf build
 
 .PHONY: test test-fail
