@@ -24,7 +24,7 @@ from tarmac.hooks import tarmac_hooks
 from tarmac.plugins import TarmacPlugin
 
 
-class RunTest(TarmacPlugin):
+class Command(TarmacPlugin):
     '''Tarmac plugin for running a test command.
 
     This plugin checks for a config setting specific to the project.  If it
@@ -81,4 +81,4 @@ class RunTest(TarmacPlugin):
         self.proposal.lp_save()
 
 
-tarmac_hooks['tarmac_pre_commit'].hook(RunTest(), 'Test run hook')
+tarmac_hooks['tarmac_pre_commit'].hook(Command(), 'Command plugin')
