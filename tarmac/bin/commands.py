@@ -2,7 +2,6 @@
 import logging
 import os
 import re
-import sys
 
 from bzrlib.commands import Command
 from bzrlib.errors import PointlessMerge
