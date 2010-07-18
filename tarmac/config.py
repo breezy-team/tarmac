@@ -31,12 +31,20 @@ class TarmacConfig(ConfigParser):
 
     def __init__(self):
         DEFAULTS = {
-            'log_file': os.path.join(self.CONFIG_HOME, 'tarmac.log'),
-            'tree_dir': None}
+            'log_file': os.path.join(self.CONFIG_HOME, 'tarmac.log'),}
 
-        ConfigParser.__init__(self, DEFAULTS)
+        ConfigParser.__init__(self)
         self._check_config_dirs()
         self.read(self.CONFIG_FILE)
+
+        if not self.has_section('Tarmac'):
+            self.add_section('Tarmac')
+            self.set('Tarmac', 'log_file', self.DEFAULTS['log_file'])
+            self.save()
+
+
+    def save(self):
+        self.write(open(self.CONFIG_FILE, 'wb'))
 
     @property
     def CONFIG_HOME(self):

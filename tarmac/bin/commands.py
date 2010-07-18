@@ -35,17 +35,14 @@ class TarmacCommand(Command):
         self.logger = logging.getLogger('tarmac')
         self.logger.setLevel(logging.WARNING)
 
-        try:
-            log_file = self.config.get('Tarmac', 'log_file')
-        except NoSectionError:
-            pass
-        else:
-            file_handler = logging.FileHandler(filename=log_file)
-            file_handler.setLevel(logging.WARNING)
-            file_handler.setFormatter(
-                logging.Formatter('%(asctime)s %(levelname)-8s %(message)s',
-                                  '%Y-%m-%d %H:%M:%S'))
-            self.logger.addHandler(file_handler)
+        log_file = self.config.get('Tarmac', 'log_file')
+        file_handler = logging.FileHandler(filename=log_file)
+        file_handler.setLevel(logging.WARNING)
+        file_handler.setFormatter(
+            logging.Formatter('%(asctime)s %(levelname)-8s %(message)s',
+                              '%Y-%m-%d %H:%M:%S'))
+        self.logger.addHandler(file_handler)
+        self.logger.debug('Logging to %(logfile)s' % {'logfile': log_file})
 
     def run(self):
         '''Actually run the command.'''
