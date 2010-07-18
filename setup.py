@@ -32,7 +32,7 @@ setup(
     package_dir={'tarmac': 'tarmac'},
     packages=['tarmac', 'tarmac.bin', 'tarmac.plugins', 'tarmac.tests'],
     scripts=['bin/tarmac'],
-    data_files=[('share/tarmac/', ['webui.py']),
+    data_files=[('share/tarmac/', ['tarmac-web']),
                 ('share/tarmac/templates/', ['templates/index.html']),
                 ],
     long_description='''
