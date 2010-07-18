@@ -18,3 +18,48 @@ What's more, Tarmac supports plugins that can prevent a branch from landing if
 it doesn't meet specific requirements, or perform specific tasks after the
 branch has landed.  This opens up all sorts of branch landing options that can
 happen behind the scenes, while you can safely do more exciting work.
+
+
+Configuration
+=============
+
+Tarmac gets it's configuration data from ``~/.config/tarmac/tarmac.conf`` --
+The configuration is split up by projects.  As an example, Tarmac will
+demonstrate its own config throughout this project.  To start with, the Tarmac
+project should be added to the config (with the file being created if it
+doesn't exist already).::
+
+  [Tarmac]
+  # Configuration for the Tarmac project
+
+This doesn't mean much by itself.  Optionally, we can also specify where to
+write the log (by default, it logs to ~/tarmac.log).  A basic log file setting
+would look like this:
+
+  [Tarmac]
+  log_file = /var/log/tarmac.log
+
+Now let's provide some branches for Tarmac to manage.  How about Tarmac's
+development focus first?  Specifying this is REALLY easy.  Now my config file
+will look like this:
+
+  [Tarmac]
+  log_file = /var/log/tarmac.log
+
+  [lp:tarmac]
+
+That's it!  I specify the branch by it's lp: name, and Tarmac knows that when
+it's instructed to land branches, it should check up on lp:tarmac for approved
+merge proposals.  However, this means that Tarmac has to make a new tree of
+lp:tarmac every time it makes a landing run.  This is rather inefficient.  We
+can actually have Tarmac cache a tree, and just update it on every run.  This
+path to the cache tree can be specified by changing the config file to look
+like this:
+
+  [Tarmac]
+  log_file = /var/log/tarmac.log
+
+  [lp:tarmac]
+  tree_dir = /var/cache/tarmac
+
+If this directory or tree doesn't exist, Tarmac will go ahead and create it.
