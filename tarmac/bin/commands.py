@@ -14,6 +14,7 @@ from tarmac.bin import options
 from tarmac.branch import Branch
 from tarmac.config import TarmacConfig
 from tarmac.hooks import tarmac_hooks
+from tarmac.log import set_up_debug_logging, set_up_logging
 from tarmac.exceptions import BranchHasConflicts, TarmacCommandError
 from tarmac.plugin import load_plugins
 
@@ -29,18 +30,7 @@ class TarmacCommand(Command):
         self.config = TarmacConfig()
         self.registry = registry
 
-        # Set up logging.
         self.logger = logging.getLogger('tarmac')
-        self.logger.setLevel(logging.WARNING)
-
-        log_file = self.config.get('Tarmac', 'log_file')
-        file_handler = logging.FileHandler(filename=log_file)
-        file_handler.setLevel(logging.WARNING)
-        file_handler.setFormatter(
-            logging.Formatter('%(asctime)s %(levelname)-8s %(message)s',
-                              '%Y-%m-%d %H:%M:%S'))
-        self.logger.addHandler(file_handler)
-        self.logger.debug('Logging to %(logfile)s' % {'logfile': log_file})
 
     def run(self):
         '''Actually run the command.'''
@@ -71,12 +61,6 @@ class TarmacCommand(Command):
             launchpad = Launchpad(
                 credentials, SERVICE_ROOT, self.config.CACHE_HOME)
         return launchpad
-
-    def set_debugging(self):
-        stderr_handler = logging.StreamHandler(sys.stderr)
-        stderr_handler.setLevel(logging.DEBUG)
-        self.logger.addHandler(stderr_handler)
-
 
 
 class cmd_authenticate(TarmacCommand):
@@ -216,8 +200,10 @@ class cmd_merge(TarmacCommand):
         return reviewers
 
     def run(self, branch_url=None, launchpad=None, debug=False):
+        set_up_logging()
         if debug:
-            self.set_debugging()
+            set_up_debug_logging()
+            self.logger.debug('Debug logging enabled')
         load_plugins()
 
         self.launchpad = launchpad
