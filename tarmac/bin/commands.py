@@ -144,7 +144,7 @@ class cmd_merge(TarmacCommand):
                             'revision': proposal.reviewed_revid,})
                     target.merge(
                         source,
-                        proposal.reviewed_revid)
+                        str(proposal.reviewed_revid))
 
                 except BranchHasConflicts:
                     subject = (
