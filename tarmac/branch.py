@@ -80,10 +80,11 @@ class Branch(object):
         self.tree.revert()
         self.tree.update()
 
-    def merge(self, branch):
+    def merge(self, branch, revid=None):
         '''Merge from another tarmac.branch.Branch instance.'''
         assert self.tree
-        conflict_list = self.tree.merge_from_branch(branch.bzr_branch)
+        conflict_list = self.tree.merge_from_branch(
+            branch.bzr_branch, to_revision=revid)
         if conflict_list:
             raise BranchHasConflicts
 

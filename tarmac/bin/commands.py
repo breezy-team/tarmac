@@ -138,7 +138,13 @@ class cmd_merge(TarmacCommand):
                     proposal.source_branch, self.config)
 
                 try:
-                    target.merge(source)
+                    self.logger.debug(
+                        'Merging %(source)s at revision %(revision)s' % {
+                            'source': proposal.source_branch.display_name,
+                            'revision': proposal.reviewed_revid,})
+                    target.merge(
+                        source,
+                        proposal.reviewed_revid)
 
                 except BranchHasConflicts:
                     subject = (
