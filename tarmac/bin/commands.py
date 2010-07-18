@@ -168,6 +168,20 @@ class cmd_merge(TarmacCommand):
                         'pointless.' % {
                             'source': proposal.source_branch.display_name,
                             'target': proposal.target_branch.display_name,})
+
+                    subject = (
+                        u"Pointless merge" % {
+                             "source": proposal.source_branch.display_name,
+                             "target": proposal.target_branch.display_name})
+                    comment = (
+                        u'There is no resulting diff between %(source)s '
+                        u'and %(target)s.' % {
+                            "source": proposal.source_branch.display_name,
+                            "target": proposal.target_branch.display_name,
+                            "output": target.conflicts})
+                    proposal.createComment(subject=subject, content=comment)
+                    proposal.setStatus(status=u"Needs review")
+
                     target.cleanup()
                     continue
 
