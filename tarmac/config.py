@@ -39,7 +39,7 @@ class TarmacConfig(ConfigParser):
 
         if not self.has_section('Tarmac'):
             self.add_section('Tarmac')
-            self.set('Tarmac', 'log_file', self.DEFAULTS['log_file'])
+            self.set('Tarmac', 'log_file', DEFAULTS['log_file'])
             self.save()
 
 
