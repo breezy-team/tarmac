@@ -133,7 +133,7 @@ class cmd_merge(TarmacCommand):
         try:
             for proposal in proposals:
 
-                self.logger.info(
+                self.logger.debug(
                     u'Preparing to merge %(source_branch)s' % {
                         'source_branch': proposal.source_branch.bzr_identity})
                 source = Branch.create(
@@ -156,10 +156,20 @@ class cmd_merge(TarmacCommand):
                     proposal.createComment(subject=subject, content=comment)
                     proposal.setStatus(status=u"Needs review")
                     proposal.lp_save()
+                    self.logger.warn(
+                        'Conflicts found while merging %(source)s into '
+                        '%(target)s,' % {
+                            'source': proposal.source_branch.display_name,
+                            'target': proposal.target_branch.display_name,})
                     target.cleanup()
                     continue
 
                 except PointlessMerge:
+                    self.logger.warn(
+                        'Merging %(source)s into $(target)s would be '
+                        'pointless.' % {
+                            'source': proposal.source_branch.display_name,
+                            'target': proposal.target_branch.display_name,})
                     target.cleanup()
                     continue
 
@@ -167,7 +177,7 @@ class cmd_merge(TarmacCommand):
                 merge_url = urlp.sub(
                     'http://launchpad.net/', proposal.self_link)
                 revprops = { 'merge_url' : merge_url }
-                self.logger.info('Firing tarmac_pre_commit hook')
+                self.logger.debug('Firing tarmac_pre_commit hook')
                 tarmac_hooks['tarmac_pre_commit'].fire(
                     self, target, source, proposal)
                 target.commit(proposal.commit_message,
@@ -175,7 +185,7 @@ class cmd_merge(TarmacCommand):
                              authors=source.authors,
                              reviewers=self._get_reviewers(proposal))
 
-                self.logger.info('Firing tarmac_post_commit hook')
+                self.logger.debug('Firing tarmac_post_commit hook')
                 tarmac_hooks['tarmac_post_commit'].fire(
                     self, target, source, proposal)
 
@@ -204,20 +214,27 @@ class cmd_merge(TarmacCommand):
         if debug:
             set_up_debug_logging()
             self.logger.debug('Debug logging enabled')
+        self.logger.debug('Loading plugins')
         load_plugins()
+        self.logger.debug('Plugins loaded')
 
         self.launchpad = launchpad
         if self.launchpad is None:
+            self.logger.debug('Loading launchpad object')
             self.launchpad = self.get_launchpad_object()
+            self.logger.debug('launchpad object loaded')
 
         if branch_url:
+            self.logger.debug(
+                '%(branch_url)s specified as branch_url' % {
+                    'branch_url': branch_url,})
             if not branch_url.startswith('lp:'):
                 raise TarmacCommandError('Branch urls must start with lp:')
             self._do_merges(branch_url)
 
         else:
             for branch in self.config.branches:
-                self.logger.info(
+                self.logger.debug(
                     'Merging approved branches against %(branch)s' % {
                         'branch': branch})
                 self._do_merges(branch)
