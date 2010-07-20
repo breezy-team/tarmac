@@ -32,9 +32,9 @@ setup(
     package_dir={'tarmac': 'tarmac'},
     packages=['tarmac', 'tarmac.bin', 'tarmac.plugins', 'tarmac.tests'],
     scripts=['bin/tarmac'],
-    data_files=[('share/tarmac/', ['tarmac-web']),
-                ('share/tarmac/templates/', ['templates/index.html']),
-                ],
+    #data_files=[('share/tarmac/', ['tarmac-web']),
+    #            ('share/tarmac/templates/', ['templates/index.html']),
+    #            ],
     long_description='''
         Tarmac is a series of scripts to facilitate the landing of Bazaar
         branches in Launchpad (http://edge.launchpad.net).''',
