@@ -34,7 +34,7 @@ class Command(TarmacPlugin):
 
     def run(self, command, target, source, proposal):
         try:
-            self.verify_command = target.config.verify_command
+            self.test_command = target.config.test_command
         except AttributeError:
             return True
 
@@ -42,7 +42,7 @@ class Command(TarmacPlugin):
 
         cwd = os.getcwd()
         os.chdir(target.config.tree_dir)
-        self.logger.debug('Running test command: %s' % self.verify_command)
+        self.logger.debug('Running test command: %s' % self.test_command)
         proc = subprocess.Popen(
             self.test_command,
             shell=True,
