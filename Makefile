@@ -20,4 +20,9 @@ doc: build/docs/introduction.html build/docs/writingplugins.html
 clean:
 	rm -rf build
 
+release:
+	python setup.py sdist
+	cd dist
+	gpg --armor --sign --detach-sig `find . -name "tarmac-*"`
+
 .PHONY: test test-fail
