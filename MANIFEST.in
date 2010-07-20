@@ -1,6 +1,5 @@
 include MANIFEST.in
 include AUTHORS HACKING LICENSE NEWS README
-include Makefile
 recursive-include bin *
 recursive-include docs *
 recursive-include templates *
