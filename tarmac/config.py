@@ -22,6 +22,7 @@ __metaclass__ = type
 
 import os
 from ConfigParser import SafeConfigParser as ConfigParser
+import logging
 
 from tarmac.xdgdirs import xdg_config_home, xdg_cache_home
 
@@ -34,17 +35,23 @@ class TarmacConfig(ConfigParser):
             'log_file': os.path.join(self.CONFIG_HOME, 'tarmac.log'),}
 
         ConfigParser.__init__(self)
+        logger = logging.getLogger('tarmac')
+
         self._check_config_dirs()
         self.read(self.CONFIG_FILE)
 
         if not self.has_section('Tarmac'):
+            logger.warn(
+                'Configuration has no [Tarmac] section.  '
+                'Please create one.')
             self.add_section('Tarmac')
+
+        if not self.has_option('Tarmac', 'log_file'):
+            logger.warn(
+                '[Tarmac] section of configuration does not contain a '
+                'log_file option. If you\'d like to specify a log file, '
+                'please set this option.')
             self.set('Tarmac', 'log_file', DEFAULTS['log_file'])
-            self.save()
-
-
-    def save(self):
-        self.write(open(self.CONFIG_FILE, 'wb'))
 
     @property
     def CONFIG_HOME(self):
