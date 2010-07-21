@@ -2,7 +2,6 @@
 import logging
 import os
 import re
-import sys
 
 from bzrlib.commands import Command
 from bzrlib.errors import PointlessMerge
@@ -14,7 +13,9 @@ from tarmac.bin import options
 from tarmac.branch import Branch
 from tarmac.config import TarmacConfig
 from tarmac.hooks import tarmac_hooks
+from tarmac.log import set_up_debug_logging, set_up_logging
 from tarmac.exceptions import BranchHasConflicts, TarmacCommandError
+from tarmac.plugin import load_plugins
 
 
 class TarmacCommand(Command):
@@ -28,28 +29,12 @@ class TarmacCommand(Command):
         self.config = TarmacConfig()
         self.registry = registry
 
-        # XXX: bzrlib.commands.Command must be masking the logger stuff, since
-        # I can only get logging output if I set up a logger called 'bzr'
-        # instead of 'tarmac'
-        # Set up logging.
-        self.logger = logging.getLogger('bzr')
-
-        stderr_handler = logging.StreamHandler(sys.stderr)
-        stderr_handler.setLevel(logging.DEBUG)
-        self.logger.addHandler(stderr_handler)
-
-        log_file = self.config.get('Tarmac', 'log_file')
-        if log_file:
-            file_handler = logging.FileHandler(filename=log_file)
-            file_handler.setLevel(logging.DEBUG)
-            self.logger.addHandler(file_handler)
+        self.logger = logging.getLogger('tarmac')
 
     def run(self):
         '''Actually run the command.'''
-        raise NotImplementedError
 
-    # XXX: rockstar - DON'T RELEASE with staging as the default!!!!!!
-    def get_launchpad_object(self, filename=None, staging=True):
+    def get_launchpad_object(self, filename=None, staging=False):
         '''Return a Launchpad object for making API requests.'''
         # XXX: rockstar - 2009 Dec 13 - Ideally, we should be using
         # Launchpad.login_with, but currently, it doesn't support the option of
@@ -70,10 +55,7 @@ class TarmacCommand(Command):
             launchpad.credentials.save(file(filename, 'w'))
         else:
             credentials = Credentials()
-            try:
-                credentials.load(open(filename))
-            except Exception, e:
-                raise Exception('Something is wrong at %s' % (filename))
+            credentials.load(open(filename))
             launchpad = Launchpad(
                 credentials, SERVICE_ROOT, self.config.CACHE_HOME)
         return launchpad
@@ -92,13 +74,11 @@ class cmd_authenticate(TarmacCommand):
         options.staging_option,]
 
     def run(self, filename=None, staging=False):
-        # TODO: rockstar - DON'T RELEASE with staging as the default!!!!!!
-        staging = True
         if os.path.exists(self.config.CREDENTIALS):
             self.logger.error('You have already been authenticated.')
         else:
-            launchpad = self.get_launchpad_object(filename=filename,
-                staging=staging)
+            self.get_launchpad_object(filename=filename,
+                                      staging=staging)
 
 
 class cmd_help(TarmacCommand):
@@ -131,7 +111,8 @@ class cmd_merge(TarmacCommand):
 
     aliases = ['land',]
     takes_args = ['branch_url?']
-    takes_options = []
+    takes_options = [
+        options.debug_option]
 
     def _do_merges(self, branch_url):
 
@@ -147,53 +128,87 @@ class cmd_merge(TarmacCommand):
             return
 
         target = Branch.create(lp_branch, self.config, create_tree=True)
-        for proposal in proposals:
+        try:
+            for proposal in proposals:
 
-            self.logger.info(
-                u'Preparing to merge %(source_branch)s' % {
-                    'source_branch': proposal.source_branch.bzr_identity})
-            source = Branch.create(
-                proposal.source_branch, self.config)
+                self.logger.debug(
+                    u'Preparing to merge %(source_branch)s' % {
+                        'source_branch': proposal.source_branch.bzr_identity})
+                source = Branch.create(
+                    proposal.source_branch, self.config)
 
-            try:
-                target.merge(source)
+                try:
+                    self.logger.debug(
+                        'Merging %(source)s at revision %(revision)s' % {
+                            'source': proposal.source_branch.display_name,
+                            'revision': proposal.reviewed_revid,})
+                    target.merge(
+                        source,
+                        str(proposal.reviewed_revid))
 
-            except BranchHasConflicts:
-                subject = (
-                    u"Conflicts merging %(source)s into %(target)s" %
-                    {"source": proposal.source_branch.display_name,
-                     "target": proposal.target_branch.display_name})
-                comment = (
-                    u"Attempt to merge %(source)s into %(target)s failed due "
-                    u"to merge conflicts:\n\n%(output)s" % {
-                        "source": proposal.source_branch.display_name,
-                        "target": proposal.target_branch.display_name,
-                        "output": target.conflicts})
-                proposal.createComment(subject=subject, content=comment)
-                proposal.setStatus(status=u"Needs review")
-                proposal.lp_save()
+                except BranchHasConflicts:
+                    subject = (
+                        u"Conflicts merging %(source)s into %(target)s" % {
+                             "source": proposal.source_branch.display_name,
+                             "target": proposal.target_branch.display_name})
+                    comment = (
+                        u'Attempt to merge %(source)s into %(target)s failed '
+                        u'due to merge conflicts:\n\n%(output)s' % {
+                            "source": proposal.source_branch.display_name,
+                            "target": proposal.target_branch.display_name,
+                            "output": target.conflicts})
+                    proposal.createComment(subject=subject, content=comment)
+                    proposal.setStatus(status=u"Needs review")
+                    proposal.lp_save()
+                    self.logger.warn(
+                        'Conflicts found while merging %(source)s into '
+                        '%(target)s,' % {
+                            'source': proposal.source_branch.display_name,
+                            'target': proposal.target_branch.display_name,})
+                    target.cleanup()
+                    continue
+
+                except PointlessMerge:
+                    self.logger.warn(
+                        'Merging %(source)s into $(target)s would be '
+                        'pointless.' % {
+                            'source': proposal.source_branch.display_name,
+                            'target': proposal.target_branch.display_name,})
+
+                    subject = (
+                        u"Pointless merge" % {
+                             "source": proposal.source_branch.display_name,
+                             "target": proposal.target_branch.display_name})
+                    comment = (
+                        u'There is no resulting diff between %(source)s '
+                        u'and %(target)s.' % {
+                            "source": proposal.source_branch.display_name,
+                            "target": proposal.target_branch.display_name,
+                            "output": target.conflicts})
+                    proposal.createComment(subject=subject, content=comment)
+                    proposal.setStatus(status=u"Needs review")
+
+                    target.cleanup()
+                    continue
+
+                urlp = re.compile('http[s]?://api\.(.*)launchpad\.net/beta/')
+                merge_url = urlp.sub(
+                    'http://launchpad.net/', proposal.self_link)
+                revprops = { 'merge_url' : merge_url }
+                self.logger.debug('Firing tarmac_pre_commit hook')
+                tarmac_hooks['tarmac_pre_commit'].fire(
+                    self, target, source, proposal)
+                target.commit(proposal.commit_message,
+                             revprops=revprops,
+                             authors=source.authors,
+                             reviewers=self._get_reviewers(proposal))
+
+                self.logger.debug('Firing tarmac_post_commit hook')
+                tarmac_hooks['tarmac_post_commit'].fire(
+                    self, target, source, proposal)
+
                 target.cleanup()
-                continue
-
-            except PointlessMerge:
-                target.cleanup()
-                continue
-
-            urlp = re.compile('http[s]?://api\.(.*)launchpad\.net/beta/')
-            merge_url = urlp.sub('http://launchpad.net/', proposal.self_link)
-            revprops = { 'merge_url' : merge_url }
-            self.logger.info('Firing tarmac_pre_commit hook')
-            tarmac_hooks['tarmac_pre_commit'].fire(
-                self, target, source, proposal)
-            target.commit(proposal.commit_message,
-                         revprops=revprops,
-                         authors=source.authors,
-                         reviewers=self._get_reviewers(proposal))
-
-            self.logger.info('Firing tarmac_post_commit hook')
-            tarmac_hooks['tarmac_post_commit'].fire(
-                self, target, source, proposal)
-
+        finally:
             target.cleanup()
 
     def _get_reviewers(self, candidate):
@@ -212,17 +227,32 @@ class cmd_merge(TarmacCommand):
 
         return reviewers
 
-    def run(self, branch_url=None):
+    def run(self, branch_url=None, launchpad=None, debug=False):
+        set_up_logging()
+        if debug:
+            set_up_debug_logging()
+            self.logger.debug('Debug logging enabled')
+        self.logger.debug('Loading plugins')
+        load_plugins()
+        self.logger.debug('Plugins loaded')
 
-        self.launchpad = self.get_launchpad_object()
+        self.launchpad = launchpad
+        if self.launchpad is None:
+            self.logger.debug('Loading launchpad object')
+            self.launchpad = self.get_launchpad_object()
+            self.logger.debug('launchpad object loaded')
+
         if branch_url:
+            self.logger.debug(
+                '%(branch_url)s specified as branch_url' % {
+                    'branch_url': branch_url,})
             if not branch_url.startswith('lp:'):
                 raise TarmacCommandError('Branch urls must start with lp:')
             self._do_merges(branch_url)
 
         else:
             for branch in self.config.branches:
-                self.logger.info(
+                self.logger.debug(
                     'Merging approved branches against %(branch)s' % {
                         'branch': branch})
                 self._do_merges(branch)

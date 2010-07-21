@@ -27,12 +27,15 @@ setup(
     name=u'tarmac',
     version=__version__,
     description=u'Tarmac - The Launchpad Lander',
-    url=u'http://edge.launchpad.net/tarmac',
+    url=u'http://launchpad.net/tarmac',
     license=u'GPLv3',
-    package_dir={
-        'tarmac': 'tarmac'},
-    packages=['tarmac', 'tarmac.plugins'],
-    scripts=['tarmac-script', 'webui.py'],
+    package_dir={'tarmac': 'tarmac'},
+    packages=['tarmac', 'tarmac.bin', 'tarmac.plugins', 'tarmac.tests'],
+    scripts=['bin/tarmac'],
+    #data_files=[('share/tarmac/', ['tarmac-web']),
+    #            ('share/tarmac/templates/', ['templates/index.html']),
+    #            ],
     long_description='''
         Tarmac is a series of scripts to facilitate the landing of Bazaar
-        branches in Launchpad (http://edge.launchpad.net).''',)
+        branches in Launchpad (http://edge.launchpad.net).''',
+    )

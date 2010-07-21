@@ -105,28 +105,28 @@ class TestTarmacConfig(TarmacTestCase):
         '''Ensure that the branch's log file can be read.'''
         config = TarmacConfig()
         self.write_config_file(config)
+        log_file = os.path.join(os.getcwd(), 'tarmac.log')
         self.assertEqual(
             config.get('lp:~tarmac/tarmac/tarmac', 'log_file'),
-            '/var/log/tarmac/tarmac.log')
+            log_file)
 
     def test_section_log_file_NOT_SET(self):
         '''Get the default log file.'''
         config = TarmacConfig()
-        self.CONFIG_TEMPLATE = '''
-[lp:~tarmac/tarmac/tarmac]
-'''
+        log_file = os.path.join(config.CONFIG_HOME, 'tarmac.log')
         self.write_config_file(config)
         self.assertEqual(
-            config.get('lp:~tarmac/tarmac/tarmac', 'log_file'),
-            os.path.abspath('.'))
+            config.get('lp:~tarmac/tarmac/tarmac2', 'log_file'),
+            log_file)
 
     def test_section_tree_dir(self):
         '''Ensure that the branch's tree cache can be read.'''
         config = TarmacConfig()
         self.write_config_file(config)
+        tree_dir = os.path.join(os.getcwd(), 'trunk')
         self.assertEqual(
             config.get('lp:~tarmac/tarmac/tarmac', 'tree_dir'),
-            '/var/cache/tarmac/tarmac')
+            tree_dir)
 
     def test_section_tree_dir_NOT_SET(self):
         '''Ensure that the branch's tree cache can be read.'''

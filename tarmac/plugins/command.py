@@ -18,13 +18,13 @@
 import os
 import subprocess
 
-from bzrlib.errors import HookFailed
+from bzrlib.errors import TipChangeRejected
 
 from tarmac.hooks import tarmac_hooks
 from tarmac.plugins import TarmacPlugin
 
 
-class RunTest(TarmacPlugin):
+class Command(TarmacPlugin):
     '''Tarmac plugin for running a test command.
 
     This plugin checks for a config setting specific to the project.  If it
@@ -32,34 +32,31 @@ class RunTest(TarmacPlugin):
     do_failed method, and on success, continues.
     '''
 
-    def __call__(self, command, target, source, proposal):
-
-        if target.config.test_command:
-            self.test_command = target.config.test_command
-        else:
+    def run(self, command, target, source, proposal):
+        try:
+            self.verify_command = target.config.verify_command
+        except AttributeError:
             return True
 
         self.proposal = proposal
 
         cwd = os.getcwd()
-        os.chdir(target.tree_dir)
-        print 'Running test command: %s' % self.test_command
+        os.chdir(target.config.tree_dir)
+        self.logger.debug('Running test command: %s' % self.verify_command)
         proc = subprocess.Popen(
             self.test_command,
             shell=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE)
+        self.logger.debug('Completed test command: %s' % self.test_command)
         stdout_value, stderr_value = proc.communicate()
         return_code = proc.wait()
         os.chdir(cwd)
 
         if return_code != 0:
             self.do_failed(stdout_value, stderr_value)
-            #XXX matsubara: this line will always fail with
-            # IndexError: string index out of range. HookFailed expects a
-            # a (exc_type, exc_value, exc_tb) object. Maybe use
-            # sys.exc_info() here? See bug 424466
-            raise HookFailed('test', 'runtest', '')
+            raise TipChangeRejected(
+                'Test command "%s" failed' % self.test_command)
 
     def do_failed(self, stdout_value, stderr_value):
         '''Perform failure tests.
@@ -84,4 +81,4 @@ class RunTest(TarmacPlugin):
         self.proposal.lp_save()
 
 
-tarmac_hooks['tarmac_pre_commit'].hook(RunTest(), 'Test run hook')
+tarmac_hooks['tarmac_pre_commit'].hook(Command(), 'Command plugin')

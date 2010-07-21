@@ -32,13 +32,13 @@ from tarmac import __version__ as version_string
 class CIAVC(TarmacPlugin):
     '''Tarmac plugin for notifying CIA.vc of new commits.'''
 
-    def __call__(self, command, target, source, proposal):
+    def run(self, command, target, source, proposal):
     # pylint: disable-msg=W0613,W0104,C0324
 
-        if (command.config.cia_project and command.config.cia_server):
-            cia_project = command.config.cia_project
-            cia_server = command.config.cia_server
-        else:
+        try:
+            cia_project = target.config.cia_project
+            cia_server = target.config.cia_server
+        except AttributeError:
             return
 
         revno = target.bzr_branch.revno()

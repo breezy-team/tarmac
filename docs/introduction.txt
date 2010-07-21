@@ -1,0 +1,148 @@
+==================
+Introducing Tarmac
+==================
+
+Merging branches is boring.  Really, it is.  After humans have looked over a
+merge, it should really just magically be merged.  That's what Tarmac does, and
+it does it well.
+
+How it works
+============
+
+Tarmac uses Launchpad to manage merging branches.  It does this by checking
+over all the branches configured to have Tarmac manage them for merge proposals
+that are approved and have commit messages set.  It then merges those branches,
+one by one, and automatically commits them.
+
+What's more, Tarmac supports plugins that can prevent a branch from landing if
+it doesn't meet specific requirements, or perform specific tasks after the
+branch has landed.  This opens up all sorts of branch landing options that can
+happen behind the scenes, while you can safely do more exciting work.
+
+
+Configuration
+=============
+
+Tarmac gets it's configuration data from ``~/.config/tarmac/tarmac.conf`` --
+The configuration is split up by projects.  As an example, Tarmac will
+demonstrate its own config throughout this project.  To start with, the Tarmac
+project should be added to the config (with the file being created if it
+doesn't exist already).::
+
+  [Tarmac]
+  # Configuration for the Tarmac project
+
+This doesn't mean much by itself.  Optionally, we can also specify where to
+write the log (by default, it logs to ~/tarmac.log).  A basic log file setting
+would look like this::
+
+  [Tarmac]
+  log_file = /var/log/tarmac.log
+
+Now let's provide some branches for Tarmac to manage.  How about Tarmac's
+development focus first?  Specifying this is REALLY easy.  Now my config file
+will look like this::
+
+  [Tarmac]
+  log_file = /var/log/tarmac.log
+
+  [lp:tarmac]
+
+That's it!  I specify the branch by it's lp: name, and Tarmac knows that when
+it's instructed to land branches, it should check up on lp:tarmac for approved
+merge proposals.  However, this means that Tarmac has to make a new tree of
+lp:tarmac every time it makes a landing run.  This is rather inefficient.  We
+can actually have Tarmac cache a tree, and just update it on every run.  This
+path to the cache tree can be specified by changing the config file to look
+like this::
+
+  [Tarmac]
+  log_file = /var/log/tarmac.log
+
+  [lp:tarmac]
+  tree_dir = /var/cache/tarmac
+
+If this directory or tree doesn't exist, Tarmac will go ahead and create it.
+
+
+================
+Built-in Plugins
+================
+
+Tarmac ships with a few built-in plugins available.  They can be enabled by
+setting some config options on the branch's config.  The following are the
+plugins available, and the config options required to set it properly.
+
+Commit Message Formatter
+========================
+
+The Commit Message Formatter allows a user to specify a template for how a
+commit message should appear.  In order to use it, you must set the
+``commit_message_template`` config option on the branch, like so::
+
+  [lp:tarmac]
+  commit_message_template = <commit_message> by <author> review by <reviewer>
+
+The formatter can take a few different items available and re-format the commit
+message.  Among those items are the following:
+
+**commit_message**
+  This is the commit message that is set on the merge proposal itself.
+
+**author**
+  This is the owner of the source branch.
+
+**reviewer**
+  This is the person who reviewed the branch.
+
+Command
+=======
+
+The Command plugin takes the merged tree result and runs a command on that
+tree.  If the command fails, then it raises an exception that causes the merge
+to be abandoned, a comment on the merge proposal to be added, and the merge
+proposal set to "Needs Review" (so that Tarmac doesn't try to merge it in the
+next run).  This command can be a script that runs tests, verifies certain
+files aren't changed, a script that verifies a proper build, etc.  In order to
+use the Command plugin, your branch must have a ``verify_command`` option in
+the config, like so::
+
+  [lp:tarmac]
+  verify_command = python setup.py test
+
+In this example, we're using Tarmac's distutils script to run our tests.  If
+the tests fail, then the branch won't be merged, ensuring a pristine trunk.
+
+**Important note:** When running commands like this, one must stop and think
+about the potential of merging in questionable code that may be executed by
+your command.  This means that a malicious user could execute code on the
+tarmac machine that could read files on your system.  This is generally bad.
+Okay, well, more than generally, it's quite specifically bad.
+
+What the instance specifically does is use ``schroot`` to run the command
+inside a chrooted jail.  It is configured to provide the tree in a neutral
+place in the chroot.  The chroot is configured in /etc/schroot/schroot.conf as
+"tarmac-jail" and is run in the schroot with ``schroot -c tarmac-jail
+<script-to-run-in-chroot>``.
+
+CIA.vc Notifier
+===============
+
+The CIA.vc Notifier can be configured to notify the CIA.vc service of
+successful merges.  Tarmac has already been configured to work with the CIA.vc
+service and is set up to notify those in the #tarmac IRC channel on Freenode.
+This configuration looks like this::
+
+  [lp:tarmac]
+  cia_project = tarmac
+  cia_server = http://cia.vc
+
+
+========================
+Installing other plugins
+========================
+
+Tarmac's plugin system is very clever, because it's based on Bazaar's plugin
+system.  In order to install extra plugins, place them
+``$HOME/.config/tarmac/plugins``.  They will then be available for import in
+python at tarmac.plugins.

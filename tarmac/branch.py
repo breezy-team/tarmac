@@ -20,6 +20,7 @@
 # along with Tarmac.  If not, see <http://www.gnu.org/licenses/>.
 
 '''Tarmac branch tools.'''
+import logging
 import os
 import tempfile
 
@@ -40,6 +41,8 @@ class Branch(object):
         else:
             self.config = None
 
+        self.logger = logging.getLogger('tarmac')
+
     @classmethod
     def create(cls, lp_branch, config, create_tree=False):
         if create_tree:
@@ -52,14 +55,21 @@ class Branch(object):
 
     def create_tree(self):
         '''Create the dir and working tree.'''
-        if self.config.tree_dir:
+        try:
+            self.logger.debug(
+                'Using tree in %(tree_dir)s' % {
+                    'tree_dir': self.config.tree_dir})
             if os.path.exists(self.config.tree_dir):
                 self.tree = WorkingTree.open(self.config.tree_dir)
             else:
+                self.logger.debug('Tree does not exist.  Creating dir')
                 self.tree = self.bzr_branch.create_checkout(
                     self.config.tree_dir)
-        else:
+        except AttributeError:
             tree_dir = tempfile.mkdtemp()
+            self.logger.debug(
+                'Using temp dir at %(tree_dir)s' % {
+                    'tree_dir': tree_dir})
             self.tree = self.bzr_branch.create_checkout(tree_dir)
 
         self.cleanup()
@@ -70,10 +80,11 @@ class Branch(object):
         self.tree.revert()
         self.tree.update()
 
-    def merge(self, branch):
+    def merge(self, branch, revid=None):
         '''Merge from another tarmac.branch.Branch instance.'''
         assert self.tree
-        conflict_list = self.tree.merge_from_branch(branch.bzr_branch)
+        conflict_list = self.tree.merge_from_branch(
+            branch.bzr_branch, to_revision=revid)
         if conflict_list:
             raise BranchHasConflicts
 
