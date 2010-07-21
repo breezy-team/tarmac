@@ -47,7 +47,6 @@ class TestCommand(TarmacTestCase):
     def test_run(self):
         registry = CommandRegistry()
         command = commands.TarmacCommand(registry)
-        self.assertRaises(NotImplementedError, command.run)
 
 
 class TestAuthCommand(TarmacTestCase):
@@ -73,20 +72,15 @@ class TestAuthCommand(TarmacTestCase):
 
     def test_run_already_authenticated(self):
         '''If the user has already been authenticated, don't try again.'''
-        tmp_stderr = StringIO()
-        old_stderr = sys.stderr
-        sys.stderr = tmp_stderr
-
         registry = CommandRegistry()
         registry.register_command('authenticate', commands.cmd_authenticate)
         command = registry._get_command(commands.cmd_authenticate,
                                         'authenticate')
+        def fail_if_get_lp_object(*args, **kwargs):
+            '''Fail if get_launchpad_object is called here.'''
+            raise Exception('Not already authenticated.')
+        command.get_launchpad_object = fail_if_get_lp_object
         command.run()
-        self.assertEqual(
-            tmp_stderr.getvalue(),
-            'You have already been authenticated.\n')
-
-        sys.stderr = old_stderr
 
 
 class TestHelpCommand(TarmacTestCase):

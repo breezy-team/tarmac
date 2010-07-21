@@ -103,3 +103,10 @@ access_secret = secret
         f.reset()
         config.readfp(f)
         f.close()
+        try:
+            os.makedirs(os.path.dirname(config.get('Tarmac', 'log_file')))
+        except OSError, e:
+            if e.errno == 17:
+                return
+            raise e
+
