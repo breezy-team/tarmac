@@ -227,7 +227,7 @@ class cmd_merge(TarmacCommand):
 
         return reviewers
 
-    def run(self, branch_url=None, launchpad=None, debug=False):
+    def run(self, branch_url=None, debug=False, launchpad=None):
         set_up_logging()
         if debug:
             set_up_debug_logging()
