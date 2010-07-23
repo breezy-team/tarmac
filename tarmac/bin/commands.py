@@ -1,4 +1,5 @@
 '''Command handling for Tarmac.'''
+import httplib2
 import logging
 import os
 import re
@@ -232,6 +233,7 @@ class cmd_merge(TarmacCommand):
         if debug:
             set_up_debug_logging()
             self.logger.debug('Debug logging enabled')
+            httplib2.debuglevel = 1
         self.logger.debug('Loading plugins')
         load_plugins()
         self.logger.debug('Plugins loaded')
