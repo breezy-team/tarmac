@@ -64,7 +64,7 @@ class Branch(object):
             else:
                 self.logger.debug('Tree does not exist.  Creating dir')
                 self.tree = self.bzr_branch.create_checkout(
-                    self.config.tree_dir)
+                    self.config.tree_dir, lightweight=True)
         except AttributeError:
             tree_dir = tempfile.mkdtemp()
             self.logger.debug(
