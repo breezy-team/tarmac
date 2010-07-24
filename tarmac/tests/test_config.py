@@ -1,5 +1,6 @@
 '''Tests for tarmac.config'''
 import os
+import ConfigParser
 
 from tarmac.config import TarmacConfig
 from tarmac.tests import TarmacTestCase
@@ -115,9 +116,10 @@ class TestTarmacConfig(TarmacTestCase):
         config = TarmacConfig()
         log_file = os.path.join(config.CONFIG_HOME, 'tarmac.log')
         self.write_config_file(config)
-        self.assertEqual(
-            config.get('lp:~tarmac/tarmac/tarmac2', 'log_file'),
-            log_file)
+        self.assertRaises(
+            ConfigParser.NoOptionError,
+            config.get,
+            'lp:~tarmac/tarmac/tarmac2', 'log_file')
 
     def test_section_tree_dir(self):
         '''Ensure that the branch's tree cache can be read.'''
@@ -135,6 +137,7 @@ class TestTarmacConfig(TarmacTestCase):
 [lp:~tarmac/tarmac/tarmac]
 '''
         self.write_config_file(config)
-        self.assertEqual(
-            config.get('lp:~tarmac/tarmac/tarmac', 'tree_dir'),
-            '')
+        self.assertRaises(
+            ConfigParser.NoOptionError,
+            config.get,
+            'lp:~tarmac/tarmac/tarmac', 'tree_dir')

@@ -30,6 +30,7 @@ class TarmacCommand(Command):
         self.config = TarmacConfig()
         self.registry = registry
 
+        set_up_logging()
         self.logger = logging.getLogger('tarmac')
 
     def run(self):
@@ -229,7 +230,6 @@ class cmd_merge(TarmacCommand):
         return reviewers
 
     def run(self, branch_url=None, debug=False, launchpad=None):
-        set_up_logging()
         if debug:
             set_up_debug_logging()
             self.logger.debug('Debug logging enabled')
