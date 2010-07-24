@@ -57,6 +57,9 @@ access_secret = secret
         os.environ['TARMAC_CREDENTIALS'] = os.path.join(
             self.tempdir, 'credentials')
 
+        # Create self.tempdir; it is removed in tearDown().
+        os.makedirs(self.tempdir)
+
         if self.NEEDS_SAMPLE_DATA:
             config = TarmacConfig()
             self.write_config_file(config)
