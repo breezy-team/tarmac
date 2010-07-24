@@ -20,13 +20,15 @@ This code is derived from Jelmer Vernooij's CIA script for Bazaar that is found
 at http://samba.org/~jelmer/bzr/cia_bzr.py and modified to fit within the needs
 of Tarmac.
 '''
+from bzrlib import lazy_import
+lazy_import(globals(), '''
+    import xmlrpclib
+    from xml.sax import saxutils
 
-import xmlrpclib
-from xml.sax import saxutils
-
-from tarmac.hooks import tarmac_hooks
-from tarmac.plugins import TarmacPlugin
-from tarmac import __version__ as version_string
+    from tarmac.hooks import tarmac_hooks
+    from tarmac.plugins import TarmacPlugin
+    from tarmac import __version__ as version_string
+    ''')
 
 
 class CIAVC(TarmacPlugin):
