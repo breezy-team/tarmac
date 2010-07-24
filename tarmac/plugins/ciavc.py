@@ -20,7 +20,7 @@ This code is derived from Jelmer Vernooij's CIA script for Bazaar that is found
 at http://samba.org/~jelmer/bzr/cia_bzr.py and modified to fit within the needs
 of Tarmac.
 '''
-from bzrlib import lazy_import
+from bzrlib.lazy_import import lazy_import
 lazy_import(globals(), '''
     import xmlrpclib
     from xml.sax import saxutils
