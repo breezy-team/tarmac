@@ -36,7 +36,7 @@ class Command(TarmacPlugin):
 
     def run(self, command, target, source, proposal):
         try:
-            self.test_command = target.config.test_command
+            self.verify_command = target.config.verify_command
         except AttributeError:
             return True
 
@@ -44,13 +44,13 @@ class Command(TarmacPlugin):
 
         cwd = os.getcwd()
         os.chdir(target.config.tree_dir)
-        self.logger.debug('Running test command: %s' % self.test_command)
+        self.logger.debug('Running test command: %s' % self.verify_command)
         proc = subprocess.Popen(
-            self.test_command,
+            self.verify_command,
             shell=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE)
-        self.logger.debug('Completed test command: %s' % self.test_command)
+        self.logger.debug('Completed test command: %s' % self.verify_command)
         stdout_value, stderr_value = proc.communicate()
         return_code = proc.wait()
         os.chdir(cwd)
@@ -58,7 +58,7 @@ class Command(TarmacPlugin):
         if return_code != 0:
             self.do_failed(stdout_value, stderr_value)
             raise TipChangeRejected(
-                'Test command "%s" failed' % self.test_command)
+                'Test command "%s" failed' % self.verify_command)
 
     def do_failed(self, stdout_value, stderr_value):
         '''Perform failure tests.
