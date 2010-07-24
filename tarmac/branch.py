@@ -78,6 +78,9 @@ class Branch(object):
         '''Remove the working tree from the temp dir.'''
         assert self.tree
         self.tree.revert()
+        for unknown in self.tree.unknowns():
+            os.remove(unknown)
+
         self.tree.update()
 
     def merge(self, branch, revid=None):
