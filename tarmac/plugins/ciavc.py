@@ -25,10 +25,11 @@ lazy_import(globals(), '''
     import xmlrpclib
     from xml.sax import saxutils
 
-    from tarmac.hooks import tarmac_hooks
-    from tarmac.plugins import TarmacPlugin
     from tarmac import __version__ as version_string
     ''')
+
+from tarmac.hooks import tarmac_hooks
+from tarmac.plugins import TarmacPlugin
 
 
 class CIAVC(TarmacPlugin):

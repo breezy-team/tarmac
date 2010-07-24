@@ -21,11 +21,10 @@ lazy_import(globals(), '''
     import subprocess
 
     from bzrlib.errors import TipChangeRejected
-
-    from tarmac.hooks import tarmac_hooks
-    from tarmac.plugins import TarmacPlugin
     ''')
 
+from tarmac.hooks import tarmac_hooks
+from tarmac.plugins import TarmacPlugin
 
 class Command(TarmacPlugin):
     '''Tarmac plugin for running a test command.
