@@ -15,13 +15,16 @@
 # along with Tarmac.  If not, see <http://www.gnu.org/licenses/>.
 
 '''Tarmac plugin for running tests pre-commit.'''
-import os
-import subprocess
+from bzrlib.lazy_import import lazy_import
+lazy_import(globals(), '''
+    import os
+    import subprocess
 
-from bzrlib.errors import TipChangeRejected
+    from bzrlib.errors import TipChangeRejected
 
-from tarmac.hooks import tarmac_hooks
-from tarmac.plugins import TarmacPlugin
+    from tarmac.hooks import tarmac_hooks
+    from tarmac.plugins import TarmacPlugin
+    ''')
 
 
 class Command(TarmacPlugin):
