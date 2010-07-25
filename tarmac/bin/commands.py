@@ -130,6 +130,11 @@ class cmd_merge(TarmacCommand):
             return
 
         target = Branch.create(lp_branch, self.config, create_tree=True)
+
+        self.logger.debug('Firing tarmac_pre_merge hook')
+        tarmac_hooks['tarmac_pre_merge'].fire(
+            self, target)
+
         try:
             for proposal in proposals:
 
@@ -210,6 +215,10 @@ class cmd_merge(TarmacCommand):
                     self, target, source, proposal)
 
                 target.cleanup()
+        else:
+            self.logger.debug('Firing tarmac_post_merge hook')
+            tarmac_hooks['tarmac_post_merge'].fire(
+                self, target)
         finally:
             target.cleanup()
 

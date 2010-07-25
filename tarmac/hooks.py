@@ -42,11 +42,22 @@ class TarmacHookRegistry(hooks.Hooks):
         self.create_hook(TarmacHookPoint('tarmac_pre_commit',
             'Called right after Tarmac checks out and merges in a new '
             'branch, but before committing.',
-            (1, 14, 0), False))
+            (0, 2), False))
 
         self.create_hook(TarmacHookPoint('tarmac_post_commit',
             'Called right after Tarmac commits the merged revision',
-            (1, 14, 0), False))
+            (0, 2), False))
+
+        self.create_hook(TarmacHookPoint('tarmac_pre_merge',
+            'Called right before tarmac begins attempting to merge '
+            'approved branches into the target branch.',
+            (0, 3, 3), False))
+
+        self.create_hook(TarmacHookPoint('tarmac_post_merge',
+            'Called right after Tarmac finishes merging approved '
+            'branches into the target branch.',
+            (0, 3, 3), False))
+
 
 
 tarmac_hooks = TarmacHookRegistry()
