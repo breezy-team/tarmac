@@ -78,8 +78,11 @@ class Branch(object):
         '''Remove the working tree from the temp dir.'''
         assert self.tree
         self.tree.revert()
-        for unknown in self.tree.unknowns():
-            os.remove(self.tree.abspath(unknown))
+        for unknown in [self.tree.abspath(f) for f in self.tree.unknowns()]:
+            if os.path.isdir(unknown):
+                os.removedirs(unknown) 
+            else:
+                os.remove(unknown)
 
         self.tree.update()
 
