@@ -79,7 +79,7 @@ class Branch(object):
         assert self.tree
         self.tree.revert()
         for unknown in self.tree.unknowns():
-            os.remove(unknown)
+            os.remove(self.tree.abspath(unknown))
 
         self.tree.update()
 
