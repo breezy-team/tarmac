@@ -22,6 +22,7 @@
 '''Tarmac branch tools.'''
 import logging
 import os
+import shutil
 import tempfile
 
 from bzrlib import branch as bzr_branch
@@ -80,7 +81,7 @@ class Branch(object):
         self.tree.revert()
         for unknown in [self.tree.abspath(f) for f in self.tree.unknowns()]:
             if os.path.isdir(unknown):
-                os.removedirs(unknown) 
+                shutil.rmtree(unknown) 
             else:
                 os.remove(unknown)
 
