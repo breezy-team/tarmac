@@ -215,6 +215,10 @@ class cmd_merge(TarmacCommand):
                     self, target, source, proposal)
 
                 target.cleanup()
+        # This except is here because we need the else and can't have it
+        # without an except as well.
+        except Exception, e:
+            raise e
         else:
             self.logger.debug('Firing tarmac_post_merge hook')
             tarmac_hooks['tarmac_post_merge'].fire(
