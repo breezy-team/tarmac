@@ -81,7 +81,7 @@ class Branch(object):
         self.tree.revert()
         for unknown in [self.tree.abspath(f) for f in self.tree.unknowns()]:
             if os.path.isdir(unknown):
-                shutil.rmtree(unknown) 
+                shutil.rmtree(unknown)
             else:
                 os.remove(unknown)
 

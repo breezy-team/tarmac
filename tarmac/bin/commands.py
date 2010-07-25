@@ -114,6 +114,7 @@ class cmd_merge(TarmacCommand):
     aliases = ['land',]
     takes_args = ['branch_url?']
     takes_options = [
+        options.http_debug_option,
         options.debug_option]
 
     def _do_merges(self, branch_url):
@@ -242,11 +243,14 @@ class cmd_merge(TarmacCommand):
 
         return reviewers
 
-    def run(self, branch_url=None, debug=False, launchpad=None):
+    def run(self, branch_url=None, debug=False, http_debug=False,
+            launchpad=None):
         if debug:
             set_up_debug_logging()
             self.logger.debug('Debug logging enabled')
+        if http_debug:
             httplib2.debuglevel = 1
+            self.logger.debug('HTTP debugging enabled.')
         self.logger.debug('Loading plugins')
         load_plugins()
         self.logger.debug('Plugins loaded')
