@@ -178,7 +178,7 @@ class cmd_merge(TarmacCommand):
 
                 except PointlessMerge:
                     self.logger.warn(
-                        'Merging %(source)s into $(target)s would be '
+                        'Merging %(source)s into %(target)s would be '
                         'pointless.' % {
                             'source': proposal.source_branch.display_name,
                             'target': proposal.target_branch.display_name,})
