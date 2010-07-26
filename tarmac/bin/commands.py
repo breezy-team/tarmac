@@ -191,10 +191,10 @@ class cmd_merge(TarmacCommand):
                         u'There is no resulting diff between %(source)s '
                         u'and %(target)s.' % {
                             "source": proposal.source_branch.display_name,
-                            "target": proposal.target_branch.display_name,
-                            "output": target.conflicts})
+                            "target": proposal.target_branch.display_name,})
                     proposal.createComment(subject=subject, content=comment)
                     proposal.setStatus(status=u"Needs review")
+                    proposal.lp_save()
 
                     target.cleanup()
                     continue
@@ -216,6 +216,12 @@ class cmd_merge(TarmacCommand):
                     self, target, source, proposal)
 
                 target.cleanup()
+
+                # Set the status to Merged, now.
+                # LP rescan be quite slow at times, so do it asap.
+                proposal.setStatus(status=u'Merged')
+                proposal.lp_save()
+
         # This except is here because we need the else and can't have it
         # without an except as well.
         except Exception, e:
