@@ -38,7 +38,15 @@ class Command(TarmacPlugin):
         try:
             self.verify_command = target.config.verify_command
         except AttributeError:
-            return True
+            # This can be killed two versions after 0.4, whatever version that
+            # is.
+            try:
+                self.verify_command = target.config.test_command
+                self.logger.warn(
+                    'test_command config setting is deprecated. '
+                    'Please use verify_command instead.')
+            except AttributeError:
+                return
 
         self.proposal = proposal
 
