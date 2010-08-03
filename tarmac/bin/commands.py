@@ -217,11 +217,6 @@ class cmd_merge(TarmacCommand):
 
                 target.cleanup()
 
-                # Set the status to Merged, now.
-                # LP rescan be quite slow at times, so do it asap.
-                proposal.setStatus(status=u'Merged')
-                proposal.lp_save()
-
         # This except is here because we need the else and can't have it
         # without an except as well.
         except Exception, e:
