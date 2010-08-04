@@ -5,7 +5,7 @@ import os
 import re
 
 from bzrlib.commands import Command
-from bzrlib.errors import PointlessMerge
+from bzrlib.errors import PointlessMerge, TipChangeRejected
 from bzrlib.help import help_commands
 from launchpadlib.launchpad import (Credentials, Launchpad, EDGE_SERVICE_ROOT,
     STAGING_SERVICE_ROOT)
@@ -190,7 +190,7 @@ class cmd_merge(TarmacCommand):
                                 "source": proposal.source_branch.display_name,
                                 "target": proposal.target_branch.display_name,})
                     elif isinstance(TipChangeRejected, failure):
-                        comemnt = failure.msg
+                        comment = failure.msg
                     elif isinstance(UnapprovedChanges, failure):
                         self.logger.warn(
                             u'Unapproved chagnes to %(source) were made '
