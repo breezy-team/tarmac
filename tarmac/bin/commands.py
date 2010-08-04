@@ -15,7 +15,8 @@ from tarmac.branch import Branch
 from tarmac.config import TarmacConfig
 from tarmac.hooks import tarmac_hooks
 from tarmac.log import set_up_debug_logging, set_up_logging
-from tarmac.exceptions import BranchHasConflicts, TarmacCommandError
+from tarmac.exceptions import (BranchHasConflicts, TarmacCommandError,
+                               UnapprovedChanges)
 from tarmac.plugin import load_plugins
 
 
@@ -146,56 +147,71 @@ class cmd_merge(TarmacCommand):
                     proposal.source_branch, self.config)
 
                 try:
+                    approved = proposal.reviewed_revid
+                    tip = proposal.source_branch.revision_count
+                    if tip > approved:
+                        raise UnapprovedChanges(
+                            'Unapproved changes to branch after approval.')
+
                     self.logger.debug(
                         'Merging %(source)s at revision %(revision)s' % {
                             'source': proposal.source_branch.display_name,
                             'revision': proposal.reviewed_revid,})
+
                     target.merge(
                         source,
                         str(proposal.reviewed_revid))
 
-                except BranchHasConflicts:
-                    subject = (
-                        u"Conflicts merging %(source)s into %(target)s" % {
-                             "source": proposal.source_branch.display_name,
-                             "target": proposal.target_branch.display_name})
-                    comment = (
-                        u'Attempt to merge %(source)s into %(target)s failed '
-                        u'due to merge conflicts:\n\n%(output)s' % {
-                            "source": proposal.source_branch.display_name,
-                            "target": proposal.target_branch.display_name,
-                            "output": target.conflicts})
+                except Exception, failure:
+                    subject = u'Re: [Merge] %(source)s into %(target)s' % {
+                        "source": proposal.source_branch.display_name,
+                        "target": proposal.target_branch.display_name,}
+                    comment = None
+                    if isinstance(BranchHasConflicts, failure):
+                        self.logger.warn(
+                            u'Conflicts merging %(source)s into %(target)s' % {
+                                "source": proposal.source_branch.display_name,
+                                "target": proposal.target_branch.display_name})
+                        comment = (
+                            u'Attempt to merge %(source)s into %(target)s '
+                            u'failed due to merge conflicts:\n\n%(output)s' % {
+                                "source": proposal.source_branch.display_name,
+                                "target": proposal.target_branch.display_name,
+                                "output": target.conflicts})
+                    elif isinstance(PointlessMerge, failure):
+                        self.logger.warn(
+                            'Merging %(source)s into %(target)s would be '
+                            'pointless.' % {
+                                'source': proposal.source_branch.display_name,
+                                'target': proposal.target_branch.display_name,})
+                        comment = (
+                            u'There is no resulting diff between %(source)s '
+                            u'and %(target)s.' % {
+                                "source": proposal.source_branch.display_name,
+                                "target": proposal.target_branch.display_name,})
+                    elif isinstance(TipChangeRejected, failure):
+                        comemnt = failure.msg
+                    elif isinstance(UnapprovedChanges, failure):
+                        self.logger.warn(
+                            u'Unapproved chagnes to %(source) were made '
+                            u'after approval for merge into %(target).' % {
+                                "source": proposal.source_branch.display_name,
+                                "target": proposal.target_branch.display_name,})
+                        comment = (
+                            u'There are additional revisions which have not '
+                            u'been approved in review. Please seek review and '
+                            u'approval of these revisions as well.')
+                    else:
+                        raise failure
+
                     proposal.createComment(subject=subject, content=comment)
-                    proposal.setStatus(status=u"Needs review")
+                    proposal.setStatus(status=u'Needs review')
                     proposal.lp_save()
                     self.logger.warn(
                         'Conflicts found while merging %(source)s into '
                         '%(target)s,' % {
                             'source': proposal.source_branch.display_name,
                             'target': proposal.target_branch.display_name,})
-                    target.cleanup()
-                    continue
-
-                except PointlessMerge:
-                    self.logger.warn(
-                        'Merging %(source)s into %(target)s would be '
-                        'pointless.' % {
-                            'source': proposal.source_branch.display_name,
-                            'target': proposal.target_branch.display_name,})
-
-                    subject = (
-                        u"Pointless merge" % {
-                             "source": proposal.source_branch.display_name,
-                             "target": proposal.target_branch.display_name})
-                    comment = (
-                        u'There is no resulting diff between %(source)s '
-                        u'and %(target)s.' % {
-                            "source": proposal.source_branch.display_name,
-                            "target": proposal.target_branch.display_name,})
-                    proposal.createComment(subject=subject, content=comment)
-                    proposal.setStatus(status=u"Needs review")
-                    proposal.lp_save()
-
                     target.cleanup()
                     continue
 
