@@ -65,8 +65,6 @@ class Command(TarmacPlugin):
 
         if return_code != 0:
             self.do_failed(stdout_value, stderr_value)
-            raise TipChangeRejected(
-                'Test command "%s" failed' % self.verify_command)
 
     def do_failed(self, stdout_value, stderr_value):
         '''Perform failure tests.
@@ -76,6 +74,7 @@ class Command(TarmacPlugin):
         doesn't attempt to merge it again without human interaction.  An
         exception is then raised to prevent the commit from happening.
         '''
+        self.logger.warn(u'Test command "%s" failed.' % self.verify_command)
         comment = (u'The attempt to merge %(source)s into %(target)s failed.' +
                    u'Below is the output from the failed tests.\n\n' +
                    u'%(output)s') % {
@@ -83,12 +82,7 @@ class Command(TarmacPlugin):
             'target' : self.proposal.target_branch.display_name,
             'output' : u'\n'.join([stdout_value, stderr_value]),
             }
-        subject = u'Re: [Merge] %s into %s' % (
-            self.proposal.source_branch.display_name,
-            self.proposal.target_branch.display_name)
-        self.proposal.createComment(subject=subject, content=comment)
-        self.proposal.setStatus(status=u'Needs review')
-        self.proposal.lp_save()
+        raise TipChangeRejected(comment)
 
 
 tarmac_hooks['tarmac_pre_commit'].hook(Command(), 'Command plugin')

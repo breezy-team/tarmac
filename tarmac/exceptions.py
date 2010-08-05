@@ -29,3 +29,7 @@ class CommandNotFound(Exception):
 
 class TarmacCommandError(BzrCommandError):
     '''Exception for various command errors.'''
+
+
+class UnapprovedChanges(Exception):
+    '''Exception for when a branch has unapproved changes.'''
