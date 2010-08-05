@@ -162,12 +162,16 @@ class cmd_merge(TarmacCommand):
                         source,
                         str(proposal.reviewed_revid))
 
+                    self.logger.debug('Firing tarmac_pre_commit hook')
+                    tarmac_hooks['tarmac_pre_commit'].fire(
+                        self, target, source, proposal)
+
                 except Exception, failure:
                     subject = u'Re: [Merge] %(source)s into %(target)s' % {
                         "source": proposal.source_branch.display_name,
                         "target": proposal.target_branch.display_name,}
                     comment = None
-                    if isinstance(BranchHasConflicts, failure):
+                    if isinstance(failure, BranchHasConflicts):
                         self.logger.warn(
                             u'Conflicts merging %(source)s into %(target)s' % {
                                 "source": proposal.source_branch.display_name,
@@ -178,7 +182,7 @@ class cmd_merge(TarmacCommand):
                                 "source": proposal.source_branch.display_name,
                                 "target": proposal.target_branch.display_name,
                                 "output": target.conflicts})
-                    elif isinstance(PointlessMerge, failure):
+                    elif isinstance(failure, PointlessMerge):
                         self.logger.warn(
                             'Merging %(source)s into %(target)s would be '
                             'pointless.' % {
@@ -189,9 +193,9 @@ class cmd_merge(TarmacCommand):
                             u'and %(target)s.' % {
                                 "source": proposal.source_branch.display_name,
                                 "target": proposal.target_branch.display_name,})
-                    elif isinstance(TipChangeRejected, failure):
+                    elif isinstance(failure, TipChangeRejected):
                         comment = failure.msg
-                    elif isinstance(UnapprovedChanges, failure):
+                    elif isinstance(failure, UnapprovedChanges):
                         self.logger.warn(
                             u'Unapproved chagnes to %(source) were made '
                             u'after approval for merge into %(target).' % {
@@ -219,9 +223,6 @@ class cmd_merge(TarmacCommand):
                 merge_url = urlp.sub(
                     'http://launchpad.net/', proposal.self_link)
                 revprops = { 'merge_url' : merge_url }
-                self.logger.debug('Firing tarmac_pre_commit hook')
-                tarmac_hooks['tarmac_pre_commit'].fire(
-                    self, target, source, proposal)
                 target.commit(proposal.commit_message,
                              revprops=revprops,
                              authors=source.authors,
