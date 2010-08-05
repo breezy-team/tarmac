@@ -81,7 +81,7 @@ class CIAVC(TarmacPlugin):
             'files': '\n'.join([
                 '<file>%s</file>' % saxutils.escape(f) for f in files]),
             'author': saxutils.escape(
-                proposal.owner.display_name),
+                proposal.source_branch.owner.display_name),
             'commit_message': saxutils.escape(proposal.commit_message)}
 
         print "Updating cvs.vc for project " + cia_project
