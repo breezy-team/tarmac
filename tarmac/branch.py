@@ -124,7 +124,6 @@ class Branch(object):
                                          ' reviewer identity')
             revprops['reviewers'] = '\n'.join(reviewers)
 
-        #import pdb; pdb.set_trace()
         self.tree.commit(commit_message, committer='Tarmac',
                          revprops=revprops, authors=authors)
 
