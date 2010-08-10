@@ -26,6 +26,8 @@ import shutil
 import tempfile
 
 from bzrlib import branch as bzr_branch
+from bzrlib import missing
+from bzrlib.errors import NoSuchRevision
 from bzrlib.workingtree import WorkingTree
 
 from tarmac.config import BranchConfig
@@ -47,7 +49,6 @@ class Branch(object):
     @classmethod
     def create(cls, lp_branch, config, create_tree=False):
         if create_tree:
-            assert config.has_section(lp_branch.bzr_identity)
             clazz = cls(lp_branch, config)
             clazz.create_tree()
         else:
@@ -107,8 +108,6 @@ class Branch(object):
 
     def commit(self, commit_message, revprops=None, **kwargs):
         '''Commit changes.'''
-        assert self.tree
-
         if not revprops:
             revprops = {}
 
@@ -125,6 +124,7 @@ class Branch(object):
                                          ' reviewer identity')
             revprops['reviewers'] = '\n'.join(reviewers)
 
+        #import pdb; pdb.set_trace()
         self.tree.commit(commit_message, committer='Tarmac',
                          revprops=revprops, authors=authors)
 
@@ -148,6 +148,24 @@ class Branch(object):
 
     @property
     def has_changes(self):
-        if not self.has_tree:
+        if not self.tree:
             return False
         return self.tree.changes_from(self.tree.basis_tree())
+
+    def fixed_bugs(self, source_branch):
+        """Return the list of bugs fixed by the branch."""
+        bugs_list = []
+
+        unmerged = missing.find_unmerged(self.bzr_branch,
+                                         source_branch.bzr_branch)
+        for rev_info in unmerged:
+            try:
+                rev = self.bzr_branch.repository.get_revision(rev_info[0][1])
+                for bug in rev.iter_bugs():
+                    if bug[0].startswith('https://launchpad.net/bugs/'):
+                        bugs_list.append(bug[0].replace(
+                                'https://launchpad.net/bugs/', ''))
+            except NoSuchRevision:
+                continue
+
+        return bugs_list

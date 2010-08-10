@@ -18,6 +18,7 @@
 from base64 import b64encode
 import math
 import os
+import shutil
 import tempfile
 
 from bzrlib.bzrdir import BzrDir
@@ -36,7 +37,8 @@ class MockLPBranch(object):
     '''A mock LP Branch.'''
 
     def __init__(self, source_branch=None):
-        self.temp_dir = tempfile.mkdtemp()
+        tempfile.tempdir = os.getcwd()
+        self.temp_dir = tempfile.mkdtemp(dir=os.getcwd())
         if source_branch:
             bzrdir = source_branch.bzrdir.sprout(
                 self.temp_dir)
@@ -47,6 +49,9 @@ class MockLPBranch(object):
                 self.temp_dir)
         self.bzr_identity = self._internal_bzr_branch.base
         self.project = MockLPProject()
+
+    def cleanup(self):
+        shutil.rmtree(self.temp_dir)
 
 
 class cmd_mock(TarmacCommand):
