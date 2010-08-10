@@ -11,3 +11,6 @@ http_debug_option = Option(
 staging_option = Option(
     'staging', short_name='s',
     help='Use staging as API source.')
+imply_commit_message_option = Option(
+    'imply-commit-message',
+    help="Use the description as a commit message if the branch doesn't have a message")

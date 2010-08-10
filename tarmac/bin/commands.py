@@ -116,15 +116,16 @@ class cmd_merge(TarmacCommand):
     takes_args = ['branch_url?']
     takes_options = [
         options.http_debug_option,
-        options.debug_option]
+        options.debug_option,
+        options.imply_commit_message_option]
 
-    def _do_merges(self, branch_url):
+    def _do_merges(self, branch_url, imply_commit_message):
 
         lp_branch = self.launchpad.branches.getByUrl(url=branch_url)
 
         proposals = [entry for entry in lp_branch.landing_candidates
                         if entry.queue_status == u'Approved' and
-                        entry.commit_message]
+                        (imply_commit_message or entry.commit_message)]
         if not proposals:
             self.logger.info(
                 'No approved proposals found for %(branch_url)s' % {
@@ -223,7 +224,11 @@ class cmd_merge(TarmacCommand):
                 merge_url = urlp.sub(
                     'http://launchpad.net/', proposal.self_link)
                 revprops = { 'merge_url' : merge_url }
-                target.commit(proposal.commit_message,
+
+                commit_message = proposal.commit_message
+                if commit_message is None and imply_commit_message:
+                    commit_message = proposal.description
+                target.commit(commit_message,
                              revprops=revprops,
                              authors=source.authors,
                              reviewers=self._get_reviewers(proposal))
@@ -262,7 +267,7 @@ class cmd_merge(TarmacCommand):
         return reviewers
 
     def run(self, branch_url=None, debug=False, http_debug=False,
-            launchpad=None):
+            launchpad=None, imply_commit_message=False):
         if debug:
             set_up_debug_logging()
             self.logger.debug('Debug logging enabled')
@@ -285,7 +290,7 @@ class cmd_merge(TarmacCommand):
                     'branch_url': branch_url,})
             if not branch_url.startswith('lp:'):
                 raise TarmacCommandError('Branch urls must start with lp:')
-            self._do_merges(branch_url)
+            self._do_merges(branch_url, imply_commit_message)
 
         else:
             for branch in self.config.branches:
