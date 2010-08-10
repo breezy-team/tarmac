@@ -226,7 +226,7 @@ class cmd_merge(TarmacCommand):
                 revprops = { 'merge_url' : merge_url }
 
                 commit_message = proposal.commit_message
-                if commit_message is None:
+                if commit_message is None and imply_commit_message:
                     commit_message = proposal.description
                 target.commit(commit_message,
                              revprops=revprops,
