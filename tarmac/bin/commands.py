@@ -189,11 +189,8 @@ class cmd_merge(TarmacCommand):
                             'pointless.' % {
                                 'source': proposal.source_branch.display_name,
                                 'target': proposal.target_branch.display_name,})
-                        comment = (
-                            u'There is no resulting diff between %(source)s '
-                            u'and %(target)s.' % {
-                                "source": proposal.source_branch.display_name,
-                                "target": proposal.target_branch.display_name,})
+                        target.cleanup()
+                        continue
                     elif isinstance(failure, TipChangeRejected):
                         comment = failure.msg
                     elif isinstance(failure, UnapprovedChanges):
@@ -212,11 +209,6 @@ class cmd_merge(TarmacCommand):
                     proposal.createComment(subject=subject, content=comment)
                     proposal.setStatus(status=u'Needs review')
                     proposal.lp_save()
-                    self.logger.warn(
-                        'Conflicts found while merging %(source)s into '
-                        '%(target)s,' % {
-                            'source': proposal.source_branch.display_name,
-                            'target': proposal.target_branch.display_name,})
                     target.cleanup()
                     continue
 
