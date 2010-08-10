@@ -297,4 +297,4 @@ class cmd_merge(TarmacCommand):
                 self.logger.debug(
                     'Merging approved branches against %(branch)s' % {
                         'branch': branch})
-                self._do_merges(branch)
+                self._do_merges(branch, imply_commit_message)
