@@ -24,10 +24,9 @@ from bzrlib.lazy_import import lazy_import
 lazy_import(globals(), '''
     import xmlrpclib
     from xml.sax import saxutils
-
-    from tarmac import __version__ as version_string
     ''')
 
+from tarmac import __version__ as version_string
 from tarmac.hooks import tarmac_hooks
 from tarmac.plugins import TarmacPlugin
 
@@ -84,7 +83,11 @@ class CIAVC(TarmacPlugin):
                 proposal.source_branch.owner.display_name),
             'commit_message': saxutils.escape(proposal.commit_message)}
 
-        print "Updating cvs.vc for project " + cia_project
+        self.logger.info(
+            "Updating CIA server at %(project)s for project %(server)s" % {
+                'project': cia_project,
+                'server': cia_server})
+        self.logger.debug(message)
         xmlrpclib.ServerProxy(cia_server).hub.deliver(message)
 
 tarmac_hooks['tarmac_post_commit'].hook(CIAVC(), 'CIA.vc plugin.')
