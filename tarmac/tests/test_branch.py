@@ -58,10 +58,12 @@ class TestBranch(TarmacTestCase):
 
         a_branch = branch.Branch.create(mock1, self.config, create_tree=True)
         a_branch.commit("Reading, 'riting, 'rithmetic")
+        a_branch.lp_branch.revision_count += 1
         another_branch = branch.Branch.create(MockLPBranch(
-            source_branch=a_branch.bzr_branch), self.config, create_tree=True)
+            source_branch=a_branch.lp_branch), self.config, create_tree=True)
         another_branch.commit('ABC...')
         another_branch.commit('...as easy as 123')
+        another_branch.lp_branch.revision_count += 2
 
         return a_branch, another_branch
 
@@ -151,8 +153,10 @@ class TestBranch(TarmacTestCase):
         branch1.commit('Testing')
         branch2.commit('Foo',
                        revprops={'bugs':'https://launchpad.net/bugs/3 fixed'})
+        branch2.lp_branch.revision_count += 1
         branch2.merge(branch1)
-        self.assertEqual(branch1.fixed_bugs(branch2), [u'1', u'2'])
+        branch2.commit('Landed bugs')
+        self.assertEqual(branch2.fixed_bugs, branch1.fixed_bugs)
         branch2.cleanup()
 
     def test_merge_with_reviewers(self):

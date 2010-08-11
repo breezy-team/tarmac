@@ -40,13 +40,15 @@ class MockLPBranch(object):
         tempfile.tempdir = os.getcwd()
         self.temp_dir = tempfile.mkdtemp(dir=os.getcwd())
         if source_branch:
-            bzrdir = source_branch.bzrdir.sprout(
+            bzrdir = source_branch._internal_bzr_branch.bzrdir.sprout(
                 self.temp_dir)
             self._internal_tree, self._internal_bzr_branch = \
                     bzrdir.open_tree_or_branch(self.temp_dir)
+            self.revision_count = source_branch.revision_count
         else:
             self._internal_bzr_branch = BzrDir.create_branch_convenience(
                 self.temp_dir)
+            self.revision_count = 0
         self.bzr_identity = self._internal_bzr_branch.base
         self.project = MockLPProject()
 

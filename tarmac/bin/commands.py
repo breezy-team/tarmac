@@ -217,8 +217,6 @@ class cmd_merge(TarmacCommand):
                     'http://launchpad.net/', proposal.self_link)
                 revprops = { 'merge_url' : merge_url }
 
-                fixed_bugs = source.fixed_bugs(source)
-
                 commit_message = proposal.commit_message
                 if commit_message is None and imply_commit_message:
                     commit_message = proposal.description
@@ -226,11 +224,6 @@ class cmd_merge(TarmacCommand):
                              revprops=revprops,
                              authors=source.authors,
                              reviewers=self._get_reviewers(proposal))
-
-                for bug in fixed_bugs:
-                    lp_bug = self.launchpad.bugs[bug]
-                    lp_bug.setStatus(u'Fix committed')
-                    lp_bug.lp_save()
 
                 self.logger.debug('Firing tarmac_post_commit hook')
                 tarmac_hooks['tarmac_post_commit'].fire(

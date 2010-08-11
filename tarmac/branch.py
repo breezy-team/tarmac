@@ -151,15 +151,17 @@ class Branch(object):
             return False
         return self.tree.changes_from(self.tree.basis_tree())
 
-    def fixed_bugs(self, source_branch):
+    @property
+    def fixed_bugs(self):
         """Return the list of bugs fixed by the branch."""
         bugs_list = []
 
-        unmerged = missing.find_unmerged(self.bzr_branch,
-                                         source_branch.bzr_branch)
-        for rev_info in unmerged:
+        self.bzr_branch.lock_read()
+        oldrevid = self.bzr_branch.get_rev_id(self.lp_branch.revision_count)
+        for rev_info in self.bzr_branch.iter_merge_sorted_revisions(
+            stop_revision_id=oldrevid):
             try:
-                rev = self.bzr_branch.repository.get_revision(rev_info[0][1])
+                rev = self.bzr_branch.repository.get_revision(rev_info[0])
                 for bug in rev.iter_bugs():
                     if bug[0].startswith('https://launchpad.net/bugs/'):
                         bugs_list.append(bug[0].replace(
@@ -167,4 +169,5 @@ class Branch(object):
             except NoSuchRevision:
                 continue
 
+        self.bzr_branch.unlock()
         return bugs_list
