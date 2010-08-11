@@ -26,6 +26,8 @@ import shutil
 import tempfile
 
 from bzrlib import branch as bzr_branch
+from bzrlib import missing
+from bzrlib.errors import NoSuchRevision
 from bzrlib.workingtree import WorkingTree
 
 from tarmac.config import BranchConfig
@@ -47,7 +49,6 @@ class Branch(object):
     @classmethod
     def create(cls, lp_branch, config, create_tree=False):
         if create_tree:
-            assert config.has_section(lp_branch.bzr_identity)
             clazz = cls(lp_branch, config)
             clazz.create_tree()
         else:
@@ -107,8 +108,6 @@ class Branch(object):
 
     def commit(self, commit_message, revprops=None, **kwargs):
         '''Commit changes.'''
-        assert self.tree
-
         if not revprops:
             revprops = {}
 
@@ -148,6 +147,27 @@ class Branch(object):
 
     @property
     def has_changes(self):
-        if not self.has_tree:
+        if not self.tree:
             return False
         return self.tree.changes_from(self.tree.basis_tree())
+
+    @property
+    def fixed_bugs(self):
+        """Return the list of bugs fixed by the branch."""
+        bugs_list = []
+
+        self.bzr_branch.lock_read()
+        oldrevid = self.bzr_branch.get_rev_id(self.lp_branch.revision_count)
+        for rev_info in self.bzr_branch.iter_merge_sorted_revisions(
+            stop_revision_id=oldrevid):
+            try:
+                rev = self.bzr_branch.repository.get_revision(rev_info[0])
+                for bug in rev.iter_bugs():
+                    if bug[0].startswith('https://launchpad.net/bugs/'):
+                        bugs_list.append(bug[0].replace(
+                                'https://launchpad.net/bugs/', ''))
+            except NoSuchRevision:
+                continue
+
+        self.bzr_branch.unlock()
+        return bugs_list

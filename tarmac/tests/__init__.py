@@ -58,7 +58,11 @@ access_secret = secret
             self.tempdir, 'credentials')
 
         # Create self.tempdir; it is removed in tearDown().
-        os.makedirs(self.tempdir)
+        try:
+            os.makedirs(self.tempdir)
+        except OSError, e:
+            if e.errno != 17:
+                raise e
 
         if self.NEEDS_SAMPLE_DATA:
             config = TarmacConfig()

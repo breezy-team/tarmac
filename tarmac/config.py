@@ -106,5 +106,6 @@ class BranchConfig:
     '''
 
     def __init__(self, branch_name, config):
-        for key, val in config.items(branch_name):
-            setattr(self, key, val)
+        if config.has_section(branch_name):
+            for key, val in config.items(branch_name):
+                setattr(self, key, val)
