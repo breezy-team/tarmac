@@ -18,7 +18,6 @@
 from base64 import b64encode
 import math
 import os
-import shutil
 
 from bzrlib.bzrdir import BzrDir
 
@@ -55,10 +54,12 @@ class MockLPBranch(object):
 class cmd_mock(TarmacCommand):
     '''A mock command.'''
 
-    def run(): pass
+    def run(self):
+        """Just a dummy command that does nothing."""
 
 
 class MockModule(object):
+    """A mock module."""
 
     def __init__(self):
         self.__dict__['cmd_mock'] = cmd_mock

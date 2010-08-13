@@ -1,10 +1,9 @@
 '''Tests for tarmac.config'''
-import inspect
 import os
-import ConfigParser
 
-from tarmac.config import TarmacConfig, BranchConfig
+from tarmac.config import BranchConfig
 from tarmac.tests import TarmacTestCase
+
 
 class TestTarmacConfig(TarmacTestCase):
     '''Testing for tarmac.config.TarmacConfig.'''

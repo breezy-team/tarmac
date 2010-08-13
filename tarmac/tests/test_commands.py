@@ -1,6 +1,5 @@
 '''Tests for tarmac.bin.commands.py.'''
 from cStringIO import StringIO
-import os
 import sys
 
 from tarmac.bin import commands
@@ -40,6 +39,7 @@ class TestCommand(TarmacTestCase):
     def test_run(self):
         registry = CommandRegistry(config=self.config)
         command = commands.TarmacCommand(registry)
+        command.run()
 
 
 class TestAuthCommand(TarmacTestCase):

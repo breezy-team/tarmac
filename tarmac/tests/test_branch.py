@@ -22,7 +22,6 @@ import os
 from bzrlib.errors import PointlessMerge
 
 from tarmac import branch
-from tarmac.config import TarmacConfig
 from tarmac.tests import TarmacTestCase
 from tarmac.tests.mock import MockLPBranch
 

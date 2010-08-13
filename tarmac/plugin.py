@@ -21,10 +21,15 @@ import os
 
 from tarmac import plugins as _mod_plugins
 
-# XXX: rockstar - There should be a way to load from ENV as well.
+
 TARMAC_PLUGIN_PATHS = [
-    os.path.expanduser('~/.config/tarmac/plugins'),
-    os.path.join(os.path.dirname(__file__), 'plugins')]
+        os.path.expanduser('~/.config/tarmac/plugins'),
+        os.path.join(os.path.dirname(__file__), 'plugins')]
+try:
+    TARMAC_PLUGIN_PATHS.extend(os.environ['TARMAC_PLUGIN_PATH'].split(':'))
+except KeyError:
+    pass
+
 
 def load_plugins():
     '''Load the plugins for Tarmac.'''

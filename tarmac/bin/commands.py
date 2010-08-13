@@ -97,7 +97,7 @@ class cmd_help(TarmacCommand):
         else:
             cmd = self.registry._get_command(None, command)
             if cmd is None:
-                self.outf.write('Unknown command "%{command}s"\n' % {
+                self.outf.write('Unknown command "%(command)s"\n' % {
                     'command': command,})
                 return
             text = cmd.get_help_text()
@@ -194,8 +194,8 @@ class cmd_merge(TarmacCommand):
                         comment = failure.msg
                     elif isinstance(failure, UnapprovedChanges):
                         self.logger.warn(
-                            u'Unapproved chagnes to %(source) were made '
-                            u'after approval for merge into %(target).' % {
+                            u'Unapproved chagnes to %(source)s were made '
+                            u'after approval for merge into %(target)s.' % {
                                 "source": proposal.source_branch.display_name,
                                 "target": proposal.target_branch.display_name,})
                         comment = (
@@ -250,7 +250,7 @@ class cmd_merge(TarmacCommand):
             elif vote.comment and vote.comment.vote == u'Approve' and \
                     candidate.source_branch.isPersonTrustedReviewer(
                 reviewer=vote.reviewer):
-                    reviewers.append(vote.reviewer.display_name)
+                reviewers.append(vote.reviewer.display_name)
 
         if len(reviewers) == 0:
             return None
