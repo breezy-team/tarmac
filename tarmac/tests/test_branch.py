@@ -19,18 +19,12 @@
 '''Tests for tarmac.branch'''
 import os
 
-from bzrlib.errors import NoCommits
+from bzrlib.errors import PointlessMerge
 
 from tarmac import branch
 from tarmac.config import TarmacConfig
 from tarmac.tests import TarmacTestCase
 from tarmac.tests.mock import MockLPBranch
-
-CONFIG_TEMPLATE = '''
-[%(url)s]
-tree_dir = %(temp_tree)s
-log_file = %(temp_log)s
-'''
 
 
 class TestBranch(TarmacTestCase):
@@ -43,146 +37,131 @@ class TestBranch(TarmacTestCase):
         self.bzrdir = os.path.join(os.getcwd(), "bzr")
         os.environ['BZR_HOME'] = self.bzrdir
 
-        self.config = TarmacConfig()
-        self.write_config_file()
+        self.branch1, self.branch2 = self.make_two_branches_to_merge()
+
+    def tearDown(self):
+        """Tear down the tests."""
+        self.remove_branch_config(self.branch1.lp_branch.tree_dir)
+        self.remove_branch_config(self.branch2.lp_branch.tree_dir)
+        TarmacTestCase.tearDown(self)
 
     def make_two_branches_to_merge(self):
         '''Make two branches, one with revisions to merge.'''
-        mock1 = MockLPBranch()
-        self.CONFIG_TEMPLATE = CONFIG_TEMPLATE % {
-            'url' : 'file://%s' % mock1.temp_dir,
-            'temp_log' : mock1.temp_dir + '.log',
-            'temp_tree' : mock1.temp_dir
-            }
-        self.write_config_file()
+        branch1_dir = os.path.join(self.tempdir, 'branch1')
+        branch2_dir = os.path.join(self.tempdir, 'branch2')
+        self.add_branch_config(branch1_dir)
+        self.add_branch_config(branch2_dir)
 
-        a_branch = branch.Branch.create(mock1, self.config, create_tree=True)
-        a_branch.commit("Reading, 'riting, 'rithmetic")
-        a_branch.lp_branch.revision_count += 1
-        another_branch = branch.Branch.create(MockLPBranch(
-            source_branch=a_branch.lp_branch), self.config, create_tree=True)
-        another_branch.commit('ABC...')
-        another_branch.commit('...as easy as 123')
-        another_branch.lp_branch.revision_count += 2
+        mock1 = MockLPBranch(branch1_dir)
+        branch1 = branch.Branch.create(mock1, self.config, create_tree=True)
+        branch1.commit("Reading, 'riting, 'rithmetic")
+        branch1.lp_branch.revision_count += 1
 
-        return a_branch, another_branch
+        mock2 = MockLPBranch(branch2_dir, source_branch=branch1.lp_branch)
+        branch2 = branch.Branch.create(mock2, self.config, create_tree=True)
+        branch2.commit('ABC...')
+
+        added_file = os.path.join(branch2.lp_branch.tree_dir, 'README')
+        with open(added_file, 'w+') as f:
+            f.write('This is a test file.')
+            f.close()
+        branch2.tree.add(['README'])
+        branch2.commit('Added a README for testing')
+        branch2.lp_branch.revision_count += 2
+
+        return branch1, branch2
 
     def test_create(self):
         '''Test the creation of a TarmacBranch instance.'''
-        mock1 = MockLPBranch()
-        self.CONFIG_TEMPLATE = CONFIG_TEMPLATE % {
-            'url' : 'file://%s' % mock1.temp_dir,
-            'temp_log' : mock1.temp_dir + '.log',
-            'temp_tree' : mock1.temp_dir
-            }
-        self.write_config_file()
+        tree_dir = os.path.join(self.tempdir, 'test_create')
+        self.add_branch_config(tree_dir)
 
-        self.assertTrue(self.config.has_section('file://%s' % mock1.temp_dir))
-        self.assertEqual(self.config.get('file://%s' % mock1.temp_dir,
-                                         'tree_dir', None),
-                         mock1.temp_dir)
-        a_branch = branch.Branch.create(mock1, self.config)
-
+        a_branch = branch.Branch.create(MockLPBranch(tree_dir), self.config)
         self.assertTrue(isinstance(a_branch, branch.Branch))
-        self.assertTrue(a_branch.lp_branch.bzr_identity)
+        self.assertTrue(a_branch.lp_branch.bzr_identity is not None)
         self.assertFalse(hasattr(a_branch, 'tree'))
+        self.remove_branch_config(tree_dir)
 
     def test_create_with_tree(self):
         '''Test the creation of a TarmacBranch with a created tree.'''
-        mock1 = MockLPBranch()
-        self.CONFIG_TEMPLATE = CONFIG_TEMPLATE % {
-            'url' : 'file://%s' % mock1.temp_dir,
-            'temp_log' : mock1.temp_dir + '.log',
-            'temp_tree' : mock1.temp_dir
-            }
-        self.write_config_file()
-
-        a_branch = branch.Branch.create(mock1, self.config,
-                                        create_tree=True)
-
-        self.assertTrue(isinstance(a_branch, branch.Branch))
-        self.assertTrue(a_branch.lp_branch.bzr_identity)
-        self.assertTrue(hasattr(a_branch, 'tree'))
+        self.assertTrue(isinstance(self.branch1, branch.Branch))
+        self.assertTrue(self.branch1.lp_branch.bzr_identity is not None)
+        self.assertTrue(hasattr(self.branch1, 'tree'))
 
     def test_merge_raises_exception_with_no_tree(self):
         '''A merge on a branch with no tree will raise an exception.'''
-        a_branch = branch.Branch(MockLPBranch())
-        another_branch = branch.Branch(MockLPBranch())
+        branch3_dir = os.path.join(self.tempdir, 'branch3')
+        self.add_branch_config(branch3_dir)
+        branch3 = branch.Branch.create(MockLPBranch(
+                branch3_dir, source_branch=self.branch1.lp_branch),
+                                       self.config)
 
         self.assertRaises(
-            AttributeError, a_branch.merge, another_branch)
+            AttributeError, branch3.merge, self.branch2)
+        self.remove_branch_config(branch3_dir)
 
     def test_merge_no_changes(self):
         '''A merge on a branch with a tree will raise an exception if no
         changes are present.'''
-        a_branch = branch.Branch.create(MockLPBranch(), self.config,
-                                        create_tree=True)
-        another_branch = branch.Branch(MockLPBranch())
+        branch3_dir = os.path.join(self.tempdir, 'branch3')
+        self.add_branch_config(branch3_dir)
+        branch3 = branch.Branch.create(MockLPBranch(
+                branch3_dir, source_branch=self.branch1.lp_branch),
+                                       self.config)
 
-        # XXX: Find a way to generate dummy revisions for the second branch.
-        self.assertRaises(NoCommits, a_branch.merge, another_branch)
+        self.assertRaises(PointlessMerge, self.branch1.merge, branch3)
+        self.remove_branch_config(branch3_dir)
 
     def test_merge(self):
         '''A merge on a branch with a tree of a branch with changes will merge.
         '''
-        a_branch, another_branch = self.make_two_branches_to_merge()
-        a_branch.merge(another_branch)
-        self.assertTrue(a_branch.has_changes)
-        a_branch.lp_branch.cleanup()
-        another_branch.lp_branch.cleanup()
+        self.branch1.merge(self.branch2)
+        self.assertTrue(self.branch1.tree.changes_from(
+                self.branch1.tree.basis_tree()).has_changed())
 
     def test_merge_with_authors(self):
         '''A merge from a branch with authors'''
-        branch1, branch2 = self.make_two_branches_to_merge()
         authors = [ 'author1', 'author2' ]
-        branch1.commit('Authors test', authors=authors)
-        branch2.merge(branch1)
-        branch2.commit('Authors Merge test', authors=branch1.authors)
-        self.assertEqual(branch2.authors.sort(), authors.sort())
+        self.branch1.commit('Authors test', authors=authors)
+        self.branch2.merge(self.branch1)
+        self.branch2.commit('Authors Merge test', authors=self.branch1.authors)
+        self.assertEqual(self.branch2.authors.sort(), authors.sort())
 
     def test_merge_with_bugs(self):
         '''A merge from a branch with authors'''
-        branch1, branch2 = self.make_two_branches_to_merge()
         bugs = ['https://launchpad.net/bugs/1 fixed',
                 'https://bugzilla.gnome.org/show_bug.cgi?id=1 fixed',
                 'https://launchpad.net/bugs/2 fixed'
                 ]
         revprops = {}
         revprops['bugs'] = '\n'.join(bugs)
-        branch1.commit('Bugs test', revprops)
-        branch1.commit('Testing')
-        branch2.commit('Foo',
-                       revprops={'bugs':'https://launchpad.net/bugs/3 fixed'})
-        branch2.lp_branch.revision_count += 1
-        branch2.merge(branch1)
-        branch2.commit('Landed bugs')
-        self.assertEqual(branch2.fixed_bugs, branch1.fixed_bugs)
-        branch2.cleanup()
+        self.branch1.commit('Bugs test', revprops)
+        self.branch1.commit('Testing')
+        self.branch2.commit('Foo',
+                            revprops={
+                'bugs':'https://launchpad.net/bugs/3 fixed'})
+        self.branch2.lp_branch.revision_count += 1
+        self.branch2.merge(self.branch1)
+        self.branch2.commit('Landed bugs')
+        self.assertEqual(self.branch2.fixed_bugs, self.branch1.fixed_bugs)
 
     def test_merge_with_reviewers(self):
         '''A merge with reviewers.'''
         reviewers = [ 'reviewer1', 'reviewer2' ]
+        self.branch1.merge(self.branch2)
+        self.branch1.commit('Reviewers test', reviewers=reviewers)
 
-        a_branch, another_branch = self.make_two_branches_to_merge()
-        a_branch.merge(another_branch)
-        a_branch.commit('Reviewers test', reviewers=reviewers)
-
-        last_rev = a_branch.lp_branch._internal_bzr_branch.last_revision()
+        last_rev = self.branch1.lp_branch._internal_bzr_branch.last_revision()
         self.assertNotEquals(last_rev, 'null:')
-        rev = a_branch.lp_branch._internal_bzr_branch.repository.get_revision(
-            last_rev)
+        repo = self.branch1.lp_branch._internal_bzr_branch.repository
+        rev = repo.get_revision(last_rev)
         self.assertEquals('\n'.join(reviewers), rev.properties['reviewers'])
-        a_branch.lp_branch.cleanup()
-        another_branch.lp_branch.cleanup()
 
     def test_cleanup(self):
         '''The branch object should clean up after itself.'''
-        a_branch, another_branch = self.make_two_branches_to_merge()
-        a_branch.merge(another_branch)
-        self.assertTrue(a_branch.has_changes)
-
-        a_branch.cleanup()
-        self.assertTrue(a_branch.has_changes)
-
-        a_branch.lp_branch.cleanup()
-        another_branch.lp_branch.cleanup()
+        self.branch1.merge(self.branch2)
+        self.assertTrue(self.branch1.tree.changes_from(
+                self.branch1.tree.basis_tree()).has_changed())
+        self.branch1.cleanup()
+        self.assertFalse(self.branch1.tree.changes_from(
+                self.branch1.tree.basis_tree()).has_changed())

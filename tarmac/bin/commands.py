@@ -12,7 +12,6 @@ from launchpadlib.launchpad import (Credentials, Launchpad, EDGE_SERVICE_ROOT,
 
 from tarmac.bin import options
 from tarmac.branch import Branch
-from tarmac.config import TarmacConfig
 from tarmac.hooks import tarmac_hooks
 from tarmac.log import set_up_debug_logging, set_up_logging
 from tarmac.exceptions import (BranchHasConflicts, TarmacCommandError,
@@ -28,7 +27,7 @@ class TarmacCommand(Command):
     def __init__(self, registry):
         Command.__init__(self)
 
-        self.config = TarmacConfig()
+        self.config = registry.config
         self.registry = registry
 
         set_up_logging()

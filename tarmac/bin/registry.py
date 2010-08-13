@@ -4,14 +4,18 @@ import sys
 from bzrlib.commands import Command, run_bzr
 from bzrlib.errors import BzrCommandError
 
+from tarmac.config import TarmacConfig
 from tarmac.exceptions import CommandNotFound
 
 
 class CommandRegistry(object):
     '''Class for handling command dispatch.'''
 
-    def __init__(self):
+    def __init__(self, config=None):
         self._registry = {}
+        self.config = config
+        if self.config is None:
+            self.config = TarmacConfig()
 
     def _get_command(self, command, name):
         '''Return the command.'''
