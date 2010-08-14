@@ -17,27 +17,19 @@ class FakeCommand(commands.TarmacCommand):
     def run(self, *args, **kwargs):
         return
 
+
 class FakeLaunchpad(object):
     '''Fake Launchpad object for testing.'''
 
     def __init__(self, config=None, *args, **kwargs):
-        if not config:
-            raise Exception('No config provided.')
-        else:
-            self.config = config
-
-        for section in self.config.sections():
-            if section == 'Tarmac':
-                continue
-            else:
-                print 'Merging %(branch)s' % {'branch' : section}
+        """Fake Launchpad object."""
 
 
 class TestCommand(TarmacTestCase):
     '''Test for tarmac.bin.commands.Command.'''
 
     def test__init__(self):
-        registry = CommandRegistry()
+        registry = CommandRegistry(config=self.config)
         command_name = u'test'
         command = commands.TarmacCommand(registry)
         command.NAME = command_name
@@ -45,14 +37,13 @@ class TestCommand(TarmacTestCase):
         self.assertTrue(isinstance(command.config, TarmacConfig))
 
     def test_run(self):
-        registry = CommandRegistry()
+        registry = CommandRegistry(config=self.config)
         command = commands.TarmacCommand(registry)
+        command.run()
 
 
 class TestAuthCommand(TarmacTestCase):
     '''Test for tarmac.bin.command.cmd_auth.'''
-
-    NEEDS_SAMPLE_DATA = True
 
     # XXX: rockstar - 10 Jan 2010 - How do I test this with the OAuth request,
     # etc?
@@ -72,7 +63,7 @@ class TestAuthCommand(TarmacTestCase):
 
     def test_run_already_authenticated(self):
         '''If the user has already been authenticated, don't try again.'''
-        registry = CommandRegistry()
+        registry = CommandRegistry(config=self.config)
         registry.register_command('authenticate', commands.cmd_authenticate)
         command = registry._get_command(commands.cmd_authenticate,
                                         'authenticate')
@@ -90,7 +81,7 @@ class TestHelpCommand(TarmacTestCase):
         old_stdout = sys.stdout
         sys.stdout = tmp_stdout
 
-        registry = CommandRegistry()
+        registry = CommandRegistry(config=self.config)
         registry.register_command('foo', FakeCommand)
 
         registry.register_command('help', commands.cmd_help)
@@ -103,27 +94,34 @@ class TestHelpCommand(TarmacTestCase):
 
         sys.stdout = old_stdout
 
-class TestMergeCommand(TarmacTestCase):
 
-    NEEDS_SAMPLE_DATA = True
+class TestMergeCommand(TarmacTestCase):
 
     def test_run(self):
         tmp_stdout = StringIO()
         old_stdout = sys.stdout
         sys.stdout = tmp_stdout
 
-        config = TarmacConfig()
-        self.write_config_file(config)
+        def _do_merges(branch_url, *args, **kwargs):
+            """Just checking."""
+            print 'Merging %s' % branch_url
 
-        registry = CommandRegistry()
+        branches = ['lp:foo', 'lp:bar', 'lp:baz']
+        for branch in branches:
+            self.config.add_section(branch)
+
+        registry = CommandRegistry(config=self.config)
         registry.register_command('merge', commands.cmd_merge)
+
         command = registry._get_command(commands.cmd_merge, 'merge')
-        command.run(launchpad=FakeLaunchpad(config=config))
-        self.assertEqual(
-            tmp_stdout.getvalue(),
-            'Merging lp:~tarmac/tarmac/tarmac\n'
-            'Merging lp:~tarmac/tarmac/tarmac3\n'
-            'Merging lp:~tarmac/tarmac/tarmac2\n'
-            'Merging lp:~tarmac/tarmac/tarmac4\n')
+        command._do_merges = _do_merges
+        command.run(launchpad=FakeLaunchpad())
+        self.assertEqual(tmp_stdout.getvalue(),
+                         '\n'.join(
+                ['Merging %s' % b for b in  sorted(branches, reverse=True)]
+                ) + '\n')
+
+        for branch in branches:
+            self.config.remove_section(branch)
 
         sys.stdout = old_stdout

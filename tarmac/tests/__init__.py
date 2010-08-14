@@ -15,9 +15,9 @@
 # along with Tarmac.  If not, see <http://www.gnu.org/licenses/>.
 
 '''Tests for Tarmac!'''
-from cStringIO import StringIO
 import os
 import shutil
+import tempfile
 import unittest
 
 from tarmac.config import TarmacConfig
@@ -26,16 +26,6 @@ from tarmac.config import TarmacConfig
 class TarmacTestCase(unittest.TestCase):
     '''A base TestCase for all Tarmac tests.'''
 
-    NEEDS_SAMPLE_DATA = False
-    CONFIG_TEMPLATE = '''
-[lp:~tarmac/tarmac/tarmac]
-log_file = %(log_file)s
-tree_dir = %(tree_dir)s
-
-[lp:~tarmac/tarmac/tarmac2]
-[lp:~tarmac/tarmac/tarmac3]
-[lp:~tarmac/tarmac/tarmac4]
-'''
     CREDS_TEMPLATE = '''
 [1]
 consumer_secret =
@@ -45,9 +35,9 @@ access_secret = secret
 '''
 
     def setUp(self):
-
         # Set up the environment.
-        self.tempdir = os.path.join(os.getcwd(), 'tmp')
+        tempfile.tempdir = os.getcwd()
+        self.tempdir = tempfile.mkdtemp(dir=os.getcwd())
         os.environ['TARMAC_CONFIG_HOME'] = os.path.join(
             self.tempdir, 'config')
         os.environ['TARMAC_CACHE_HOME'] = os.path.join(
@@ -57,20 +47,11 @@ access_secret = secret
         os.environ['TARMAC_CREDENTIALS'] = os.path.join(
             self.tempdir, 'credentials')
 
-        # Create self.tempdir; it is removed in tearDown().
-        try:
-            os.makedirs(self.tempdir)
-        except OSError, e:
-            if e.errno != 17:
-                raise e
-
-        if self.NEEDS_SAMPLE_DATA:
-            config = TarmacConfig()
-            self.write_config_file(config)
-            self.write_credentials_file(config)
+        # Create the config for testing
+        self.config = TarmacConfig()
+        self.write_credentials_file()
 
     def tearDown(self):
-
         # Clean up environment.
         shutil.rmtree(self.tempdir)
         keys = ['TARMAC_CONFIG_HOME', 'TARMAC_CACHE_HOME', 'TARMAC_PID_FILE',
@@ -81,39 +62,22 @@ access_secret = secret
             except KeyError:
                 pass
 
-    def write_credentials_file(self, config=None):
-        if not config:
-            try:
-                config = self.config
-            except AttributeError:
-                raise Exception('No config provided.')
-
-        credentials = open(config.CREDENTIALS, 'ab')
+    def write_credentials_file(self):
+        """Write out the temporary credentials file for testing."""
+        credentials = open(self.config.CREDENTIALS, 'ab')
         credentials.write(self.CREDS_TEMPLATE)
         credentials.close()
 
-    def write_config_file(self, config=None):
-        '''Parse the CONFIG_TEMPLATE without writing a file.'''
-        if not config:
-            try:
-                config = self.config
-            except AttributeError:
-                raise Exception('No config provided.')
+    def add_branch_config(self, branch_path):
+        """Add some fake config for a temporary local branch."""
+        branch_url = 'file://%s' % branch_path
+        if not branch_url in self.config.sections():
+            self.config.add_section(branch_url)
+        self.config.set(branch_url, 'tree_dir', branch_path)
+        self.config.set(branch_url, 'log_file',
+                        os.path.dirname(branch_path) + '.log')
 
-        template = self.CONFIG_TEMPLATE % {
-            'log_file' : os.path.join(os.getcwd(),'tarmac.log'),
-            'tree_dir' : os.path.join(os.getcwd(), 'trunk')
-            }
-
-        f = StringIO()
-        f.write(template)
-        f.reset()
-        config.readfp(f)
-        f.close()
-        try:
-            os.makedirs(os.path.dirname(config.get('Tarmac', 'log_file')))
-        except OSError, e:
-            if e.errno == 17:
-                return
-            raise e
-
+    def remove_branch_config(self, branch_path):
+        """Remove the config for the temporary local branch."""
+        branch_url = 'file://%s' % os.path.dirname(branch_path)
+        self.config.remove_section(branch_url)
