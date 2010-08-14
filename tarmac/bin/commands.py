@@ -203,7 +203,7 @@ class cmd_merge(TarmacCommand):
                             u'been approved in review. Please seek review and '
                             u'approval of these revisions as well.')
                     else:
-                        raise failure
+                        raise
 
                     proposal.createComment(subject=subject, content=comment)
                     proposal.setStatus(status=u'Needs review')
@@ -232,8 +232,8 @@ class cmd_merge(TarmacCommand):
 
         # This except is here because we need the else and can't have it
         # without an except as well.
-        except Exception, e:
-            raise e
+        except:
+            raise
         else:
             self.logger.debug('Firing tarmac_post_merge hook')
             tarmac_hooks['tarmac_post_merge'].fire(
