@@ -51,7 +51,7 @@ class Command(TarmacPlugin):
         self.proposal = proposal
 
         cwd = os.getcwd()
-        os.chdir(target.config.tree_dir)
+        os.chdir(target.tree.abspath(''))
         self.logger.debug('Running test command: %s' % self.verify_command)
         proc = subprocess.Popen(
             self.verify_command,
