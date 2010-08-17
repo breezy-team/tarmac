@@ -26,7 +26,7 @@ class BugResolver(TarmacPlugin):
         for bug_id in target.fixed_bugs:
             bug = command.launchpad.bugs[bug_id]
             for task in bug.bug_tasks:
-                if task.target == target.project:
+                if task.target == target.lp_branch.project:
                     task.status = u'Fix committed'
                     task.lp_save()
                     return
