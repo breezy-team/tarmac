@@ -1,0 +1,51 @@
+.TH TARMAC 1
+.SH NAME
+tarmac \- Launchpad branch landing tool
+.SH SYNOPSIS
+.B tarmac
+.I command
+[
+.I command_options
+]
+.br
+
+.B tarmac help
+.br
+.B tarmac help
+.I command
+
+.SH DESCRIPTION
+Tarmac is a tool for automatically merging changes to projects hosted on
+the Launchpad project hosting service. It supports plug-ins, running tests
+to verify changes, reporting to CIA.vc, and much more.
+
+.SH COMMANDS AND OPTIONS
+
+.SH FILES
+.TP
+.I ~/.config/tarmac/tarmac.conf
+Contains the user\'s default configuration. The section
+.B [Tarmac]
+is used to define general configuration for Tarmac.
+Additional sections of the form
+.B [lp:branchpath]
+are used to define what branches to handle code merging for.
+
+A typical config file might look something like:
+
+.br
+[Tarmac]
+.br
+log_file = /var/log/tarmac.log
+.br
+.br
+[lp:project]
+.br
+tree_dir = /var/cache/tarmac/project/trunk
+.br
+verify_command = ./autogen.sh && make check
+.br
+
+.SH SEE ALSO
+.UR bzr
+.BR bzr
