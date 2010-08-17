@@ -25,8 +25,11 @@ class BugResolver(TarmacPlugin):
         """Mark bugs fixed in the bug tracker."""
         for bug_id in target.fixed_bugs:
             bug = command.launchpad.bugs[bug_id]
-            bug.setStatus(u'Fix committed')
-            bug.lp_save()
+            for task in bug.bug_tasks:
+                if task.target == target.project:
+                    task.status = u'Fix committed'
+                    task.lp_save()
+                    return
             
 
 tarmac_hooks['tarmac_post_commit'].hook(BugResolver(), 'Bug resolver')
