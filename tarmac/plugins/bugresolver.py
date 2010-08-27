@@ -29,7 +29,6 @@ class BugResolver(TarmacPlugin):
                 if task.target == target.lp_branch.project:
                     task.status = u'Fix Committed'
                     task.lp_save()
-                    return
             
 
 tarmac_hooks['tarmac_post_commit'].hook(BugResolver(), 'Bug resolver')
