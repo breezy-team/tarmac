@@ -23,11 +23,11 @@ class TestVotes(TarmacTestCase):
                 thing(comment=thing(vote=u"Abstain")),
                 thing(comment=thing(vote=u"Needs Information")),
                 ])
-        self.votes = Votes()
+        self.plugin = Votes()
 
     def test_count_votes(self):
         expected = {u"Approve": 2, u"Needs Information": 1, u"Abstain": 1}
-        observed = self.votes.count_votes(self.proposal.votes)
+        observed = self.plugin.count_votes(self.proposal.votes)
         self.assertEqual(expected, observed)
 
     def test_parse_criteria(self):
@@ -35,26 +35,26 @@ class TestVotes(TarmacTestCase):
             (u"Approve", operator.ge, 2),
             (u"Disapprove", operator.eq, 0),
             ]
-        observed = self.votes.parse_criteria(
+        observed = self.plugin.parse_criteria(
             "  Approve >= 2, Disapprove == 0; ")
         self.assertEqual(expected, observed)
 
     def test_parse_invalid_criteria(self):
         self.assertRaises(
-            InvalidCriterion, self.votes.parse_criteria, "foo")
+            InvalidCriterion, self.plugin.parse_criteria, "foo")
         self.assertRaises(
-            InvalidCriterion, self.votes.parse_criteria,
+            InvalidCriterion, self.plugin.parse_criteria,
             "Approve == 1; Disapprove is 0")
 
     def test_evaluate_criteria(self):
         self.assertTrue(
-            self.votes.evaluate_criteria(
+            self.plugin.evaluate_criteria(
                 {"Approve": 3}, [(u"Approve", operator.ge, 2)]))
         self.assertFalse(
-            self.votes.evaluate_criteria(
+            self.plugin.evaluate_criteria(
                 {"Approve": 3}, [(u"Approve", operator.lt, 3)]))
         self.assertFalse(
-            self.votes.evaluate_criteria(
+            self.plugin.evaluate_criteria(
                 {"Approve": 2, "Disapprove": 1},
                 [(u"Approve", operator.ge, 3),
                  (u"Disapprove", operator.eq, 0)]))
@@ -63,7 +63,7 @@ class TestVotes(TarmacTestCase):
         target = thing(
             config=thing(
                 voting_criteria="Approve >= 2, Disapprove == 0"))
-        self.votes.run(
+        self.plugin.run(
             command=None, target=target, source=None, proposal=self.proposal)
 
     def test_run_failure(self):
@@ -71,7 +71,7 @@ class TestVotes(TarmacTestCase):
             config=thing(
                 voting_criteria="Approve >= 2, Needs Information == 0"))
         try:
-            self.votes.run(
+            self.plugin.run(
                 command=None, target=target, source=None,
                 proposal=self.proposal)
         except VotingViolation, error:
