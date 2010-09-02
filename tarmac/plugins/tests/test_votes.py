@@ -4,24 +4,19 @@ import operator
 
 from tarmac.plugins.votes import InvalidCriterion, Votes, VotingViolation
 from tarmac.tests import TarmacTestCase
-
-
-class thing(object):
-    """Quickly create an object with given attributes."""
-    def __init__(self, **names):
-        self.__dict__.update(names)
+from tarmac.tests.mock import Thing
 
 
 class TestVotes(TarmacTestCase):
 
     def setUp(self):
         super(TestVotes, self).setUp()
-        self.proposal = thing(
+        self.proposal = Thing(
             votes=[
-                thing(comment=thing(vote=u"Approve")),
-                thing(comment=thing(vote=u"Approve")),
-                thing(comment=thing(vote=u"Abstain")),
-                thing(comment=thing(vote=u"Needs Information")),
+                Thing(comment=Thing(vote=u"Approve")),
+                Thing(comment=Thing(vote=u"Approve")),
+                Thing(comment=Thing(vote=u"Abstain")),
+                Thing(comment=Thing(vote=u"Needs Information")),
                 ])
         self.plugin = Votes()
 
@@ -60,15 +55,15 @@ class TestVotes(TarmacTestCase):
                  (u"Disapprove", operator.eq, 0)]))
 
     def test_run(self):
-        target = thing(
-            config=thing(
+        target = Thing(
+            config=Thing(
                 voting_criteria="Approve >= 2, Disapprove == 0"))
         self.plugin.run(
             command=None, target=target, source=None, proposal=self.proposal)
 
     def test_run_failure(self):
-        target = thing(
-            config=thing(
+        target = Thing(
+            config=Thing(
                 voting_criteria="Approve >= 2, Needs Information == 0"))
         try:
             self.plugin.run(

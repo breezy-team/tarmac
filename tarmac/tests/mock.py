@@ -63,3 +63,9 @@ class MockModule(object):
 
     def __init__(self):
         self.__dict__['cmd_mock'] = cmd_mock
+
+
+class Thing(object):
+    """Quickly create an object with given attributes."""
+    def __init__(self, **names):
+        self.__dict__.update(names)

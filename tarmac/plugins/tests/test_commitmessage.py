@@ -3,32 +3,27 @@
 from tarmac.plugins.commitmessage import (
     CommitMessageTemplate, CommitMessageTemplateInfo)
 from tarmac.tests import TarmacTestCase
-
-
-class thing(object):
-    """Quickly create an object with given attributes."""
-    def __init__(self, **names):
-        self.__dict__.update(names)
+from tarmac.tests.mock import Thing
 
 
 class TestCommitMessageTemplateInfo(TarmacTestCase):
 
     def setUp(self):
         super(TestCommitMessageTemplateInfo, self).setUp()
-        self.proposal = thing(
-            source_branch=thing(
-                owner=thing(display_name="Arthur Author", name="arthur"),
-                linked_bugs=[thing(id=1234), thing(id=5678)]),
+        self.proposal = Thing(
+            source_branch=Thing(
+                owner=Thing(display_name="Arthur Author", name="arthur"),
+                linked_bugs=[Thing(id=1234), Thing(id=5678)]),
             commit_message="Awesome",
-            reviewer=thing(display_name="Randy Reviewer"),
+            reviewer=Thing(display_name="Randy Reviewer"),
             votes=[
-                thing(
-                    comment=thing(vote=u"Approve"),
-                    reviewer=thing(
+                Thing(
+                    comment=Thing(vote=u"Approve"),
+                    reviewer=Thing(
                         display_name="Virgil Voter", name="virgil")),
-                thing(
-                    comment=thing(vote=u"Approve"),
-                    reviewer=thing(
+                Thing(
+                    comment=Thing(vote=u"Approve"),
+                    reviewer=Thing(
                         display_name="Virginia Voter", name="virginia")),
                 ])
         self.info = CommitMessageTemplateInfo(self.proposal)
