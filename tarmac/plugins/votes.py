@@ -63,6 +63,12 @@ class Votes(TarmacPlugin):
         for (vote, op, value) in exprs:
             yield vote.strip(), operator_map[op], int(value)
 
+    def evaluate_criteria(self, votes, criteria):
+        for vote, op, value in criteria:
+            if not op(votes[vote], value):
+                return False
+        return True
+
 
 tarmac_hooks['tarmac_pre_commit'].hook(
     Votes(), "Enforces a voting policy.")

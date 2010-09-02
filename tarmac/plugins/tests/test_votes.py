@@ -55,3 +55,16 @@ class TestVotes(TarmacTestCase):
         observed = self.votes.parse_criteria(
             "  Approve >= 2, Disapprove == 0; noise")
         self.assertEqual(expected, list(observed))
+
+    def test_evaluate_criteria(self):
+        self.assertTrue(
+            self.votes.evaluate_criteria(
+                {"Approve": 3}, [(u"Approve", operator.ge, 2)]))
+        self.assertFalse(
+            self.votes.evaluate_criteria(
+                {"Approve": 3}, [(u"Approve", operator.lt, 3)]))
+        self.assertFalse(
+            self.votes.evaluate_criteria(
+                {"Approve": 2, "Disapprove": 1},
+                [(u"Approve", operator.ge, 3),
+                 (u"Disapprove", operator.eq, 0)]))
