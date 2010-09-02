@@ -80,6 +80,16 @@ class TestVotes(TarmacTestCase):
         target = thing(
             config=thing(
                 voting_criteria="Approve >= 2, Needs Information == 0"))
-        self.assertRaises(
-            VotingViolation, self.votes.run,
-            command=None, target=target, source=None, proposal=self.proposal)
+        try:
+            self.votes.run(
+                command=None, target=target, source=None,
+                proposal=self.proposal)
+        except VotingViolation, error:
+            self.assertEqual(
+                ("Voting does not meet specified criteria. "
+                 "Required: Approve >= 2, Needs Information == 0. "
+                 "Got: 1 Abstain, 2 Approve, 1 Needs Information."),
+                str(error))
+        else:
+            raise AssertionError(
+                "Votes.run() did not raise VotingViolation.")

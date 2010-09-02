@@ -24,7 +24,6 @@ from tarmac.plugins import TarmacPlugin
 
 
 operator_map = {
-    "=": operator.eq,
     "==": operator.eq,
     "<": operator.lt,
     "<=": operator.le,
@@ -57,10 +56,18 @@ class Votes(TarmacPlugin):
             return
 
         votes = self.count_votes(proposal.votes)
-        criteria = self.parse_criteria(criteria)
+        criteria = list(self.parse_criteria(criteria))
 
         if not self.evaluate_criteria(votes, criteria):
-            raise VotingViolation()
+            votes_desc = ", ".join(
+                "%d %s" % (value, vote)
+                for (vote, value) in sorted(votes.iteritems()))
+            criteria_desc = ", ".join(
+                "%s %s %d" % (vote, operator_map_inverse[op], value)
+                for (vote, op, value) in criteria)
+            raise VotingViolation(
+                "Voting does not meet specified criteria. "
+                 "Required: %s. Got: %s." % (criteria_desc, votes_desc))
 
     def count_votes(self, votes):
         counter = VoteCounter()
