@@ -62,6 +62,7 @@ class Votes(TarmacPlugin):
     """Plugin to enforce a voting policy."""
 
     def run(self, command, target, source, proposal):
+        """See L{TarmacPlugin.run}."""
         try:
             criteria = target.config.voting_criteria
         except AttributeError:
@@ -82,6 +83,10 @@ class Votes(TarmacPlugin):
                  "Required: %s. Got: %s." % (criteria_desc, votes_desc))
 
     def count_votes(self, votes):
+        """Count and collate the votes.
+
+        @return: L{VoteCounter} instance.
+        """
         counter = VoteCounter()
         for vote in votes:
             comment = vote.comment
@@ -90,6 +95,12 @@ class Votes(TarmacPlugin):
         return counter
 
     def parse_criteria(self, criteria):
+        """Parse a given criteria string.
+
+        @param criteria: A string of criteria, separated by commas or
+            semi-colons.
+        @return: A C{list} of C{(vote, operator, value)} tuples.
+        """
         expressions = []
         for expression in criteria_split.split(criteria):
             if len(expression) > 0:
@@ -103,6 +114,12 @@ class Votes(TarmacPlugin):
         return expressions
 
     def evaluate_criteria(self, votes, criteria):
+        """Check if the given votes fit the given criteria.
+
+        @param votes: A L{VoteCounter} instance.
+        @param criteria: A list of C{(vote, operator, value)} tuples.
+        @return: A C{boolean} indicating if the criteria have been met.
+        """
         return all(
             op(votes[vote], value)
             for vote, op, value in criteria)
