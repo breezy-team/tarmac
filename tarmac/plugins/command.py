@@ -32,6 +32,7 @@ lazy_import(globals(), '''
 from tarmac.hooks import tarmac_hooks
 from tarmac.plugins import TarmacPlugin
 
+
 class Command(TarmacPlugin):
     '''Tarmac plugin for running a test command.
 
@@ -84,9 +85,9 @@ class Command(TarmacPlugin):
         comment = (u'The attempt to merge %(source)s into %(target)s failed.' +
                    u'Below is the output from the failed tests.\n\n' +
                    u'%(output)s') % {
-            'source' : self.proposal.source_branch.display_name,
-            'target' : self.proposal.target_branch.display_name,
-            'output' : u'\n'.join([stdout_value, stderr_value]),
+            'source': self.proposal.source_branch.display_name,
+            'target': self.proposal.target_branch.display_name,
+            'output': u'\n'.join([stdout_value, stderr_value]),
             }
         raise errors.TipChangeRejected(comment)
 

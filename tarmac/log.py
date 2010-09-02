@@ -21,6 +21,7 @@ def set_up_logging():
     logger.addHandler(file_handler)
     logger.debug('Logging to %(logfile)s' % {'logfile': log_file})
 
+
 def set_up_debug_logging():
     logger = logging.getLogger('tarmac')
     stderr_handler = logging.StreamHandler(sys.stderr)

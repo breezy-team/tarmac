@@ -57,5 +57,5 @@ except ImportError:
         xdg_config_home = os.path.join(home, '.config/')
         xdg_cache_home = os.path.join(home, '.cache/')
 else:
-     xdg_config_home = xdg.BaseDirectory.xdg_config_home
-     xdg_cache_home = xdg.BaseDirectory.xdg_cache_home
+    xdg_config_home = xdg.BaseDirectory.xdg_config_home
+    xdg_cache_home = xdg.BaseDirectory.xdg_cache_home

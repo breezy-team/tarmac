@@ -52,10 +52,10 @@ class CIAVC(TarmacPlugin):
         files = []
         delta = target.bzr_branch.get_revision_delta(revno)
 
-        [files.append(f) for (f,_x,_x) in delta.added]
-        [files.append(f) for (f,_x,_x) in delta.removed]
-        [files.append(f) for (_x,f,_x,_x,_x,_x) in delta.renamed]
-        [files.append(f) for (f,_x,_x,_x,_x) in delta.modified]
+        [files.append(f) for (f, _x, _x) in delta.added]
+        [files.append(f) for (f, _x, _x) in delta.removed]
+        [files.append(f) for (_x, f, _x, _x, _x, _x) in delta.renamed]
+        [files.append(f) for (f, _x, _x, _x, _x) in delta.modified]
 
         message = '''
 <message>
