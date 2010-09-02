@@ -103,10 +103,9 @@ class Votes(TarmacPlugin):
         return expressions
 
     def evaluate_criteria(self, votes, criteria):
-        for vote, op, value in criteria:
-            if not op(votes[vote], value):
-                return False
-        return True
+        return all(
+            op(votes[vote], value)
+            for vote, op, value in criteria)
 
 
 tarmac_hooks['tarmac_pre_commit'].hook(
