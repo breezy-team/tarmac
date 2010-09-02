@@ -20,6 +20,11 @@ This code is derived from Jelmer Vernooij's CIA script for Bazaar that is found
 at http://samba.org/~jelmer/bzr/cia_bzr.py and modified to fit within the needs
 of Tarmac.
 '''
+
+# Head off lint warnings.
+saxutils = None
+xmlrpclib = None
+
 from bzrlib.lazy_import import lazy_import
 lazy_import(globals(), '''
     import xmlrpclib
@@ -47,10 +52,10 @@ class CIAVC(TarmacPlugin):
         files = []
         delta = target.bzr_branch.get_revision_delta(revno)
 
-        [files.append(f) for (f,_x,_x) in delta.added]
-        [files.append(f) for (f,_x,_x) in delta.removed]
-        [files.append(f) for (_x,f,_x,_x,_x,_x) in delta.renamed]
-        [files.append(f) for (f,_x,_x,_x,_x) in delta.modified]
+        [files.append(f) for (f, _x, _x) in delta.added]
+        [files.append(f) for (f, _x, _x) in delta.removed]
+        [files.append(f) for (_x, f, _x, _x, _x, _x) in delta.renamed]
+        [files.append(f) for (f, _x, _x, _x, _x) in delta.modified]
 
         message = '''
 <message>

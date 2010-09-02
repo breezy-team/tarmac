@@ -6,6 +6,7 @@ Merging branches is boring.  Really, it is.  After humans have looked over a
 merge, it should really just magically be merged.  That's what Tarmac does, and
 it does it well.
 
+
 How it works
 ============
 
@@ -73,6 +74,7 @@ Tarmac ships with a few built-in plugins available.  They can be enabled by
 setting some config options on the branch's config.  The following are the
 plugins available, and the config options required to set it properly.
 
+
 Commit Message Formatter
 ========================
 
@@ -94,6 +96,7 @@ message.  Among those items are the following:
 
 **reviewer**
   This is the person who reviewed the branch.
+
 
 Command
 =======
@@ -125,6 +128,7 @@ place in the chroot.  The chroot is configured in /etc/schroot/schroot.conf as
 "tarmac-jail" and is run in the schroot with ``schroot -c tarmac-jail
 <script-to-run-in-chroot>``.
 
+
 CIA.vc Notifier
 ===============
 
@@ -148,6 +152,25 @@ only land branches that have 2 Approve votes and no Disapprove votes::
 
 Add as many criteria as you need, comma or semi-colon separated. All
 criteria have to pass.
+
+
+Recipe Builder
+==============
+
+The Recipe Builder plug-in can be configured to trigger the building of a
+Source Package Recipe on Launchpad, after all proposals for a target branch
+have finished merging into the tree. There are two configuration options
+required to use the plug-in:
+
+  [lp:target_branch]
+  package_recipe = <person_or_team>/<recipe_name>
+  recipe_series = <name_or_version>[,<name_or_version2>[,...]]
+
+This will trigger the <recipe_name> recipe owned by <person_or_team> to
+build into the <recipe_name>'s Daily Build Archive, as specified in the
+Launchpad configuration for the Recipe, for the specified relase series
+of the Ubuntu distribution. The [recipe_series] option accepts a comma-
+separated list of Ubuntu distribution series names or versions.
 
 
 ========================

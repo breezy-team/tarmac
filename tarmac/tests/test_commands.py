@@ -67,9 +67,11 @@ class TestAuthCommand(TarmacTestCase):
         registry.register_command('authenticate', commands.cmd_authenticate)
         command = registry._get_command(commands.cmd_authenticate,
                                         'authenticate')
+
         def fail_if_get_lp_object(*args, **kwargs):
             '''Fail if get_launchpad_object is called here.'''
             raise Exception('Not already authenticated.')
+
         command.get_launchpad_object = fail_if_get_lp_object
         command.run()
 
@@ -116,10 +118,9 @@ class TestMergeCommand(TarmacTestCase):
         command = registry._get_command(commands.cmd_merge, 'merge')
         command._do_merges = _do_merges
         command.run(launchpad=FakeLaunchpad())
-        self.assertEqual(tmp_stdout.getvalue(),
-                         '\n'.join(
-                ['Merging %s' % b for b in  sorted(branches, reverse=True)]
-                ) + '\n')
+        self.assertEqual(
+            tmp_stdout.getvalue(), ''.join(
+                'Merging %s\n' % b for b in  sorted(branches, reverse=True)))
 
         for branch in branches:
             self.config.remove_section(branch)

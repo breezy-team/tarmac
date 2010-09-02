@@ -59,5 +59,4 @@ class TarmacHookRegistry(hooks.Hooks):
             (0, 3, 3), False))
 
 
-
 tarmac_hooks = TarmacHookRegistry()
