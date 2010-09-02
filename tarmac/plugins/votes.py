@@ -34,6 +34,11 @@ operator_map = {
 operator_map_inverse = dict(
     (op, name) for (name, op) in operator_map.iteritems())
 
+criteria_expr = re.compile(
+    r"([a-zA-Z ]+) \s* (%s) \s* ([0-9]+)" % (
+        "|".join(re.escape(op) for op in operator_map)),
+    re.VERBOSE | re.MULTILINE)
+
 
 class VotingViolation(Exception):
     """The voting criteria have not been met."""
@@ -78,14 +83,7 @@ class Votes(TarmacPlugin):
         return counter
 
     def parse_criteria(self, criteria):
-        operator_expr = "|".join(re.escape(op) for op in operator_map)
-        vote_expr = "[a-zA-Z ]+"
-        number_expr = "[0-9]+"
-        term_expr = r"(%s) \s* (%s) \s* (%s)" % (
-            vote_expr, operator_expr, number_expr)
-        term_expr_flags = re.VERBOSE | re.MULTILINE
-        exprs = re.findall(term_expr, criteria, term_expr_flags)
-        for (vote, op, value) in exprs:
+        for (vote, op, value) in criteria_expr.findall(criteria):
             yield vote.strip(), operator_map[op], int(value)
 
     def evaluate_criteria(self, votes, criteria):
