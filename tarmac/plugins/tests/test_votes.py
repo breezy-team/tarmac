@@ -44,7 +44,7 @@ class TestVotes(TarmacTestCase):
 
     def test_count_votes(self):
         expected = {u"Approve": 2, u"Needs Information": 1, u"Abstain": 1}
-        observed = self.votes.count_votes(self.proposal)
+        observed = self.votes.count_votes(self.proposal.votes)
         self.assertEqual(expected, observed)
 
     def test_parse_criteria(self):

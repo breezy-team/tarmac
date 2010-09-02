@@ -36,9 +36,9 @@ class Votes(TarmacPlugin):
     def __call__(self, command, target, source, proposal):
         pass
 
-    def count_votes(self, proposal):
+    def count_votes(self, votes):
         counter = VoteCounter()
-        for vote in proposal.votes:
+        for vote in votes:
             comment = vote.comment
             if comment is not None:
                 counter[comment.vote] += 1
