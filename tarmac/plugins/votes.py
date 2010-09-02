@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Tarmac.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Tarmac plugin for enforcing a minimum number of approval votes."""
+"""Tarmac plugin for enforcing a configurable set of voting criteria."""
 
 import operator
 import re
@@ -34,10 +34,17 @@ operator_map = {
 operator_map_inverse = dict(
     (op, name) for (name, op) in operator_map.iteritems())
 
+criteria_split = re.compile(
+    "\s* [,;] \s*", re.VERBOSE | re.MULTILINE)
+
 criteria_expr = re.compile(
-    r"([a-zA-Z ]+) \s* (%s) \s* ([0-9]+)" % (
+    r"^ \s* ([a-zA-Z ]+?) \s* (%s) \s* ([0-9]+) \s* $" % (
         "|".join(re.escape(op) for op in operator_map)),
     re.VERBOSE | re.MULTILINE)
+
+
+class InvalidCriterion(Exception):
+    """A voting criterion is not understood."""
 
 
 class VotingViolation(Exception):
@@ -61,7 +68,7 @@ class Votes(TarmacPlugin):
             return
 
         votes = self.count_votes(proposal.votes)
-        criteria = list(self.parse_criteria(criteria))
+        criteria = self.parse_criteria(criteria)
 
         if not self.evaluate_criteria(votes, criteria):
             votes_desc = ", ".join(
@@ -83,8 +90,17 @@ class Votes(TarmacPlugin):
         return counter
 
     def parse_criteria(self, criteria):
-        for (vote, op, value) in criteria_expr.findall(criteria):
-            yield vote.strip(), operator_map[op], int(value)
+        expressions = []
+        for expression in criteria_split.split(criteria):
+            if len(expression) > 0:
+                match = criteria_expr.match(expression)
+                if match is None:
+                    raise InvalidCriterion(expression)
+                else:
+                    vote, op, value = match.groups()
+                    op, value = operator_map[op], int(value)
+                    expressions.append((vote, op, value))
+        return expressions
 
     def evaluate_criteria(self, votes, criteria):
         for vote, op, value in criteria:

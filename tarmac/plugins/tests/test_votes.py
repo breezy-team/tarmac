@@ -2,7 +2,7 @@
 
 import operator
 
-from tarmac.plugins.votes import Votes, VotingViolation
+from tarmac.plugins.votes import InvalidCriterion, Votes, VotingViolation
 from tarmac.tests import TarmacTestCase
 
 
@@ -53,8 +53,15 @@ class TestVotes(TarmacTestCase):
             (u"Disapprove", operator.eq, 0),
             ]
         observed = self.votes.parse_criteria(
-            "  Approve >= 2, Disapprove == 0; noise")
-        self.assertEqual(expected, list(observed))
+            "  Approve >= 2, Disapprove == 0; ")
+        self.assertEqual(expected, observed)
+
+    def test_parse_invalid_criteria(self):
+        self.assertRaises(
+            InvalidCriterion, self.votes.parse_criteria, "foo")
+        self.assertRaises(
+            InvalidCriterion, self.votes.parse_criteria,
+            "Approve == 1; Disapprove is 0")
 
     def test_evaluate_criteria(self):
         self.assertTrue(
