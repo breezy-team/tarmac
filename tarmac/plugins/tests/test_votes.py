@@ -2,7 +2,7 @@
 
 import operator
 
-from tarmac.plugins.votes import Votes
+from tarmac.plugins.votes import Votes, VotingViolation
 from tarmac.tests import TarmacTestCase
 
 
@@ -68,3 +68,18 @@ class TestVotes(TarmacTestCase):
                 {"Approve": 2, "Disapprove": 1},
                 [(u"Approve", operator.ge, 3),
                  (u"Disapprove", operator.eq, 0)]))
+
+    def test_run(self):
+        target = thing(
+            config=thing(
+                voting_criteria="Approve >= 2, Disapprove == 0"))
+        self.votes.run(
+            command=None, target=target, source=None, proposal=self.proposal)
+
+    def test_run_failure(self):
+        target = thing(
+            config=thing(
+                voting_criteria="Approve >= 2, Needs Information == 0"))
+        self.assertRaises(
+            VotingViolation, self.votes.run,
+            command=None, target=target, source=None, proposal=self.proposal)

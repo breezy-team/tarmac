@@ -23,6 +23,23 @@ from tarmac.hooks import tarmac_hooks
 from tarmac.plugins import TarmacPlugin
 
 
+operator_map = {
+    "=": operator.eq,
+    "==": operator.eq,
+    "<": operator.lt,
+    "<=": operator.le,
+    ">=": operator.ge,
+    ">": operator.gt,
+    }
+
+operator_map_inverse = dict(
+    (op, name) for (name, op) in operator_map.iteritems())
+
+
+class VotingViolation(Exception):
+    """The voting criteria have not been met."""
+
+
 class VoteCounter(dict):
     """Counts votes."""
 
@@ -33,8 +50,17 @@ class VoteCounter(dict):
 class Votes(TarmacPlugin):
     """Plugin to enforce a voting policy."""
 
-    def __call__(self, command, target, source, proposal):
-        pass
+    def run(self, command, target, source, proposal):
+        try:
+            criteria = target.config.voting_criteria
+        except AttributeError:
+            return
+
+        votes = self.count_votes(proposal.votes)
+        criteria = self.parse_criteria(criteria)
+
+        if not self.evaluate_criteria(votes, criteria):
+            raise VotingViolation()
 
     def count_votes(self, votes):
         counter = VoteCounter()
@@ -45,14 +71,6 @@ class Votes(TarmacPlugin):
         return counter
 
     def parse_criteria(self, criteria):
-        operator_map = {
-            "=": operator.eq,
-            "==": operator.eq,
-            "<": operator.lt,
-            "<=": operator.le,
-            ">=": operator.ge,
-            ">": operator.gt,
-            }
         operator_expr = "|".join(re.escape(op) for op in operator_map)
         vote_expr = "[a-zA-Z ]+"
         number_expr = "[0-9]+"
