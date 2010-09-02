@@ -15,6 +15,10 @@
 # along with Tarmac.  If not, see <http://www.gnu.org/licenses/>.
 
 """Tarmac plugin for enforcing a minimum number of approval votes."""
+
+import operator
+import re
+
 from tarmac.hooks import tarmac_hooks
 from tarmac.plugins import TarmacPlugin
 
@@ -40,6 +44,24 @@ class Votes(TarmacPlugin):
                 counter[comment.vote] += 1
         return counter
 
+    def parse_criteria(self, criteria):
+        operator_map = {
+            "=": operator.eq,
+            "==": operator.eq,
+            "<": operator.lt,
+            "<=": operator.le,
+            ">=": operator.ge,
+            ">": operator.gt,
+            }
+        operator_expr = "|".join(re.escape(op) for op in operator_map)
+        vote_expr = "[a-zA-Z ]+"
+        number_expr = "[0-9]+"
+        term_expr = r"(%s) \s* (%s) \s* (%s)" % (
+            vote_expr, operator_expr, number_expr)
+        term_expr_flags = re.VERBOSE | re.MULTILINE
+        exprs = re.findall(term_expr, criteria, term_expr_flags)
+        for (vote, op, value) in exprs:
+            yield vote.strip(), operator_map[op], int(value)
 
 
 tarmac_hooks['tarmac_pre_commit'].hook(

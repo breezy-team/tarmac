@@ -1,5 +1,7 @@
 """Tests for the votes plugin."""
 
+import operator
+
 from tarmac.plugins.votes import Votes
 from tarmac.tests import TarmacTestCase
 
@@ -44,3 +46,12 @@ class TestVotes(TarmacTestCase):
         expected = {u"Approve": 2, u"Needs Information": 1, u"Abstain": 1}
         observed = self.votes.count_votes(self.proposal)
         self.assertEqual(expected, observed)
+
+    def test_parse_criteria(self):
+        expected = [
+            (u"Approve", operator.ge, 2),
+            (u"Disapprove", operator.eq, 0),
+            ]
+        observed = self.votes.parse_criteria(
+            "  Approve >= 2, Disapprove == 0; noise")
+        self.assertEqual(expected, list(observed))
