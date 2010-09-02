@@ -69,6 +69,7 @@ class TestCommitMessageTemplateInfo(TarmacTestCase):
 
 
 class FakeCommitMessageTemplateInfo(object):
+
     def __getitem__(self, name):
         if name.startswith("_"):
             return ""

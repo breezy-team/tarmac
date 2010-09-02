@@ -68,5 +68,6 @@ class MockModule(object):
 
 class Thing(object):
     """Quickly create an object with given attributes."""
+
     def __init__(self, **names):
         self.__dict__.update(names)
