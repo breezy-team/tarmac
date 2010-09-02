@@ -31,7 +31,8 @@ class TarmacConfig(ConfigParser):
 
     def __init__(self):
         DEFAULTS = {
-            'log_file': os.path.join(self.CONFIG_HOME, 'tarmac.log'),}
+            'log_file': os.path.join(self.CONFIG_HOME, 'tarmac.log'),
+            }
 
         ConfigParser.__init__(self)
 

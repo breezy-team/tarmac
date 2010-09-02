@@ -53,7 +53,7 @@ def load_plugins():
 
                 else:
                     if _file.startswith('.'):
-                        continue # Hidden file, should be ignored.
+                        continue  # Hidden file, should be ignored.
                     for suffix_info in imp.get_suffixes():
                         if _file.endswith(suffix_info[0]):
                             _file = _file[:-len(suffix_info[0])]
@@ -67,10 +67,10 @@ def load_plugins():
                 if _file == '__init__':
                     continue
                 elif getattr(_mod_plugins, _file, None):
-                    continue # Plugin is already loaded.
+                    continue  # Plugin is already loaded.
                 else:
                     plugin_names.add(_file)
-        except OSError: # Usually the dir does not exist
+        except OSError:  # Usually the dir does not exist
             continue
 
     for name in plugin_names:
@@ -78,4 +78,3 @@ def load_plugins():
             exec 'import tarmac.plugins.%s' % name in {}
         except KeyboardInterrupt:
             raise
-

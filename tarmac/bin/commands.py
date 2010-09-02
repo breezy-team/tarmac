@@ -71,9 +71,8 @@ class cmd_authenticate(TarmacCommand):
     '''
 
     aliases = ['auth']
-    takes_args = ['filename?',]
-    takes_options = [
-        options.staging_option,]
+    takes_args = ['filename?']
+    takes_options = [options.staging_option]
 
     def run(self, filename=None, staging=False):
         if os.path.exists(self.config.CREDENTIALS):
@@ -98,7 +97,7 @@ class cmd_help(TarmacCommand):
             cmd = self.registry._get_command(None, command)
             if cmd is None:
                 self.outf.write('Unknown command "%(command)s"\n' % {
-                    'command': command,})
+                    'command': command})
                 return
             text = cmd.get_help_text()
             if text:
@@ -111,7 +110,7 @@ class cmd_help(TarmacCommand):
 class cmd_merge(TarmacCommand):
     '''Automatically merge approved merge proposal branches.'''
 
-    aliases = ['land',]
+    aliases = ['land']
     takes_args = ['branch_url?']
     takes_options = [
         options.http_debug_option,
@@ -128,7 +127,7 @@ class cmd_merge(TarmacCommand):
         if not proposals:
             self.logger.info(
                 'No approved proposals found for %(branch_url)s' % {
-                    'branch_url': branch_url,})
+                    'branch_url': branch_url})
             return
 
         target = Branch.create(lp_branch, self.config, create_tree=True)
@@ -156,7 +155,7 @@ class cmd_merge(TarmacCommand):
                     self.logger.debug(
                         'Merging %(source)s at revision %(revision)s' % {
                             'source': proposal.source_branch.display_name,
-                            'revision': proposal.reviewed_revid,})
+                            'revision': proposal.reviewed_revid})
 
                     target.merge(
                         source,
@@ -169,7 +168,7 @@ class cmd_merge(TarmacCommand):
                 except Exception, failure:
                     subject = u'Re: [Merge] %(source)s into %(target)s' % {
                         "source": proposal.source_branch.display_name,
-                        "target": proposal.target_branch.display_name,}
+                        "target": proposal.target_branch.display_name}
                     comment = None
                     if isinstance(failure, BranchHasConflicts):
                         self.logger.warn(
@@ -187,7 +186,7 @@ class cmd_merge(TarmacCommand):
                             'Merging %(source)s into %(target)s would be '
                             'pointless.' % {
                                 'source': proposal.source_branch.display_name,
-                                'target': proposal.target_branch.display_name,})
+                                'target': proposal.target_branch.display_name})
                         target.cleanup()
                         continue
                     elif isinstance(failure, TipChangeRejected):
@@ -197,7 +196,7 @@ class cmd_merge(TarmacCommand):
                             u'Unapproved chagnes to %(source)s were made '
                             u'after approval for merge into %(target)s.' % {
                                 "source": proposal.source_branch.display_name,
-                                "target": proposal.target_branch.display_name,})
+                                "target": proposal.target_branch.display_name})
                         comment = (
                             u'There are additional revisions which have not '
                             u'been approved in review. Please seek review and '
@@ -214,7 +213,7 @@ class cmd_merge(TarmacCommand):
                 urlp = re.compile('http[s]?://api\.(.*)launchpad\.net/beta/')
                 merge_url = urlp.sub(
                     'http://launchpad.net/', proposal.self_link)
-                revprops = { 'merge_url' : merge_url }
+                revprops = {'merge_url': merge_url}
 
                 commit_message = proposal.commit_message
                 if commit_message is None and imply_commit_message:
@@ -278,7 +277,7 @@ class cmd_merge(TarmacCommand):
         if branch_url:
             self.logger.debug(
                 '%(branch_url)s specified as branch_url' % {
-                    'branch_url': branch_url,})
+                    'branch_url': branch_url})
             if not branch_url.startswith('lp:'):
                 raise TarmacCommandError('Branch urls must start with lp:')
             self._do_merges(branch_url, imply_commit_message)

@@ -8,6 +8,7 @@ from tarmac.bin.registry import CommandRegistry
 from tarmac.exceptions import CommandNotFound
 from tarmac.tests.mock import cmd_mock, MockModule
 
+
 class TestCommandRegistry(unittest.TestCase):
     '''Test for tarmac.bin.commands.CommandRegistry.'''
 

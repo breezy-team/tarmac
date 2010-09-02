@@ -120,7 +120,7 @@ class TestBranch(TarmacTestCase):
 
     def test_merge_with_authors(self):
         '''A merge from a branch with authors'''
-        authors = [ 'author1', 'author2' ]
+        authors = ['author1', 'author2']
         self.branch1.commit('Authors test', authors=authors)
         self.branch2.merge(self.branch1)
         self.branch2.commit('Authors Merge test', authors=self.branch1.authors)
@@ -130,15 +130,13 @@ class TestBranch(TarmacTestCase):
         '''A merge from a branch with authors'''
         bugs = ['https://launchpad.net/bugs/1 fixed',
                 'https://bugzilla.gnome.org/show_bug.cgi?id=1 fixed',
-                'https://launchpad.net/bugs/2 fixed'
-                ]
+                'https://launchpad.net/bugs/2 fixed']
         revprops = {}
         revprops['bugs'] = '\n'.join(bugs)
         self.branch1.commit('Bugs test', revprops)
         self.branch1.commit('Testing')
-        self.branch2.commit('Foo',
-                            revprops={
-                'bugs':'https://launchpad.net/bugs/3 fixed'})
+        self.branch2.commit(
+            'Foo', revprops={'bugs': 'https://launchpad.net/bugs/3 fixed'})
         self.branch2.lp_branch.revision_count += 1
         self.branch2.merge(self.branch1)
         self.branch2.commit('Landed bugs')
@@ -146,7 +144,7 @@ class TestBranch(TarmacTestCase):
 
     def test_merge_with_reviewers(self):
         '''A merge with reviewers.'''
-        reviewers = [ 'reviewer1', 'reviewer2' ]
+        reviewers = ['reviewer1', 'reviewer2']
         self.branch1.merge(self.branch2)
         self.branch1.commit('Reviewers test', reviewers=reviewers)
 

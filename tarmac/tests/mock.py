@@ -28,7 +28,8 @@ class MockLPProject(object):
     '''A mock LP Project.'''
 
     def __init__(self):
-        self.name = b64encode(os.urandom(int(math.ceil(0.75*10))),'-_')[:10]
+        self.name = b64encode(
+            os.urandom(int(math.ceil(0.75 * 10))), '-_')[:10]
 
 
 class MockLPBranch(object):

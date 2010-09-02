@@ -26,7 +26,6 @@ import shutil
 import tempfile
 
 from bzrlib import branch as bzr_branch
-from bzrlib import missing
 from bzrlib.errors import NoSuchRevision
 from bzrlib.workingtree import WorkingTree
 
