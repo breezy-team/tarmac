@@ -15,12 +15,18 @@
 # along with Tarmac.  If not, see <http://www.gnu.org/licenses/>.
 
 '''Tarmac plugin for running tests pre-commit.'''
+
+# Head off lint warnings.
+errors = None
+os = None
+subprocess = None
+
 from bzrlib.lazy_import import lazy_import
 lazy_import(globals(), '''
     import os
     import subprocess
 
-    from bzrlib.errors import TipChangeRejected
+    from bzrlib import errors
     ''')
 
 from tarmac.hooks import tarmac_hooks
@@ -82,7 +88,7 @@ class Command(TarmacPlugin):
             'target' : self.proposal.target_branch.display_name,
             'output' : u'\n'.join([stdout_value, stderr_value]),
             }
-        raise TipChangeRejected(comment)
+        raise errors.TipChangeRejected(comment)
 
 
 tarmac_hooks['tarmac_pre_commit'].hook(Command(), 'Command plugin')

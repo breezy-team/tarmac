@@ -20,6 +20,11 @@ This code is derived from Jelmer Vernooij's CIA script for Bazaar that is found
 at http://samba.org/~jelmer/bzr/cia_bzr.py and modified to fit within the needs
 of Tarmac.
 '''
+
+# Head off lint warnings.
+saxutils = None
+xmlrpclib = None
+
 from bzrlib.lazy_import import lazy_import
 lazy_import(globals(), '''
     import xmlrpclib
