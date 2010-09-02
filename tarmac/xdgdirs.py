@@ -15,23 +15,14 @@
 # along with Tarmac.  If not, see <http://www.gnu.org/licenses/>.
 
 '''XDG BaseDirectory abstraction for non-Linux platforms.'''
+
+__all__ = [
+    'xdg_cache_home',
+    'xdg_config_home',
+    ]
+
 import os
 import sys
-
-class NotSupportedError(Exception):
-    '''Unsupported platform version.'''
-
-try:
-    from xdg.BaseDirectory import xdg_config_home, xdg_cache_home
-except ImportError:
-    if sys.platform == 'win32':
-        from bzrlib import win32utils as win
-        xdg_config_home = win.get_appdata_location_unicode()
-        xdg_cache_home = get_temp_location()
-    else:
-        home = os.environ.get('HOME')
-        xdg_config_home = os.path.join(home, '.config/')
-        xdg_cache_home = os.path.join(home, '.cache/')
 
 
 # XXX This function should be merged into bzrlib.win32utils
@@ -52,3 +43,19 @@ def get_temp_location():
 
     # Not on win32 or nothing found
     return None
+
+
+try:
+    import xdg.BaseDirectory
+except ImportError:
+    if sys.platform == 'win32':
+        from bzrlib import win32utils as win
+        xdg_config_home = win.get_appdata_location_unicode()
+        xdg_cache_home = get_temp_location()
+    else:
+        home = os.environ.get('HOME')
+        xdg_config_home = os.path.join(home, '.config/')
+        xdg_cache_home = os.path.join(home, '.cache/')
+else:
+     xdg_config_home = xdg.BaseDirectory.xdg_config_home
+     xdg_cache_home = xdg.BaseDirectory.xdg_cache_home
