@@ -141,6 +141,18 @@ This configuration looks like this::
   cia_project = tarmac
   cia_server = http://cia.vc
 
+Voting Policy
+=============
+
+This enforces a simple voting policy for branches. For example, to
+only land branches that have 2 Approve votes and no Disapprove votes::
+
+  [lp:tarmac]
+  voting_criteria = Approve >= 2, Disapprove == 0
+
+Add as many criteria as you need, comma or semi-colon separated. All
+criteria have to pass.
+
 
 Recipe Builder
 ==============
