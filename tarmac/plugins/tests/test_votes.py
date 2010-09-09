@@ -91,5 +91,4 @@ class TestVotes(TarmacTestCase):
                  "Got: 1 Abstain, 2 Approve, 1 Needs Information."),
                 str(error))
         else:
-            raise AssertionError(
-                "Votes.run() did not raise VotingViolation.")
+            self.fail("Votes.run() did not raise VotingViolation.")
