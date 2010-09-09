@@ -78,3 +78,30 @@ class TestVotes(TarmacTestCase):
         else:
             raise AssertionError(
                 "Votes.run() did not raise VotingViolation.")
+
+    def test_run_global_config(self):
+        target = Thing()
+        command = Thing(
+            config=Thing(
+                voting_criteria="Approve >= 2, Disapprove == 0"))
+        self.plugin.run(command=command, target=target,
+                        source=None, proposal=self.proposal)
+
+    def test_run_global_config_failure(self):
+        target = Thing()
+        command = Thing(
+            config=Thing(
+                voting_criteria="Approve >= 2, Needs Information == 0"))
+        try:
+            self.plugin.run(
+                command=command, target=target, source=None,
+                proposal=self.proposal)
+        except VotingViolation, error:
+            self.assertEqual(
+                ("Voting does not meet specified criteria. "
+                 "Required: Approve >= 2, Needs Information == 0. "
+                 "Got: 1 Abstain, 2 Approve, 1 Needs Information."),
+                str(error))
+        else:
+            raise AssertionError(
+                "Votes.run() did not raise VotingViolation.")
