@@ -41,7 +41,7 @@ class PackageRecipe(TarmacPlugin):
                 lp_recipe = command.launchpad.people[owner].getRecipe(
                     name=recipe)
                 archive = lp_recipe.daily_build_archive
-                distro = self.launchpad.distributions[u'Ubuntu']
+                distro = command.launchpad.distributions[u'Ubuntu']
                 lp_series = [x for x in distro.series if x.name == series][0]
                 lp_recipe.requestBuild(archive=archive,
                                        distroseries=lp_series,

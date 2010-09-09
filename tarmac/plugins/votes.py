@@ -65,7 +65,10 @@ class Votes(TarmacPlugin):
         try:
             criteria = target.config.voting_criteria
         except AttributeError:
-            return
+            try:
+                criteria = command.config.voting_criteria
+            except AttributeError:
+                return
 
         votes = self.count_votes(proposal.votes)
         criteria = self.parse_criteria(criteria)
