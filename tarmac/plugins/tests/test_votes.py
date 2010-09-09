@@ -1,3 +1,18 @@
+# Copyright 2010 Canonical Ltd.
+# This file is part of Tarmac.
+#
+# Tarmac is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License version 3 as
+# published by the Free Software Foundation.
+#
+# Tarmac is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Tarmac.  If not, see <http://www.gnu.org/licenses/>.
+
 """Tests for the votes plugin."""
 
 import operator
@@ -76,8 +91,7 @@ class TestVotes(TarmacTestCase):
                  "Got: 1 Abstain, 2 Approve, 1 Needs Information."),
                 str(error))
         else:
-            raise AssertionError(
-                "Votes.run() did not raise VotingViolation.")
+            self.fail("Votes.run() did not raise VotingViolation.")
 
     def test_run_global_config(self):
         target = Thing()
@@ -103,5 +117,4 @@ class TestVotes(TarmacTestCase):
                  "Got: 1 Abstain, 2 Approve, 1 Needs Information."),
                 str(error))
         else:
-            raise AssertionError(
-                "Votes.run() did not raise VotingViolation.")
+            self.fail("Votes.run() did not raise VotingViolation.")
