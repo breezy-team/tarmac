@@ -88,14 +88,26 @@ commit message should appear.  In order to use it, you must set the
 The formatter can take a few different items available and re-format the commit
 message.  Among those items are the following:
 
+**approved_by**
+  Display name of reviewers who approved the review, comma-separated.
+
+**approved_by_nicks**
+  Short names of reviewers who approved the review, comma-separated.
+
+**author**
+  The display name of the source branch author.
+
+**author_nick**
+  The short name of the source branch author.
+
+**bugs_fixed**
+  Comma-separated list of the bug numbers fixed in the source branch.
+
 **commit_message**
   This is the commit message that is set on the merge proposal itself.
 
-**author**
-  This is the owner of the source branch.
-
 **reviewer**
-  This is the person who reviewed the branch.
+  The display name of the merge proposal reviewer.
 
 
 Command
