@@ -17,8 +17,6 @@
 # along with Tarmac.  If not, see <http://www.gnu.org/licenses/>.
 
 '''Tests for tarmac.branch'''
-from __future__ import with_statement
-
 import os
 import shutil
 

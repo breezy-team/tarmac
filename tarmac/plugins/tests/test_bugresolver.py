@@ -19,6 +19,7 @@ from tarmac.plugins.bugresolver import BugResolver
 from tarmac.tests import TarmacTestCase
 from tarmac.tests.mock import Thing
 
+
 class BugResolverTests(TarmacTestCase):
     """Test the BugResolver."""
 
@@ -35,12 +36,12 @@ class BugResolverTests(TarmacTestCase):
             pass
 
         bugs = {
-            '0' : Thing(
+            '0': Thing(
                 bug_tasks=[Thing(target='Target', status='In Progress',
                                  lp_save=lp_save),
                            Thing(target='Ubuntu', status='Incomplete',
                                  lp_save=lp_save)]),
-            '1' : Thing(
+            '1': Thing(
                 bug_tasks=[Thing(target='Target', status='Confirmed',
                                  lp_save=lp_save)]),
             }
