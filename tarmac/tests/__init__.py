@@ -18,7 +18,6 @@
 import os
 import shutil
 import tempfile
-import unittest
 
 from bzrlib.tests import TestCaseInTempDir
 from tarmac.config import TarmacConfig
@@ -67,7 +66,6 @@ access_secret = secret
                 pass
         tempfile.tempdir = self._oldtemp
         super(TarmacTestCase, self).tearDown()
-
 
     def write_credentials_file(self):
         """Write out the temporary credentials file for testing."""
