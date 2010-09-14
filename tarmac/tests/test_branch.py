@@ -21,20 +21,18 @@ import os
 import shutil
 
 from bzrlib.errors import PointlessMerge
-from bzrlib.tests import TestCaseInTempDir
 
 from tarmac import branch
 from tarmac.tests import TarmacTestCase
 from tarmac.tests.mock import MockLPBranch
 
 
-class TestBranch(TarmacTestCase, TestCaseInTempDir):
+class TestBranch(TarmacTestCase):
     '''Test for Tarmac.branch.Branch.'''
 
     def setUp(self):
         '''Set up the test environment.'''
-        TarmacTestCase.setUp(self)
-        TestCaseInTempDir.setUp(self)
+        super(TestBranch, self).setUp()
 
         self.branch1, self.branch2 = self.make_two_branches_to_merge()
 
@@ -45,8 +43,7 @@ class TestBranch(TarmacTestCase, TestCaseInTempDir):
         shutil.rmtree(self.branch1.lp_branch.tree_dir)
         shutil.rmtree(self.branch2.lp_branch.tree_dir)
 
-        TestCaseInTempDir.tearDown(self)
-        TarmacTestCase.tearDown(self)
+        super(TestBranch, self).tearDown()
 
     def make_two_branches_to_merge(self):
         '''Make two branches, one with revisions to merge.'''
