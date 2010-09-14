@@ -18,12 +18,12 @@
 import os
 import shutil
 import tempfile
-import unittest
 
+from bzrlib.tests import TestCaseInTempDir
 from tarmac.config import TarmacConfig
 
 
-class TarmacTestCase(unittest.TestCase):
+class TarmacTestCase(TestCaseInTempDir):
     '''A base TestCase for all Tarmac tests.'''
 
     CREDS_TEMPLATE = '''
@@ -36,6 +36,9 @@ access_secret = secret
 
     def setUp(self):
         # Set up the environment.
+        super(TarmacTestCase, self).setUp()
+
+        self._oldtemp = tempfile.tempdir
         tempfile.tempdir = os.getcwd()
         self.tempdir = tempfile.mkdtemp(dir=os.getcwd())
         os.environ['TARMAC_CONFIG_HOME'] = os.path.join(
@@ -61,6 +64,8 @@ access_secret = secret
                 del os.environ[key]
             except KeyError:
                 pass
+        tempfile.tempdir = self._oldtemp
+        super(TarmacTestCase, self).tearDown()
 
     def write_credentials_file(self):
         """Write out the temporary credentials file for testing."""

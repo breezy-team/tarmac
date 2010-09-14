@@ -18,6 +18,7 @@
 
 '''Tests for tarmac.branch'''
 import os
+import shutil
 
 from bzrlib.errors import PointlessMerge
 
@@ -31,10 +32,7 @@ class TestBranch(TarmacTestCase):
 
     def setUp(self):
         '''Set up the test environment.'''
-        TarmacTestCase.setUp(self)
-
-        self.bzrdir = os.path.join(os.getcwd(), "bzr")
-        os.environ['BZR_HOME'] = self.bzrdir
+        super(TestBranch, self).setUp()
 
         self.branch1, self.branch2 = self.make_two_branches_to_merge()
 
@@ -42,12 +40,15 @@ class TestBranch(TarmacTestCase):
         """Tear down the tests."""
         self.remove_branch_config(self.branch1.lp_branch.tree_dir)
         self.remove_branch_config(self.branch2.lp_branch.tree_dir)
-        TarmacTestCase.tearDown(self)
+        shutil.rmtree(self.branch1.lp_branch.tree_dir)
+        shutil.rmtree(self.branch2.lp_branch.tree_dir)
+
+        super(TestBranch, self).tearDown()
 
     def make_two_branches_to_merge(self):
         '''Make two branches, one with revisions to merge.'''
-        branch1_dir = os.path.join(self.tempdir, 'branch1')
-        branch2_dir = os.path.join(self.tempdir, 'branch2')
+        branch1_dir = os.path.join(self.TEST_ROOT, 'branch1')
+        branch2_dir = os.path.join(self.TEST_ROOT, 'branch2')
         self.add_branch_config(branch1_dir)
         self.add_branch_config(branch2_dir)
 
@@ -72,7 +73,7 @@ class TestBranch(TarmacTestCase):
 
     def test_create(self):
         '''Test the creation of a TarmacBranch instance.'''
-        tree_dir = os.path.join(self.tempdir, 'test_create')
+        tree_dir = os.path.join(self.TEST_ROOT, 'test_create')
         self.add_branch_config(tree_dir)
 
         a_branch = branch.Branch.create(MockLPBranch(tree_dir), self.config)
@@ -89,7 +90,7 @@ class TestBranch(TarmacTestCase):
 
     def test_merge_raises_exception_with_no_tree(self):
         '''A merge on a branch with no tree will raise an exception.'''
-        branch3_dir = os.path.join(self.tempdir, 'branch3')
+        branch3_dir = os.path.join(self.TEST_ROOT, 'branch3')
         self.add_branch_config(branch3_dir)
         branch3 = branch.Branch.create(MockLPBranch(
                 branch3_dir, source_branch=self.branch1.lp_branch),
@@ -98,11 +99,12 @@ class TestBranch(TarmacTestCase):
         self.assertRaises(
             AttributeError, branch3.merge, self.branch2)
         self.remove_branch_config(branch3_dir)
+        shutil.rmtree(branch3_dir)
 
     def test_merge_no_changes(self):
         '''A merge on a branch with a tree will raise an exception if no
         changes are present.'''
-        branch3_dir = os.path.join(self.tempdir, 'branch3')
+        branch3_dir = os.path.join(self.TEST_ROOT, 'branch3')
         self.add_branch_config(branch3_dir)
         branch3 = branch.Branch.create(MockLPBranch(
                 branch3_dir, source_branch=self.branch1.lp_branch),
@@ -110,6 +112,7 @@ class TestBranch(TarmacTestCase):
 
         self.assertRaises(PointlessMerge, self.branch1.merge, branch3)
         self.remove_branch_config(branch3_dir)
+        shutil.rmtree(branch3_dir)
 
     def test_merge(self):
         '''A merge on a branch with a tree of a branch with changes will merge.
