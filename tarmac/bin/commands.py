@@ -287,4 +287,9 @@ class cmd_merge(TarmacCommand):
                 self.logger.debug(
                     'Merging approved branches against %(branch)s' % {
                         'branch': branch})
-                self._do_merges(branch, imply_commit_message)
+                try:
+                    self._do_merges(branch, imply_commit_message)
+                except Exception, error:
+                    self.logger.error(
+                        'An error occurred trying to merge %s: %s',
+                        branch, error)
