@@ -19,7 +19,15 @@
 from bzrlib.errors import BzrCommandError
 
 
-class BranchHasConflicts(Exception):
+class TarmacMergeError(Exception):
+    """An error occurred, preventing the merge of a branch."""
+
+    def __init__(self, message, comment=None, *args, **kwargs):
+        super(TarmacMergeError, self).__init__(message, *args, **kwargs)
+        self.comment = comment
+
+
+class BranchHasConflicts(TarmacMergeError):
     '''Exception for when a branch merge has conflicts.'''
 
 
@@ -31,5 +39,5 @@ class TarmacCommandError(BzrCommandError):
     '''Exception for various command errors.'''
 
 
-class UnapprovedChanges(Exception):
+class UnapprovedChanges(TarmacMergeError):
     '''Exception for when a branch has unapproved changes.'''

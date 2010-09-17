@@ -89,7 +89,7 @@ class TestVotes(TarmacTestCase):
                 ("Voting does not meet specified criteria. "
                  "Required: Approve >= 2, Needs Information == 0. "
                  "Got: 1 Abstain, 2 Approve, 1 Needs Information."),
-                str(error))
+                error.comment)
         else:
             self.fail("Votes.run() did not raise VotingViolation.")
 
@@ -115,6 +115,6 @@ class TestVotes(TarmacTestCase):
                 ("Voting does not meet specified criteria. "
                  "Required: Approve >= 2, Needs Information == 0. "
                  "Got: 1 Abstain, 2 Approve, 1 Needs Information."),
-                str(error))
+                error.comment)
         else:
             self.fail("Votes.run() did not raise VotingViolation.")

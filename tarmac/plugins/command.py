@@ -17,7 +17,6 @@
 '''Tarmac plugin for running tests pre-commit.'''
 
 # Head off lint warnings.
-errors = None
 os = None
 subprocess = None
 
@@ -25,12 +24,15 @@ from bzrlib.lazy_import import lazy_import
 lazy_import(globals(), '''
     import os
     import subprocess
-
-    from bzrlib import errors
     ''')
 
+from tarmac.exceptions import TarmacMergeError
 from tarmac.hooks import tarmac_hooks
 from tarmac.plugins import TarmacPlugin
+
+
+class VerifyCommandFailed(TarmacMergeError):
+    """Running the verify_command failed."""
 
 
 class Command(TarmacPlugin):
@@ -81,15 +83,15 @@ class Command(TarmacPlugin):
         doesn't attempt to merge it again without human interaction.  An
         exception is then raised to prevent the commit from happening.
         '''
-        self.logger.warn(u'Test command "%s" failed.' % self.verify_command)
-        comment = (u'The attempt to merge %(source)s into %(target)s failed.' +
-                   u'Below is the output from the failed tests.\n\n' +
+        message = u'Test command "%s" failed.' % self.verify_command
+        comment = (u'The attempt to merge %(source)s into %(target)s failed. '
+                   u'Below is the output from the failed tests.\n\n'
                    u'%(output)s') % {
             'source': self.proposal.source_branch.display_name,
             'target': self.proposal.target_branch.display_name,
             'output': u'\n'.join([stdout_value, stderr_value]),
             }
-        raise errors.TipChangeRejected(comment)
+        raise VerifyCommandFailed(message, comment)
 
 
 tarmac_hooks['tarmac_pre_commit'].hook(Command(), 'Command plugin')
