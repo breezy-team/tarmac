@@ -18,6 +18,7 @@
 import operator
 import re
 
+from tarmac.exceptions import TarmacMergeError
 from tarmac.hooks import tarmac_hooks
 from tarmac.plugins import TarmacPlugin
 
@@ -46,7 +47,7 @@ class InvalidCriterion(Exception):
     """A voting criterion is not understood."""
 
 
-class VotingViolation(Exception):
+class VotingViolation(TarmacMergeError):
     """The voting criteria have not been met."""
 
 
@@ -80,9 +81,10 @@ class Votes(TarmacPlugin):
             criteria_desc = ", ".join(
                 "%s %s %d" % (vote, operator_map_inverse[op], value)
                 for (vote, op, value) in criteria)
-            raise VotingViolation(
-                "Voting does not meet specified criteria. "
-                 "Required: %s. Got: %s." % (criteria_desc, votes_desc))
+            lp_comment = (
+                u"Voting does not meet specified criteria. "
+                u"Required: %s. Got: %s." % (criteria_desc, votes_desc))
+            raise VotingViolation(u'Voting criteria not met.', lp_comment)
 
     def count_votes(self, votes):
         """Count and collate the votes.
@@ -108,7 +110,8 @@ class Votes(TarmacPlugin):
             if len(expression) > 0:
                 match = criteria_expr.match(expression)
                 if match is None:
-                    raise InvalidCriterion(expression)
+                    raise InvalidCriterion('Invalid voting criterion: %s' %
+                                           expression)
                 else:
                     vote, op, value = match.groups()
                     op, value = operator_map[op], int(value)

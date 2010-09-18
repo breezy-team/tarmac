@@ -67,6 +67,51 @@ arguments to the plugin are explained below.
   The merge proposal that proposes the source branch for merge into the target.
 
 
+
+Handling Errors
+===============
+
+If you are writing a plug-in to validate against some prerequisites for a
+merge to be successful, you may wish to raise an exception if this criteria
+goes unmet, within your plug-in, to prevent the successful merge of a branch.
+The Tarmac merge command automatically handles exceptions. All you need to
+do, is raise the right one. To do this, simply use TarmacMergeError, or
+create your own exception class as a sub-class thereof. For example, if you
+were writing a plug-in to run a test before committing a change, you might
+define your exception like this:
+
+  from tarmac.exceptions import TarmacMergeError
+
+
+  class TestCommandFailed(TarmacMergeError):
+      """The test command failed to complete successfully."""
+
+
+And when you raise your exception to prevent the commit from happening, you
+might do the following:
+
+  message = u'The test command failed to complete successfully.'
+  comment = (u'Tests failed to pass, with the following errors:'
+             u'\n\n%(output)s' % {'output': test_output})
+  raise TestCommandFailed(message, comment)
+
+The TarmacMergeCommand exception takes two arguments. The first is a short
+message summarizing what failed, and the second is a comment that would be
+posted to the merge proposal on Launchpad, to let the developer know what
+needs to be fixed in their branch. The ``message`` argument is similar to
+a normal Python Exception message argument. However, in this case, it should
+be kept to a brief summary of what failed, as the message will be appended
+to another short string for writing to a log. The ``comment`` argument is
+typically a longer message describing the issue in more detail. This comment
+will be posted to the merge proposal on Launchpad, to inform the developer
+of what went wrong during the merge of their branch. The merge proposal will
+also be set back to the ``Needs Review`` status, to avoid having tarmac
+attempt to merge the branch again, without having the issues resolved. If
+no ``comment`` argument is supplied, the ``message`` argument will be used
+for the comment when posting to Launchpad, instead.
+
+
+
 Caveats
 =======
 

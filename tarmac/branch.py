@@ -30,7 +30,7 @@ from bzrlib.errors import NoSuchRevision
 from bzrlib.workingtree import WorkingTree
 
 from tarmac.config import BranchConfig
-from tarmac.exceptions import BranchHasConflicts
+from tarmac.exceptions import BranchHasConflicts, TarmacMergeError
 
 
 class Branch(object):
@@ -93,7 +93,13 @@ class Branch(object):
         conflict_list = self.tree.merge_from_branch(
             branch.bzr_branch, to_revision=revid)
         if conflict_list:
-            raise BranchHasConflicts
+            message = u'Conflicts merging branch.'
+            lp_comment = (
+                u'Attempt to merge into %(target)s failed due to conflicts: '
+                u'\n\n%(output)s' % {
+                    'target': self.lp_branch.display_name,
+                    "output": self.conflicts})
+            raise BranchHasConflicts(message, lp_comment)
 
     @property
     def conflicts(self):
@@ -119,8 +125,8 @@ class Branch(object):
         if reviewers:
             for reviewer in reviewers:
                 if '\n' in reviewer:
-                    raise AssertionError('\\n is not a valid character in a '
-                                         ' reviewer identity')
+                    raise TarmacMergeError('\\n is not a valid character in a '
+                                           'reviewer identity.')
             revprops['reviewers'] = '\n'.join(reviewers)
 
         self.tree.commit(commit_message, committer='Tarmac',
