@@ -58,7 +58,8 @@ class TestBranch(TarmacTestCase):
         branch1.lp_branch.revision_count += 1
 
         mock2 = MockLPBranch(branch2_dir, source_branch=branch1.lp_branch)
-        branch2 = branch.Branch.create(mock2, self.config, create_tree=True)
+        branch2 = branch.Branch.create(mock2, self.config, create_tree=True,
+                                       target=branch1)
         branch2.commit('ABC...')
 
         added_file = os.path.join(branch2.lp_branch.tree_dir, 'README')
@@ -124,10 +125,15 @@ class TestBranch(TarmacTestCase):
     def test_merge_with_authors(self):
         '''A merge from a branch with authors'''
         authors = ['author1', 'author2']
-        self.branch1.commit('Authors test', authors=authors)
-        self.branch2.merge(self.branch1)
-        self.branch2.commit('Authors Merge test', authors=self.branch1.authors)
-        self.assertEqual(self.branch2.authors.sort(), authors.sort())
+        self.branch2.commit('Authors test', authors=authors)
+        self.branch2.commit('Another author', authors=['author3'])
+        self.branch2.lp_branch.revision_count += 2
+        orig_authors = self.branch2.authors
+        self.branch1.merge(self.branch2)
+        self.branch1.commit('Authors Merge test', authors=self.branch2.authors)
+        self.branch1.lp_branch.revision_count += 1
+        self.assertEqual(sorted(orig_authors),
+                         sorted(self.branch1.authors))
 
     def test_merge_with_bugs(self):
         '''A merge from a branch with authors'''

@@ -143,7 +143,7 @@ class cmd_merge(TarmacCommand):
                     u'Preparing to merge %(source_branch)s' % {
                         'source_branch': proposal.source_branch.bzr_identity})
                 source = Branch.create(
-                    proposal.source_branch, self.config)
+                    proposal.source_branch, self.config, target)
 
                 try:
                     approved = proposal.reviewed_revid

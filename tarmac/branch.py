@@ -35,7 +35,7 @@ from tarmac.exceptions import BranchHasConflicts, TarmacMergeError
 
 class Branch(object):
 
-    def __init__(self, lp_branch, config=False):
+    def __init__(self, lp_branch, config=False, target=None):
         self.lp_branch = lp_branch
         self.bzr_branch = bzr_branch.Branch.open(self.lp_branch.bzr_identity)
         if config:
@@ -43,15 +43,14 @@ class Branch(object):
         else:
             self.config = None
 
+        self.target = target
         self.logger = logging.getLogger('tarmac')
 
     @classmethod
-    def create(cls, lp_branch, config, create_tree=False):
+    def create(cls, lp_branch, config, create_tree=False, target=None):
+        clazz = cls(lp_branch, config, target)
         if create_tree:
-            clazz = cls(lp_branch, config)
             clazz.create_tree()
-        else:
-            clazz = cls(lp_branch)
         return clazz
 
     def create_tree(self):
@@ -139,15 +138,38 @@ class Branch(object):
 
     @property
     def authors(self):
-        last_rev = self.bzr_branch.last_revision()
         author_list = []
 
-        # Only query for authors if last_rev is not null:
-        if last_rev != 'null:':
-            rev = self.bzr_branch.repository.get_revision(last_rev)
-            apparent_authors = rev.get_apparent_authors()
-            author_list.extend(
-                [a.replace('\n', '') for a in apparent_authors])
+        if self.target:
+            self.bzr_branch.lock_read()
+            self.target.bzr_branch.lock_read()
+
+            graph = self.bzr_branch.repository.get_graph(
+                self.target.bzr_branch.repository)
+
+            unique_ids = graph.find_unique_ancestors(
+                self.bzr_branch.last_revision(),
+                [self.target.bzr_branch.last_revision()])
+
+            revs = self.bzr_branch.repository._iter_revisions(unique_ids)
+            for rev in revs:
+                apparent_authors = rev[1].get_apparent_authors()
+                for author in apparent_authors:
+                    author.replace('\n', '')
+                    if author not in author_list:
+                        author_list.append(author)
+
+            self.target.bzr_branch.unlock()
+            self.bzr_branch.unlock()
+        else:
+            last_rev = self.bzr_branch.last_revision()
+            if last_rev != 'null:':
+                rev = self.bzr_branch.repository.get_revision(last_rev)
+                apparent_authors = rev.get_apparent_authors()
+                author_list.extend(
+                    [a.replace('\n', '') for a in apparent_authors])
+            
+
         return author_list
 
     @property
