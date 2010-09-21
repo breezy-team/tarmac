@@ -171,8 +171,10 @@ class cmd_merge(TarmacCommand):
 
                 except TarmacMergeError, failure:
                     self.logger.warn(
-                        u'Merging %(source)s into %(target)s failed: %s' %
-                        str(failure))
+                        u'Merging %(source)s into %(target)s failed: %(msg)s' %
+                        {'source': proposal.source_branch.display_name,
+                         'target': proposal.target_branch.display_name,
+                         'msg': str(failure)})
 
                     subject = u'Re: [Merge] %(source)s into %(target)s' % {
                         "source": proposal.source_branch.display_name,
