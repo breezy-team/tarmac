@@ -23,12 +23,38 @@ class BugResolver(TarmacPlugin):
 
     def run(self, command, target, source, proposal):
         """Mark bugs fixed in the bug tracker."""
+        project = target.lp_branch.project.name
+        try:
+            series = target.lp_branch.bzr_identity.split('/')[1]
+        except IndexError:
+            series = u'trunk'
+
+        lp_series = target.project.getSeries(name=series)
+        if not lp_series:
+            self.logger.info('Target branch has no valid project series.')
+            return
+
         for bug_id in target.fixed_bugs:
             bug = command.launchpad.bugs[bug_id]
             for task in bug.bug_tasks:
-                if task.target == target.lp_branch.project:
-                    task.status = u'Fix Committed'
-                    task.lp_save()
+                bug_series = None
+                try:
+                    bug_project = task.target.name.split('/')[0]
+                    bug_series = task.target.name.split('/')[1]
+                except IndexError:
+                    bug_project = task.target.name
+
+                if not bug_series:
+                    bug_series = u'trunk'
+
+                if bug_project != project:
+                    continue
+
+                if bug_series != series:
+                    continue
+
+                task.status = u'Fix Committed'
+                task.lp_save()
 
 
 tarmac_hooks['tarmac_post_commit'].hook(BugResolver(), 'Bug resolver')
