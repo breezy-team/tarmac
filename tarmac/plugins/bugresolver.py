@@ -29,7 +29,7 @@ class BugResolver(TarmacPlugin):
         except IndexError:
             series = u'trunk'
 
-        lp_series = target.project.getSeries(name=series)
+        lp_series = target.lp_branch.project.getSeries(name=series)
         if not lp_series:
             self.logger.info('Target branch has no valid project series.')
             return

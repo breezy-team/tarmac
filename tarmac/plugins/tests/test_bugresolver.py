@@ -63,7 +63,6 @@ class BugResolverTests(TarmacTestCase):
     def test_run(self):
         """Test that the plug-in runs correctly."""
         target = Thing(fixed_bugs=self.bugs.keys(),
-                       project=self.projects[1],
                        lp_branch=Thing(project=self.projects[1],
                                        bzr_identity='lp:target'))
         launchpad = Thing(bugs=self.bugs)
@@ -77,7 +76,6 @@ class BugResolverTests(TarmacTestCase):
     def test_run_with_series(self):
         """Test that bug resolution for series on bugs works."""
         target = Thing(fixed_bugs=self.bugs.keys(),
-                       project=self.projects[1],
                        lp_branch=Thing(project=self.projects[1],
                                        bzr_identity='lp:target/stable'))
         launchpad = Thing(bugs=self.bugs)
@@ -91,7 +89,6 @@ class BugResolverTests(TarmacTestCase):
     def test_run_with_series_invalid(self):
         """Test that bug resolution for series on bugs works."""
         target = Thing(fixed_bugs=self.bugs.keys(),
-                       project=self.projects[1],
                        lp_branch=Thing(project=self.projects[1],
                                        bzr_identity='lp:target/invalid'))
         launchpad = Thing(bugs=self.bugs)
