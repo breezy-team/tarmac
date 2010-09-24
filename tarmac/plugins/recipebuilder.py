@@ -1,6 +1,6 @@
 # This file is part of Tarmac.
 #
-# Copyright 2010 Canonical, LTd.
+# Copyright 2010 Canonical, Ltd.
 #
 # Tarmac is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License version 3 as

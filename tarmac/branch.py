@@ -168,7 +168,6 @@ class Branch(object):
                 apparent_authors = rev.get_apparent_authors()
                 author_list.extend(
                     [a.replace('\n', '') for a in apparent_authors])
-            
 
         return author_list
 
