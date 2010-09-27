@@ -151,9 +151,9 @@ class Branch(object):
                 self.bzr_branch.last_revision(),
                 [self.target.bzr_branch.last_revision()])
 
-            revs = self.bzr_branch.repository._iter_revisions(unique_ids)
+            revs = self.bzr_branch.repository.get_revisions(unique_ids)
             for rev in revs:
-                apparent_authors = rev[1].get_apparent_authors()
+                apparent_authors = rev.get_apparent_authors()
                 for author in apparent_authors:
                     author.replace('\n', '')
                     if author not in author_list:
