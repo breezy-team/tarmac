@@ -30,7 +30,7 @@ class TarmacCommand(Command):
         self.config = registry.config
         self.registry = registry
 
-        set_up_logging()
+        set_up_logging(self.config)
         self.logger = logging.getLogger('tarmac')
 
     def run(self):

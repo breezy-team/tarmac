@@ -26,8 +26,9 @@ class TestTarmacConfig(TarmacTestCase):
     def test_section_tree_dir(self):
         '''Ensure that the branch's tree cache can be read.'''
         tree_dir = os.path.join(self.tempdir, 'trunk')
+        branch_url = 'lp:%s' % os.path.basename(tree_dir)
         self.add_branch_config(tree_dir)
-        self.assertEqual(self.config.get('file://%s' % tree_dir, 'tree_dir'),
+        self.assertEqual(self.config.get(branch_url, 'tree_dir'),
                          tree_dir)
         self.remove_branch_config(tree_dir)
 

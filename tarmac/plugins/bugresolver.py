@@ -23,6 +23,10 @@ class BugResolver(TarmacPlugin):
 
     def run(self, command, target, source, proposal):
         """Mark bugs fixed in the bug tracker."""
+        fixed_bugs = target.fixed_bugs
+        if not fixed_bugs:
+            return
+
         project = target.lp_branch.project.name
         try:
             series = target.lp_branch.bzr_identity.split('/')[1]
@@ -34,7 +38,7 @@ class BugResolver(TarmacPlugin):
             self.logger.info('Target branch has no valid project series.')
             return
 
-        for bug_id in target.fixed_bugs:
+        for bug_id in fixed_bugs:
             bug = command.launchpad.bugs[bug_id]
             for task in bug.bug_tasks:
                 bug_series = None

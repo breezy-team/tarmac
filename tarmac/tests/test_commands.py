@@ -5,7 +5,9 @@ import sys
 from tarmac.bin import commands
 from tarmac.bin.registry import CommandRegistry
 from tarmac.config import TarmacConfig
-from tarmac.tests import TarmacTestCase
+from tarmac.exceptions import UnapprovedChanges
+from tarmac.tests import TarmacTestCase, BranchTestCase
+from tarmac.tests.mock import Thing
 
 
 class FakeCommand(commands.TarmacCommand):
@@ -16,13 +18,6 @@ class FakeCommand(commands.TarmacCommand):
 
     def run(self, *args, **kwargs):
         return
-
-
-class FakeLaunchpad(object):
-    '''Fake Launchpad object for testing.'''
-
-    def __init__(self, config=None, *args, **kwargs):
-        """Fake Launchpad object."""
 
 
 class TestCommand(TarmacTestCase):
@@ -97,32 +92,82 @@ class TestHelpCommand(TarmacTestCase):
         sys.stdout = old_stdout
 
 
-class TestMergeCommand(TarmacTestCase):
+class TestMergeCommand(BranchTestCase):
+
+    def setUp(self):
+        super(TestMergeCommand, self).setUp()
+
+        self.branches = [Thing(
+                bzr_identity=self.branch2.lp_branch.bzr_identity,
+                display_name=self.branch2.lp_branch.bzr_identity,
+                name='source',
+                revision_count=self.branch2.lp_branch.revision_count,
+                landing_candidates=[]),
+                         Thing(
+                bzr_identity=self.branch1.lp_branch.bzr_identity,
+                display_name=self.branch1.lp_branch.bzr_identity,
+                name='target',
+                revision_count=self.branch1.lp_branch.revision_count,
+                landing_candidates=None)]
+        self.proposals = [Thing(self_link=u'',
+                                queue_status=u'Needs Review',
+                                commit_message=u'Commitable.',
+                                source_branch=self.branches[0],
+                                target_branch=self.branches[1],
+                                createComment=self.createComment,
+                                setStatus=self.lp_save,
+                                lp_save=self.lp_save,
+                                reviewed_revid=None,
+                                votes=[Thing(
+                        comment=Thing(vote=u'Needs Fixing'),
+                        reviewer=Thing(display_name=u'Reviewer'))]),
+                          Thing(self_link=u'',
+                                queue_status=u'Approved',
+                                commit_message=u'Commit this.',
+                                source_branch=self.branches[0],
+                                target_branch=self.branches[1],
+                                createComment=self.createComment,
+                                setStatus=self.lp_save,
+                                lp_save=self.lp_save,
+                                reviewed_revid=None,
+                                votes=[Thing(
+                        comment=Thing(vote=u'Approved'),
+                        reviewer=Thing(display_name=u'Reviewer'))])]
+        self.branches[1].landing_candidates = self.proposals
+
+        self.launchpad = Thing(branches=Thing(getByUrl=self.getBranchByUrl))
+        self.error = None
+
+    def lp_save(self, *args, **kwargs):
+        """Do nothing here."""
+        pass
+
+    def createComment(self, subject=None, content=None):
+        """Fake createComment method for proposals."""
+        self.error = UnapprovedChanges(subject, content)
+
+    def getBranchByUrl(self, url=None):
+        """Fake method to get branches matching a URL."""
+        try:
+            return [x for x in self.branches if x.bzr_identity == url][0]
+        except IndexError:
+            return None
 
     def test_run(self):
-        tmp_stdout = StringIO()
-        old_stdout = sys.stdout
-        sys.stdout = tmp_stdout
-
-        def _do_merges(branch_url, *args, **kwargs):
-            """Just checking."""
-            print 'Merging %s' % branch_url
-
-        branches = ['lp:foo', 'lp:bar', 'lp:baz']
-        for branch in branches:
-            self.config.add_section(branch)
-
+        self.proposals[1].reviewed_revid = \
+            self.branch2.bzr_branch.last_revision()
         registry = CommandRegistry(config=self.config)
         registry.register_command('merge', commands.cmd_merge)
 
         command = registry._get_command(commands.cmd_merge, 'merge')
-        command._do_merges = _do_merges
-        command.run(launchpad=FakeLaunchpad())
-        self.assertEqual(
-            tmp_stdout.getvalue(), ''.join(
-                'Merging %s\n' % b for b in  sorted(branches, reverse=True)))
+        command.run(launchpad=self.launchpad)
 
-        for branch in branches:
-            self.config.remove_section(branch)
+    def test_run_unapprovedchanges(self):
+        self.proposals[1].reviewed_revid = \
+            self.branch2.bzr_branch.revno() - 1
+        registry = CommandRegistry(config=self.config)
+        registry.register_command('merge', commands.cmd_merge)
 
-        sys.stdout = old_stdout
+        command = registry._get_command(commands.cmd_merge, 'merge')
+        command.run(launchpad=self.launchpad)
+        self.assertTrue(isinstance(self.error, UnapprovedChanges))

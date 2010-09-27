@@ -48,7 +48,7 @@ class MockLPBranch(object):
             self._internal_bzr_branch = BzrDir.create_branch_convenience(
                 tree_dir)
             self.revision_count = 0
-        self.bzr_identity = self._internal_bzr_branch.base[:-1]
+        self.bzr_identity = 'lp:%s' % os.path.basename(self.tree_dir)
         self.project = MockLPProject()
 
 
