@@ -5,8 +5,9 @@ import sys
 from tarmac.config import TarmacConfig
 
 
-def set_up_logging():
-    config = TarmacConfig()
+def set_up_logging(config=None):
+    if not config:
+        config = TarmacConfig()
 
     # Set up logging.
     logger = logging.getLogger('tarmac')
@@ -20,6 +21,11 @@ def set_up_logging():
                           '%Y-%m-%d %H:%M:%S'))
     logger.addHandler(file_handler)
     logger.debug('Logging to %(logfile)s' % {'logfile': log_file})
+
+    # Handle logging for 'bzr' logger
+    bzr_logger = logging.getLogger('bzr')
+    bzr_logger.setLevel(logging.DEBUG)
+    bzr_logger.addHandler(file_handler)
 
 
 def set_up_debug_logging():

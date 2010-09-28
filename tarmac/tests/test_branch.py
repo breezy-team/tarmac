@@ -23,54 +23,12 @@ import shutil
 from bzrlib.errors import PointlessMerge
 
 from tarmac import branch
-from tarmac.tests import TarmacTestCase
+from tarmac.tests import BranchTestCase
 from tarmac.tests.mock import MockLPBranch
 
 
-class TestBranch(TarmacTestCase):
+class TestBranch(BranchTestCase):
     '''Test for Tarmac.branch.Branch.'''
-
-    def setUp(self):
-        '''Set up the test environment.'''
-        super(TestBranch, self).setUp()
-
-        self.branch1, self.branch2 = self.make_two_branches_to_merge()
-
-    def tearDown(self):
-        """Tear down the tests."""
-        self.remove_branch_config(self.branch1.lp_branch.tree_dir)
-        self.remove_branch_config(self.branch2.lp_branch.tree_dir)
-        shutil.rmtree(self.branch1.lp_branch.tree_dir)
-        shutil.rmtree(self.branch2.lp_branch.tree_dir)
-
-        super(TestBranch, self).tearDown()
-
-    def make_two_branches_to_merge(self):
-        '''Make two branches, one with revisions to merge.'''
-        branch1_dir = os.path.join(self.TEST_ROOT, 'branch1')
-        branch2_dir = os.path.join(self.TEST_ROOT, 'branch2')
-        self.add_branch_config(branch1_dir)
-        self.add_branch_config(branch2_dir)
-
-        mock1 = MockLPBranch(branch1_dir)
-        branch1 = branch.Branch.create(mock1, self.config, create_tree=True)
-        branch1.commit("Reading, 'riting, 'rithmetic")
-        branch1.lp_branch.revision_count += 1
-
-        mock2 = MockLPBranch(branch2_dir, source_branch=branch1.lp_branch)
-        branch2 = branch.Branch.create(mock2, self.config, create_tree=True,
-                                       target=branch1)
-        branch2.commit('ABC...')
-
-        added_file = os.path.join(branch2.lp_branch.tree_dir, 'README')
-        with open(added_file, 'w+') as f:
-            f.write('This is a test file.')
-            f.close()
-        branch2.tree.add(['README'])
-        branch2.commit('Added a README for testing')
-        branch2.lp_branch.revision_count += 2
-
-        return branch1, branch2
 
     def test_create(self):
         '''Test the creation of a TarmacBranch instance.'''
