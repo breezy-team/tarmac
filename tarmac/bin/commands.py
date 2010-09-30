@@ -283,3 +283,4 @@ class cmd_merge(TarmacCommand):
                     self.logger.error(
                         'An error occurred trying to merge %s: %s',
                         branch, error)
+                    raise
