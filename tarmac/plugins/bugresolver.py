@@ -27,38 +27,36 @@ class BugResolver(TarmacPlugin):
         if not fixed_bugs:
             return
 
-        project = target.lp_branch.project.name
+        project = target.lp_branch.project
         try:
-            series = target.lp_branch.bzr_identity.split('/')[1]
+            series_name = target.lp_branch.bzr_identity.split('/')[1]
         except IndexError:
-            series = u'trunk'
+            series = project.development_focus
+        else:
+            series = project.getSeries(name=series_name)
 
-        lp_series = target.lp_branch.project.getSeries(name=series)
-        if not lp_series:
+        if not series:
             self.logger.info('Target branch has no valid project series.')
             return
 
+        def find_task_for_target(bug, target):
+            for task in bug.bug_tasks:
+                if task.target == target:
+                    return task
+            return None
+
         for bug_id in fixed_bugs:
             bug = command.launchpad.bugs[bug_id]
-            for task in bug.bug_tasks:
-                bug_series = None
-                try:
-                    bug_project = task.target.name.split('/')[0]
-                    bug_series = task.target.name.split('/')[1]
-                except IndexError:
-                    bug_project = task.target.name
+            task = find_task_for_target(bug, series)
+            if not task and series == project.development_focus:
+                task = find_task_for_target(bug, project)
 
-                if not bug_series:
-                    bug_series = u'trunk'
-
-                if bug_project != project:
-                    continue
-
-                if bug_series != series:
-                    continue
-
+            if task:
                 task.status = u'Fix Committed'
                 task.lp_save()
+            else:
+                self.logger.info('Target %s/%s not found in bug #%s.',
+                                 project.name, series.name, bug_id)
 
 
 tarmac_hooks['tarmac_post_commit'].hook(BugResolver(), 'Bug resolver')
