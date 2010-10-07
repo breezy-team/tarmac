@@ -146,8 +146,13 @@ class cmd_merge(TarmacCommand):
                     proposal.source_branch, self.config, target=target)
 
                 try:
-                    approved = proposal.reviewed_revid
-                    tip = proposal.source_branch.revision_count
+                    if not proposal.reviewed_revid:
+                        raise TarmacMergeError(
+                            u'No approved revision specified.')
+
+                    approved = source.bzr_branch.revision_id_to_revno(
+                        str(proposal.reviewed_revid))
+                    tip = source.bzr_branch.revno()
                     if tip > approved:
                         message = u'Unapproved changes made after approval'
                         lp_comment = (

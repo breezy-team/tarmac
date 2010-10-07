@@ -164,10 +164,22 @@ class TestMergeCommand(BranchTestCase):
 
     def test_run_unapprovedchanges(self):
         self.proposals[1].reviewed_revid = \
-            self.branch2.bzr_branch.revno() - 1
+            self.branch2.bzr_branch.dotted_revno_to_revision_id(
+            (self.branch2.bzr_branch.revno() - 1,))
         registry = CommandRegistry(config=self.config)
         registry.register_command('merge', commands.cmd_merge)
 
         command = registry._get_command(commands.cmd_merge, 'merge')
         command.run(launchpad=self.launchpad)
         self.assertTrue(isinstance(self.error, UnapprovedChanges))
+
+    def test_run_no_reviewed_revid(self):
+        self.proposals[1].reviewed_revid = None
+        registry = CommandRegistry(config=self.config)
+        registry.register_command('merge', commands.cmd_merge)
+
+        command = registry._get_command(commands.cmd_merge, 'merge')
+        command.run(launchpad=self.launchpad)
+        self.assertTrue(isinstance(self.error, UnapprovedChanges))
+        self.assertEqual(self.error.comment,
+                         u'No approved revision specified.')
