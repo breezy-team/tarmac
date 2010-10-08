@@ -116,17 +116,17 @@ class Branch(object):
             revprops = {}
 
         authors = kwargs.pop('authors', None)
-        reviewers = kwargs.pop('reviewers', None)
+        reviews = kwargs.pop('reviews', None)
 
         if not authors:
             authors = self.authors
 
-        if reviewers:
-            for reviewer in reviewers:
-                if '\n' in reviewer:
+        if reviews:
+            for review in reviews:
+                if '\n' in review:
                     raise TarmacMergeError('\\n is not a valid character in a '
-                                           'reviewer identity.')
-            revprops['reviewers'] = '\n'.join(reviewers)
+                                           'review identity or vote.')
+            revprops['reviews'] = '\n'.join(reviews)
 
         self.tree.commit(commit_message, committer='Tarmac',
                          revprops=revprops, authors=authors)
