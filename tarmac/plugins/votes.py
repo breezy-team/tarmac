@@ -94,7 +94,7 @@ class Votes(TarmacPlugin):
         counter = VoteCounter()
         for vote in votes:
             comment = vote.comment
-            if comment is not None:
+            if comment is not None and comment.vote != u'Abstain':
                 counter[comment.vote] += 1
         return counter
 
