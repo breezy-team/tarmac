@@ -27,17 +27,30 @@ class TestVotes(TarmacTestCase):
     def setUp(self):
         super(TestVotes, self).setUp()
         self.proposal = Thing(
+            source_branch=Thing(isPersonTrustedReviewer=self.isReviewer),
             votes=[
-                Thing(comment=Thing(vote=u"Approve")),
-                Thing(comment=Thing(vote=u"Approve")),
-                Thing(comment=Thing(vote=u"Abstain")),
-                Thing(comment=Thing(vote=u"Needs Information")),
+                Thing(comment=Thing(vote=u"Approve"),
+                      reviewer=Thing(display_name=u'Reviewer')),
+                Thing(comment=Thing(vote=u"Approve"),
+                      reviewer=Thing(display_name=u'Reviewer')),
+                Thing(comment=Thing(vote=u"Abstain"),
+                      reviewer=Thing(display_name=u'Reviewer')),
+                Thing(comment=Thing(vote=u"Needs Information"),
+                      reviewer=Thing(display_name=u'Reviewer')),
+                Thing(comment=Thing(vote=u'Disapprove'),
+                      reviewer=Thing(display_name=u'Community')),
                 ])
         self.plugin = Votes()
 
+    def isReviewer(self, reviewer=None):
+        """Is the reviewer a trusted reviewer?"""
+        if reviewer.display_name == u'Reviewer':
+            return True
+        return False
+
     def test_count_votes(self):
         expected = {u"Approve": 2, u"Needs Information": 1}
-        observed = self.plugin.count_votes(self.proposal.votes)
+        observed = self.plugin.count_votes(self.proposal)
         self.assertEqual(expected, observed)
 
     def test_parse_criteria(self):

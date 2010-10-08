@@ -131,12 +131,19 @@ class TestMergeCommand(BranchTestCase):
                                 lp_save=self.lp_save,
                                 reviewed_revid=None,
                                 votes=[Thing(
-                        comment=Thing(vote=u'Approved'),
-                        reviewer=Thing(display_name=u'Reviewer'))])]
+                        comment=Thing(vote=u'Approve'),
+                        reviewer=Thing(display_name=u'Reviewer')),
+                                       Thing(
+                        comment=Thing(vote=u'Abstain'),
+                        reviewer=Thing(display_name=u'Reviewer2'))])]
         self.branches[1].landing_candidates = self.proposals
 
         self.launchpad = Thing(branches=Thing(getByUrl=self.getBranchByUrl))
         self.error = None
+        registry = CommandRegistry(config=self.config)
+        registry.register_command('merge', commands.cmd_merge)
+
+        self.command = registry._get_command(commands.cmd_merge, 'merge')
 
     def lp_save(self, *args, **kwargs):
         """Do nothing here."""
@@ -154,32 +161,30 @@ class TestMergeCommand(BranchTestCase):
             return None
 
     def test_run(self):
+        """Test that the merge command merges a branch successfully."""
         self.proposals[1].reviewed_revid = \
             self.branch2.bzr_branch.last_revision()
-        registry = CommandRegistry(config=self.config)
-        registry.register_command('merge', commands.cmd_merge)
-
-        command = registry._get_command(commands.cmd_merge, 'merge')
-        command.run(launchpad=self.launchpad)
+        self.command.run(launchpad=self.launchpad)
 
     def test_run_unapprovedchanges(self):
+        """Test that a mismatch between approved and tip raises an error."""
         self.proposals[1].reviewed_revid = \
             self.branch2.bzr_branch.dotted_revno_to_revision_id(
             (self.branch2.bzr_branch.revno() - 1,))
-        registry = CommandRegistry(config=self.config)
-        registry.register_command('merge', commands.cmd_merge)
-
-        command = registry._get_command(commands.cmd_merge, 'merge')
-        command.run(launchpad=self.launchpad)
+        self.command.run(launchpad=self.launchpad)
         self.assertTrue(isinstance(self.error, UnapprovedChanges))
 
     def test_run_no_reviewed_revid(self):
+        """Test that no reviewed revid raises an error."""
         self.proposals[1].reviewed_revid = None
-        registry = CommandRegistry(config=self.config)
-        registry.register_command('merge', commands.cmd_merge)
-
-        command = registry._get_command(commands.cmd_merge, 'merge')
-        command.run(launchpad=self.launchpad)
+        self.command.run(launchpad=self.launchpad)
         self.assertTrue(isinstance(self.error, UnapprovedChanges))
         self.assertEqual(self.error.comment,
                          u'No approved revision specified.')
+
+    def test_get_reviews(self):
+        """Test that the _get_reviews method gives the right lists."""
+        self.assertEqual(self.command._get_reviews(self.proposals[0]),
+                         [u'Reviewer;Needs Fixing'])
+        self.assertEqual(self.command._get_reviews(self.proposals[1]),
+                         [u'Reviewer;Approve', u'Reviewer2;Abstain'])

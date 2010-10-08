@@ -109,17 +109,18 @@ class TestBranch(BranchTestCase):
         self.branch2.commit('Landed bugs')
         self.assertEqual(self.branch2.fixed_bugs, self.branch1.fixed_bugs)
 
-    def test_merge_with_reviewers(self):
+    def test_merge_with_reviews(self):
         '''A merge with reviewers.'''
-        reviewers = ['reviewer1', 'reviewer2']
+        reviews = ['reviewer1 Approve', 'reviewer2 Abstain']
         self.branch1.merge(self.branch2)
-        self.branch1.commit('Reviewers test', reviewers=reviewers)
+        self.branch1.commit('Reviewers test', reviews=reviews)
 
         last_rev = self.branch1.lp_branch._internal_bzr_branch.last_revision()
         self.assertNotEquals(last_rev, 'null:')
         repo = self.branch1.lp_branch._internal_bzr_branch.repository
         rev = repo.get_revision(last_rev)
-        self.assertEquals('\n'.join(reviewers), rev.properties['reviewers'])
+        self.assertEquals('\n'.join(reviews),
+                          rev.properties.get('reviews', None))
 
     def test_cleanup(self):
         '''The branch object should clean up after itself.'''

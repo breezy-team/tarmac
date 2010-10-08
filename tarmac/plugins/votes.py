@@ -71,7 +71,7 @@ class Votes(TarmacPlugin):
             except AttributeError:
                 return
 
-        votes = self.count_votes(proposal.votes)
+        votes = self.count_votes(proposal)
         criteria = self.parse_criteria(criteria)
 
         if not self.evaluate_criteria(votes, criteria):
@@ -86,13 +86,16 @@ class Votes(TarmacPlugin):
                 u"Required: %s. Got: %s." % (criteria_desc, votes_desc))
             raise VotingViolation(u'Voting criteria not met.', lp_comment)
 
-    def count_votes(self, votes):
+    def count_votes(self, proposal):
         """Count and collate the votes.
 
         @return: L{VoteCounter} instance.
         """
         counter = VoteCounter()
-        for vote in votes:
+        source = proposal.source_branch
+        for vote in proposal.votes:
+            if not source.isPersonTrustedReviewer(reviewer=vote.reviewer):
+                continue
             comment = vote.comment
             if comment is not None and comment.vote != u'Abstain':
                 counter[comment.vote] += 1
