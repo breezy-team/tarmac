@@ -205,9 +205,9 @@ class cmd_merge(TarmacCommand):
                     target.cleanup()
                     continue
 
-                urlp = re.compile('http[s]?://api\.(.*)launchpad\.net/beta/')
+                urlp = re.compile('http[s]?://api\.(.*)launchpad\.net/[^/]+/')
                 merge_url = urlp.sub(
-                    'http://launchpad.net/', proposal.self_link)
+                    'http://code.launchpad.net/', proposal.self_link)
                 revprops = {'merge_url': merge_url}
 
                 commit_message = proposal.commit_message

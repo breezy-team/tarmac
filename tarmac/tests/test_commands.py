@@ -109,28 +109,30 @@ class TestMergeCommand(BranchTestCase):
                 name='target',
                 revision_count=self.branch1.lp_branch.revision_count,
                 landing_candidates=None)]
-        self.proposals = [Thing(self_link=u'',
-                                queue_status=u'Needs Review',
-                                commit_message=u'Commitable.',
-                                source_branch=self.branches[0],
-                                target_branch=self.branches[1],
-                                createComment=self.createComment,
-                                setStatus=self.lp_save,
-                                lp_save=self.lp_save,
-                                reviewed_revid=None,
-                                votes=[Thing(
+        self.proposals = [Thing(
+                self_link=u'http://api.edge.launchpad.net/devel/proposal0',
+                queue_status=u'Needs Review',
+                commit_message=u'Commitable.',
+                source_branch=self.branches[0],
+                target_branch=self.branches[1],
+                createComment=self.createComment,
+                setStatus=self.lp_save,
+                lp_save=self.lp_save,
+                reviewed_revid=None,
+                votes=[Thing(
                         comment=Thing(vote=u'Needs Fixing'),
                         reviewer=Thing(display_name=u'Reviewer'))]),
-                          Thing(self_link=u'',
-                                queue_status=u'Approved',
-                                commit_message=u'Commit this.',
-                                source_branch=self.branches[0],
-                                target_branch=self.branches[1],
-                                createComment=self.createComment,
-                                setStatus=self.lp_save,
-                                lp_save=self.lp_save,
-                                reviewed_revid=None,
-                                votes=[Thing(
+                          Thing(
+                self_link=u'https://api.launchpad.net/1.0/proposal1',
+                queue_status=u'Approved',
+                commit_message=u'Commit this.',
+                source_branch=self.branches[0],
+                target_branch=self.branches[1],
+                createComment=self.createComment,
+                setStatus=self.lp_save,
+                lp_save=self.lp_save,
+                reviewed_revid=None,
+                votes=[Thing(
                         comment=Thing(vote=u'Approve'),
                         reviewer=Thing(display_name=u'Reviewer')),
                                        Thing(
@@ -188,3 +190,27 @@ class TestMergeCommand(BranchTestCase):
                          [u'Reviewer;Needs Fixing'])
         self.assertEqual(self.command._get_reviews(self.proposals[1]),
                          [u'Reviewer;Approve', u'Reviewer2;Abstain'])
+
+    def test_run_merge_url_substitution(self):
+        """Test that the merge urls get substituted correctly."""
+        self.proposals[1].reviewed_revid = \
+            self.branch2.bzr_branch.last_revision()
+        self.command.run(launchpad=self.launchpad)
+        revid = self.branch1.bzr_branch.last_revision()
+        last_rev = self.branch1.bzr_branch.repository.get_revision(revid)
+        self.assertEqual(last_rev.properties.get('merge_url', None),
+                         u'http://code.launchpad.net/proposal1')
+
+        # This proposal merged ok
+        self.proposals[1].queue_status = u'Merged'
+
+        # Make a new commit, approve the propsoal, merge, and verify
+        self.branch2.commit('New commit to merge.')
+        self.proposals[0].queue_status = u'Approved'
+        self.proposals[0].reviewed_revid = \
+            self.branch2.bzr_branch.last_revision()
+        self.command.run(launchpad=self.launchpad)
+        revid = self.branch1.bzr_branch.last_revision()
+        last_rev = self.branch1.bzr_branch.repository.get_revision(revid)
+        self.assertEqual(last_rev.properties.get('merge_url', None),
+                         u'http://code.launchpad.net/proposal0')
