@@ -205,9 +205,9 @@ class cmd_merge(TarmacCommand):
                     target.cleanup()
                     continue
 
-                urlp = re.compile('http[s]?://api\.(.*)launchpad\.net/beta/')
+                urlp = re.compile('http[s]?://api\.(.*)launchpad\.net/[^/]+/')
                 merge_url = urlp.sub(
-                    'http://launchpad.net/', proposal.self_link)
+                    'http://code.launchpad.net/', proposal.self_link)
                 revprops = {'merge_url': merge_url}
 
                 commit_message = proposal.commit_message
@@ -216,7 +216,7 @@ class cmd_merge(TarmacCommand):
                 target.commit(commit_message,
                              revprops=revprops,
                              authors=source.authors,
-                             reviewers=self._get_reviewers(proposal))
+                             reviews=self._get_reviews(proposal))
 
                 self.logger.debug('Firing tarmac_post_commit hook')
                 tarmac_hooks['tarmac_post_commit'].fire(
@@ -235,21 +235,20 @@ class cmd_merge(TarmacCommand):
         finally:
             target.cleanup()
 
-    def _get_reviewers(self, candidate):
-        '''Get all reviewers who approved the review.'''
-        reviewers = []
-        for vote in candidate.votes:
+    def _get_reviews(self, proposal):
+        """Get the set of reviews from the proposal."""
+        reviews = []
+        for vote in proposal.votes:
             if not vote.comment:
                 continue
-            elif vote.comment and vote.comment.vote == u'Approve' and \
-                    candidate.source_branch.isPersonTrustedReviewer(
-                reviewer=vote.reviewer):
-                reviewers.append(vote.reviewer.display_name)
+            else:
+                reviews.append('%s;%s' % (vote.reviewer.display_name,
+                                          vote.comment.vote))
 
-        if len(reviewers) == 0:
+        if len(reviews) == 0:
             return None
 
-        return reviewers
+        return reviews
 
     def run(self, branch_url=None, debug=False, http_debug=False,
             launchpad=None, imply_commit_message=False):
