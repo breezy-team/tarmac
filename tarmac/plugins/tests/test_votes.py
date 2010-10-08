@@ -36,7 +36,7 @@ class TestVotes(TarmacTestCase):
         self.plugin = Votes()
 
     def test_count_votes(self):
-        expected = {u"Approve": 2, u"Needs Information": 1, u"Abstain": 1}
+        expected = {u"Approve": 2, u"Needs Information": 1}
         observed = self.plugin.count_votes(self.proposal.votes)
         self.assertEqual(expected, observed)
 
@@ -88,7 +88,7 @@ class TestVotes(TarmacTestCase):
             self.assertEqual(
                 ("Voting does not meet specified criteria. "
                  "Required: Approve >= 2, Needs Information == 0. "
-                 "Got: 1 Abstain, 2 Approve, 1 Needs Information."),
+                 "Got: 2 Approve, 1 Needs Information."),
                 error.comment)
         else:
             self.fail("Votes.run() did not raise VotingViolation.")
@@ -114,7 +114,7 @@ class TestVotes(TarmacTestCase):
             self.assertEqual(
                 ("Voting does not meet specified criteria. "
                  "Required: Approve >= 2, Needs Information == 0. "
-                 "Got: 1 Abstain, 2 Approve, 1 Needs Information."),
+                 "Got: 2 Approve, 1 Needs Information."),
                 error.comment)
         else:
             self.fail("Votes.run() did not raise VotingViolation.")
