@@ -45,6 +45,21 @@ class TarmacConfig(ConfigParser):
         if not self.has_option('Tarmac', 'log_file'):
             self.set('Tarmac', 'log_file', DEFAULTS['log_file'])
 
+        for key, val in self.items('Tarmac'):
+            setattr(self, key, val)
+
+    def set(self, section, option, value):
+        """Wrap the set method, so we can tweak our attrs."""
+        ConfigParser.set(self, section, option, value)
+        if section == 'Tarmac':
+            setattr(self, option, value)
+
+    def remove_option(self, section, option):
+        """Wrap the remove_option method so we can tweak our attrs."""
+        ConfigParser.remove_option(self, section, option)
+        if section == 'Tarmac':
+            delattr(self, option)
+
     @property
     def CONFIG_HOME(self):
         '''Return the base dir for the config.'''

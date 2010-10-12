@@ -108,17 +108,28 @@ class TestVotes(TarmacTestCase):
 
     def test_run_global_config(self):
         target = Thing()
-        command = Thing(
-            config=Thing(
-                voting_criteria="Approve >= 2, Disapprove == 0"))
+        self.config.set('Tarmac', 'voting_criteria',
+                        'Approve >= 2, Disapprove == 0')
+        command = Thing(config=self.config)
+        self.called = False
+        old_count_votes = self.plugin.count_votes
+
+        def count_votes(proposal):
+            """OVerride for count_votes to validate it was called."""
+            self.called = True
+            return old_count_votes(proposal)
+
+        self.plugin.count_votes = count_votes
         self.plugin.run(command=command, target=target,
                         source=None, proposal=self.proposal)
+        if not self.called:
+            self.fail('No voting_criteria configuration found')
 
     def test_run_global_config_failure(self):
         target = Thing()
-        command = Thing(
-            config=Thing(
-                voting_criteria="Approve >= 2, Needs Information == 0"))
+        self.config.set('Tarmac', 'voting_criteria',
+                        'Approve >= 2, Needs Information == 0')
+        command = Thing(config=self.config)
         try:
             self.plugin.run(
                 command=command, target=target, source=None,
