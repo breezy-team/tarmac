@@ -1,6 +1,7 @@
 '''Tests for tarmac.config'''
 import os
 
+from ConfigParser import NoOptionError
 from tarmac.config import BranchConfig
 from tarmac.tests import TarmacTestCase
 
@@ -36,3 +37,27 @@ class TestTarmacConfig(TarmacTestCase):
         '''Ensure that the branch's tree cache can be read.'''
         config = BranchConfig('lp:test_no_tree_dir', self.config)
         self.assertFalse(hasattr(config, 'tree_dir'))
+
+    def test_set(self):
+        """Test that the set override method works properly."""
+        self.config.set('Tarmac', 'test_value', 'testing')
+        self.assertEqual(self.config.get('Tarmac', 'test_value'),
+                         self.config.test_value)
+        self.config.add_section('test')
+        self.config.set('test', 'test_option', 'foo')
+        self.assertFalse(hasattr(self.config, 'test_option'))
+        self.config.remove_section('test')
+
+    def test_remove_option(self):
+        """Test that the remove_option wrapper method works properly."""
+        self.config.set('Tarmac', 'test_value', 'testing')
+        self.assertTrue(hasattr(self.config, 'test_value'))
+        self.config.remove_option('Tarmac', 'test_value')
+        self.assertFalse(hasattr(self.config, 'test_value'))
+        self.config.add_section('test')
+        self.config.set('test', 'test_option', 'foo')
+        self.assertFalse(hasattr(self.config, 'test_option'))
+        self.config.remove_option('test', 'test_option')
+        self.assertRaises(NoOptionError,
+                          self.config.get, 'test', 'test_option')
+        self.config.remove_section('test')
