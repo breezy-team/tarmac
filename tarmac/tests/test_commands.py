@@ -1,13 +1,16 @@
 '''Tests for tarmac.bin.commands.py.'''
 from cStringIO import StringIO
+import os
+import shutil
 import sys
 
 from tarmac.bin import commands
 from tarmac.bin.registry import CommandRegistry
+from tarmac.branch import Branch
 from tarmac.config import TarmacConfig
 from tarmac.exceptions import UnapprovedChanges
 from tarmac.tests import TarmacTestCase, BranchTestCase
-from tarmac.tests.mock import Thing
+from tarmac.tests.mock import MockLPBranch, Thing
 
 
 class FakeCommand(commands.TarmacCommand):
@@ -115,6 +118,7 @@ class TestMergeCommand(BranchTestCase):
                 commit_message=u'Commitable.',
                 source_branch=self.branches[0],
                 target_branch=self.branches[1],
+                prerequisite_branch=None,
                 createComment=self.createComment,
                 setStatus=self.lp_save,
                 lp_save=self.lp_save,
@@ -128,6 +132,7 @@ class TestMergeCommand(BranchTestCase):
                 commit_message=u'Commit this.',
                 source_branch=self.branches[0],
                 target_branch=self.branches[1],
+                prerequisite_branch=None,
                 createComment=self.createComment,
                 setStatus=self.lp_save,
                 lp_save=self.lp_save,
@@ -214,3 +219,149 @@ class TestMergeCommand(BranchTestCase):
         last_rev = self.branch1.bzr_branch.repository.get_revision(revid)
         self.assertEqual(last_rev.properties.get('merge_url', None),
                          u'http://code.launchpad.net/proposal0')
+
+    def test_run_merge_with_unmerged_prerequisite_fails(self):
+        """Test that mereging a branch with an unmerged prerequisite fails."""
+        # Create a 3rd prerequisite branch we'll use to test with
+        branch3_dir = os.path.join(self.TEST_ROOT, 'branch3')
+        mock3 = MockLPBranch(branch3_dir, source_branch=self.branch1.lp_branch)
+        branch3 = Branch.create(mock3, self.config, create_tree=True,
+                                target=self.branch1)
+        branch3.commit('Prerequisite commit.')
+        branch3.lp_branch.revision_count += 1
+
+        # Merge the prerequisite and create another commit after
+        self.branch2.merge(branch3)
+        self.branch2.commit('Merged prerequisite.')
+        self.branch2.commit('Post-merge commit.')
+        self.branch2.lp_branch.revision_count += 2
+
+        # Set up an unapproved proposal for the prerequisite
+        branch3.lp_branch.display_name = branch3.lp_branch.bzr_identity
+        branch3.lp_branch.name = 'branch3'
+        branch3.lp_branch.landing_candidates = []
+        b3_proposal = Thing(
+            self_link=u'http://api.edge.launchpad.net/devel/proposal3',
+            queue_status=u'Work in Progress',
+            commit_message=u'Commitable.',
+            source_branch=branch3.lp_branch,
+            target_branch=self.branches[1],
+            prerequisite_branch=None,
+            createComment=self.createComment,
+            setStatus=self.lp_save,
+            lp_save=self.lp_save,
+            reviewed_revid=None,
+            votes=[Thing(
+                    comment=Thing(vote=u'Needs Fixing'),
+                    reviewer=Thing(display_name=u'Reviewer'))])
+
+        branch3.lp_branch.landing_targets = [b3_proposal]
+
+        self.proposals.append(b3_proposal)
+        self.proposals[1].prerequisite_branch = branch3.lp_branch
+        self.proposals[1].reviewed_revid = \
+            self.branch2.bzr_branch.last_revision()
+        self.command.run(launchpad=self.launchpad)
+        shutil.rmtree(branch3_dir)
+        self.assertEqual(self.error.comment,
+                         u'The prerequisite lp:branch3 has not yet been '
+                         u'merged into lp:branch1.')
+
+    def test_run_merge_with_unproposed_prerequisite_fails(self):
+        """Test that mereging a branch with an unmerged prerequisite fails."""
+        # Create a 3rd prerequisite branch we'll use to test with
+        branch3_dir = os.path.join(self.TEST_ROOT, 'branch3')
+        mock3 = MockLPBranch(branch3_dir, source_branch=self.branch1.lp_branch)
+        branch3 = Branch.create(mock3, self.config, create_tree=True,
+                                target=self.branch1)
+        branch3.commit('Prerequisite commit.')
+        branch3.lp_branch.revision_count += 1
+
+        # Merge the prerequisite and create another commit after
+        self.branch2.merge(branch3)
+        self.branch2.commit('Merged prerequisite.')
+        self.branch2.commit('Post-merge commit.')
+        self.branch2.lp_branch.revision_count += 2
+
+        # Set up an unapproved proposal for the prerequisite
+        branch3.lp_branch.display_name = branch3.lp_branch.bzr_identity
+        branch3.lp_branch.name = 'branch3'
+        branch3.lp_branch.landing_candidates = []
+        b3_proposal = Thing(
+            self_link=u'http://api.edge.launchpad.net/devel/proposal3',
+            queue_status=u'Work in Progress',
+            commit_message=u'Commitable.',
+            source_branch=branch3.lp_branch,
+            target_branch=self.branches[1],
+            prerequisite_branch=None,
+            createComment=self.createComment,
+            setStatus=self.lp_save,
+            lp_save=self.lp_save,
+            reviewed_revid=None,
+            votes=[Thing(
+                    comment=Thing(vote=u'Needs Fixing'),
+                    reviewer=Thing(display_name=u'Reviewer'))])
+
+        branch3.lp_branch.landing_targets = []
+
+        self.proposals.append(b3_proposal)
+        self.proposals[1].prerequisite_branch = branch3.lp_branch
+        self.proposals[1].reviewed_revid = \
+            self.branch2.bzr_branch.last_revision()
+        self.command.run(launchpad=self.launchpad)
+        shutil.rmtree(branch3_dir)
+        self.assertEqual(self.error.comment,
+                         u'No proposals found for merge of lp:branch3 '
+                         u'into lp:branch1.')
+
+    def test_run_merge_with_prerequisite_with_multiple_proposals_fails(self):
+        """Test that mereging a branch with an unmerged prerequisite fails."""
+        # Create a 3rd prerequisite branch we'll use to test with
+        branch3_dir = os.path.join(self.TEST_ROOT, 'branch3')
+        mock3 = MockLPBranch(branch3_dir, source_branch=self.branch1.lp_branch)
+        branch3 = Branch.create(mock3, self.config, create_tree=True,
+                                target=self.branch1)
+        branch3.commit('Prerequisite commit.')
+        branch3.lp_branch.revision_count += 1
+
+        # Merge the prerequisite and create another commit after
+        self.branch2.merge(branch3)
+        self.branch2.commit('Merged prerequisite.')
+        self.branch2.commit('Post-merge commit.')
+        self.branch2.lp_branch.revision_count += 2
+
+        # Set up an unapproved proposal for the prerequisite
+        branch3.lp_branch.display_name = branch3.lp_branch.bzr_identity
+        branch3.lp_branch.name = 'branch3'
+        branch3.lp_branch.landing_candidates = []
+        b3_proposal = Thing(
+            self_link=u'http://api.edge.launchpad.net/devel/proposal3',
+            queue_status=u'Work in Progress',
+            commit_message=u'Commitable.',
+            source_branch=branch3.lp_branch,
+            target_branch=self.branches[1],
+            prerequisite_branch=None,
+            createComment=self.createComment,
+            setStatus=self.lp_save,
+            lp_save=self.lp_save,
+            reviewed_revid=None,
+            votes=[Thing(
+                    comment=Thing(vote=u'Needs Fixing'),
+                    reviewer=Thing(display_name=u'Reviewer'))])
+
+        branch3.lp_branch.landing_targets = [
+            b3_proposal,
+            Thing(
+                target_branch=self.branches[1],
+                queue_status='Needs Review')]
+
+        self.proposals.append(b3_proposal)
+        self.proposals[1].prerequisite_branch = branch3.lp_branch
+        self.proposals[1].reviewed_revid = \
+            self.branch2.bzr_branch.last_revision()
+        self.command.run(launchpad=self.launchpad)
+        shutil.rmtree(branch3_dir)
+        self.assertEqual(self.error.comment,
+                         u'More than one proposal found for merge of '
+                         u'lp:branch3 into lp:branch1, which is not '
+                         u'Superseded.')

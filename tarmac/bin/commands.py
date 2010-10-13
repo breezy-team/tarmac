@@ -146,6 +146,34 @@ class cmd_merge(TarmacCommand):
                     proposal.source_branch, self.config, target=target)
 
                 try:
+                    prerequisite = proposal.prerequisite_branch
+                    if prerequisite:
+                        merges = [x for x in  prerequisite.landing_targets
+                                  if x.target_branch == target.lp_branch and
+                                  x.queue_status != u'Superseded']
+                        if len(merges) == 0:
+                            raise TarmacMergeError(
+                                u'No proposals of prerequisite branch.',
+                                u'No proposals found for merge of %s '
+                                u'into %s.' % (
+                                    prerequisite.display_name,
+                                    target.lp_branch.display_name))
+                        elif len(merges) > 1:
+                            raise TarmacMergeError(
+                                u'Too many proposals of prerequisite.',
+                                u'More than one proposal found for merge '
+                                u'of %s into %s, which is not Superseded.' % (
+                                    prerequisite.display_name,
+                                    target.lp_branch.display_name))
+                        elif len(merges) == 1:
+                            if merges[0].queue_status != u'Merged':
+                                raise TarmacMergeError(
+                                    u'Prerequsiite not yet merged.',
+                                    u'The prerequisite %s has not yet been '
+                                    u'merged into %s.' % (
+                                        prerequisite.display_name,
+                                        target.lp_branch.display_name))
+
                     if not proposal.reviewed_revid:
                         raise TarmacMergeError(
                             u'No approved revision specified.')
