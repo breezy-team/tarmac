@@ -59,18 +59,18 @@ class Command(TarmacPlugin):
 
         self.proposal = proposal
 
+        self.logger.debug('Running test command: %s' % self.verify_command)
         cwd = os.getcwd()
         os.chdir(target.tree.abspath(''))
-        self.logger.debug('Running test command: %s' % self.verify_command)
         proc = subprocess.Popen(
             self.verify_command,
             shell=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE)
-        self.logger.debug('Completed test command: %s' % self.verify_command)
         stdout_value, stderr_value = proc.communicate()
         return_code = proc.wait()
         os.chdir(cwd)
+        self.logger.debug('Completed test command: %s' % self.verify_command)
 
         if return_code != 0:
             self.do_failed(stdout_value, stderr_value)
