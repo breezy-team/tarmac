@@ -27,7 +27,7 @@ class TestVotes(TarmacTestCase):
     def setUp(self):
         super(TestVotes, self).setUp()
         self.proposal = Thing(
-            source_branch=Thing(isPersonTrustedReviewer=self.isReviewer),
+            target_branch=Thing(isPersonTrustedReviewer=self.isReviewer),
             votes=[
                 Thing(comment=Thing(vote=u"Approve"),
                       reviewer=Thing(display_name=u'Reviewer')),
@@ -88,6 +88,28 @@ class TestVotes(TarmacTestCase):
                 voting_criteria="Approve >= 2, Disapprove == 0"))
         self.plugin.run(
             command=None, target=target, source=None, proposal=self.proposal)
+
+    def test_run_no_votes(self):
+        """Test that all community reviews fails."""
+        target = Thing(config=Thing(voting_criteria='Approve == 2'))
+        self.proposal.votes = [
+            Thing(comment=Thing(vote=u'Approve'),
+                  reviewer=Thing(display_name=u'Community1')),
+            Thing(comment=Thing(vote=u'Approve'),
+                  reviewer=Thing(display_name=u'Community2'))]
+        self.assertEqual({}, self.plugin.count_votes(self.proposal))
+        try:
+            self.plugin.run(
+                command=None, target=target, source=None,
+                proposal=self.proposal)
+        except VotingViolation, error:
+            self.assertEqual(
+                ('Voting does not meet specified criteria. '
+                 'Required: Approve == 2. '
+                 'Got: .'),
+                error.comment)
+        else:
+            self.fail('Votes.run() did not raise VotingViolation.')
 
     def test_run_failure(self):
         target = Thing(

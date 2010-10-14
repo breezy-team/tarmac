@@ -92,9 +92,9 @@ class Votes(TarmacPlugin):
         @return: L{VoteCounter} instance.
         """
         counter = VoteCounter()
-        source = proposal.source_branch
+        target = proposal.target_branch
         for vote in proposal.votes:
-            if not source.isPersonTrustedReviewer(reviewer=vote.reviewer):
+            if not target.isPersonTrustedReviewer(reviewer=vote.reviewer):
                 continue
             comment = vote.comment
             if comment is not None and comment.vote != u'Abstain':
