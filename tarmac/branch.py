@@ -46,6 +46,15 @@ class Branch(object):
         self.target = target
         self.logger = logging.getLogger('tarmac')
 
+    def __del__(self):
+        """Do some potenetially necessary cleanup during deletion."""
+        try:
+            # If we were using a temp directory, then remove it
+            shutil.rmtree(self.temp_tree_dir)
+        except AttributeError:
+            # Not using a tempdir
+            pass
+
     @classmethod
     def create(cls, lp_branch, config, create_tree=False, target=None):
         clazz = cls(lp_branch, config, target)
@@ -66,11 +75,12 @@ class Branch(object):
                 self.tree = self.bzr_branch.create_checkout(
                     self.config.tree_dir, lightweight=True)
         except AttributeError:
-            tree_dir = tempfile.mkdtemp()
+            # Store this so we can rmtree later
+            self.temp_tree_dir = tempfile.mkdtemp()
             self.logger.debug(
                 'Using temp dir at %(tree_dir)s' % {
-                    'tree_dir': tree_dir})
-            self.tree = self.bzr_branch.create_checkout(tree_dir)
+                    'tree_dir': self.temp_tree_dir})
+            self.tree = self.bzr_branch.create_checkout(self.temp_tree_dir)
 
         self.cleanup()
 
