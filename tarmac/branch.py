@@ -89,7 +89,7 @@ class Branch(object):
         assert self.tree
         self.tree.revert()
         for filename in [self.tree.abspath(f) for f in self.unmanaged_files]:
-            if os.path.isdir(filename):
+            if os.path.isdir(filename) and not os.path.islink(filename):
                 shutil.rmtree(filename)
             else:
                 os.remove(filename)
