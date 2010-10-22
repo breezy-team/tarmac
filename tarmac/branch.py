@@ -88,11 +88,11 @@ class Branch(object):
         '''Remove the working tree from the temp dir.'''
         assert self.tree
         self.tree.revert()
-        for unknown in [self.tree.abspath(f) for f in self.tree.unknowns()]:
-            if os.path.isdir(unknown):
-                shutil.rmtree(unknown)
+        for filename in [self.tree.abspath(f) for f in self.unmanaged_files]:
+            if os.path.isdir(filename):
+                shutil.rmtree(filename)
             else:
-                os.remove(unknown)
+                os.remove(filename)
 
         self.tree.update()
 
@@ -109,6 +109,15 @@ class Branch(object):
                     'target': self.lp_branch.display_name,
                     "output": self.conflicts})
             raise BranchHasConflicts(message, lp_comment)
+
+    @property
+    def unmanaged_files(self):
+        """Get the list of ignored and unknown files in the tree."""
+        self.tree.lock_read()
+        unmanaged = [x for x in self.tree.unknowns()]
+        unmanaged.extend([x[0] for x in self.tree.ignored_files()])
+        self.tree.unlock()
+        return unmanaged
 
     @property
     def conflicts(self):

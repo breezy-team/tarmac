@@ -127,6 +127,25 @@ class TestBranch(BranchTestCase):
         self.branch1.merge(self.branch2)
         self.assertTrue(self.branch1.tree.changes_from(
                 self.branch1.tree.basis_tree()).has_changed())
+        with open(os.path.join(self.branch1.config.tree_dir, 'README.bak~'),
+                  'w') as f:
+            f.close()
+
         self.branch1.cleanup()
         self.assertFalse(self.branch1.tree.changes_from(
                 self.branch1.tree.basis_tree()).has_changed())
+
+    def test_unmanaged_files(self):
+        """Test that the unmanaged_files property returns correct lists."""
+        self.branch1.merge(self.branch2)
+        self.assertEqual(self.branch1.unmanaged_files, [])
+        expected = sorted([u'README~', u'newfile'])
+        with open(os.path.join(self.branch1.config.tree_dir, 'README~'),
+                  'w') as f:
+            f.close()
+        with open(os.path.join(self.branch1.config.tree_dir, 'newfile'),
+                  'w') as f:
+            f.close()
+        self.assertEqual(sorted(self.branch1.unmanaged_files), expected)
+        self.branch1.cleanup()
+        self.assertEqual(self.branch1.unmanaged_files, [])
