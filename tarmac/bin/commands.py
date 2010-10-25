@@ -2,7 +2,6 @@
 import httplib2
 import logging
 import os
-import re
 
 from bzrlib.commands import Command
 from bzrlib.errors import PointlessMerge
@@ -17,6 +16,7 @@ from tarmac.log import set_up_debug_logging, set_up_logging
 from tarmac.exceptions import (TarmacMergeError, TarmacCommandError,
                                UnapprovedChanges)
 from tarmac.plugin import load_plugins
+from tarmac.utility import get_review_url
 
 
 class TarmacCommand(Command):
@@ -233,9 +233,7 @@ class cmd_merge(TarmacCommand):
                     target.cleanup()
                     continue
 
-                urlp = re.compile('http[s]?://api\.(.*)launchpad\.net/[^/]+/')
-                merge_url = urlp.sub(
-                    'http://code.launchpad.net/', proposal.self_link)
+                merge_url = get_review_url(proposal)
                 revprops = {'merge_url': merge_url}
 
                 commit_message = proposal.commit_message
