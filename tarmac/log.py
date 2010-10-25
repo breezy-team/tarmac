@@ -15,7 +15,7 @@ def set_up_logging(config=None):
 
     log_file = config.get('Tarmac', 'log_file')
     file_handler = logging.FileHandler(filename=log_file)
-    file_handler.setLevel(logging.WARN)
+    file_handler.setLevel(logging.INFO)
     file_handler.setFormatter(
         logging.Formatter('%(asctime)s %(levelname)-8s %(message)s',
                           '%Y-%m-%d %H:%M:%S'))
@@ -24,7 +24,7 @@ def set_up_logging(config=None):
 
     # Handle logging for 'bzr' logger
     bzr_logger = logging.getLogger('bzr')
-    bzr_logger.setLevel(logging.DEBUG)
+    bzr_logger.setLevel(logging.INFO)
     bzr_logger.addHandler(file_handler)
 
 

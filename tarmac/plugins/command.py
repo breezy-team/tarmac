@@ -74,6 +74,9 @@ class Command(TarmacPlugin):
 
         if return_code != 0:
             self.do_failed(stdout_value, stderr_value)
+        else:
+            self.logger.info('==========')
+            self.logger.info(stdout_value)
 
     def do_failed(self, stdout_value, stderr_value):
         '''Perform failure tests.
