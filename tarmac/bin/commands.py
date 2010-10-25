@@ -33,6 +33,21 @@ class TarmacCommand(Command):
         set_up_logging(self.config)
         self.logger = logging.getLogger('tarmac')
 
+    def _usage(self):
+        """Custom _usage for referencing "tarmac" instead of "bzr."""
+        s = 'tarmac ' + self.name() + ' '
+        for aname in self.takes_args:
+            aname = aname.upper()
+            if aname[-1] in ['$', '+']:
+                aname = aname[:-1] + '...'
+            elif aname[-1] == '?':
+                aname = '[' + aname[:-1] + ']'
+            elif aname[-1] == '*':
+                aname = '[' + aname[:-1] + '...]'
+            s += aname + ' '
+        s = s[:-1]
+        return s
+
     def run(self):
         '''Actually run the command.'''
 
