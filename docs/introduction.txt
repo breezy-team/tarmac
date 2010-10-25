@@ -66,6 +66,41 @@ like this::
 If this directory or tree doesn't exist, Tarmac will go ahead and create it.
 
 
+Running Tarmac
+==============
+
+Once Tarmac is all configured, simply run ``tarmac land``.  Voila!  If there
+are issues at all, you can run ``tarmac land --debug`` to get more debug
+imformation.
+
+==============
+Tarmac on Cron
+==============
+
+Tarmac runs best on a cron, because it's doing stuff you shouldn't even need to
+worry about.  To make Tarmac run on a cron, add this to your crontab::
+
+0 1/2/3/4/5/6/7/8/9/10/11/12 * * * tarmac land
+
+This will run Tarmac every hour, and merge branches if needed, and just quickly
+shut down if not needed.  Depending on the velocity of your project and what
+things Tarmac is doing when it merges (are your tests taking FOREVER?), you'll
+want to tune this to work best for your project.
+
+
+==========================
+Authenticating with Tarmac
+==========================
+
+If you ever feel the need to manually authenticate Tarmac, you can run::
+
+  tarmac authenticate
+
+Follow the prompts and you'll be ready to go.  Tarmac creates an authorization
+token in $HOME/.config/tarmac/credentials.  If this file is ever corrupted, you
+can just remove it and run the authentication again.
+
+
 ================
 Built-in Plugins
 ================
@@ -193,3 +228,11 @@ Tarmac's plugin system is very clever, because it's based on Bazaar's plugin
 system.  In order to install extra plugins, place them
 ``$HOME/.config/tarmac/plugins``.  They will then be available for import in
 python at tarmac.plugins.
+
+
+Getting Help
+============
+
+If you ever get stuck with Tarmac, you can easily find help by running::
+
+  tarmac help
