@@ -69,8 +69,8 @@ If this directory or tree doesn't exist, Tarmac will go ahead and create it.
 Running Tarmac
 ==============
 
-Once Tarmac is all configured, simply run ``tarmac land``.  Voila!  If there
-are issues at all, you can run ``tarmac land --debug`` to get more debug
+Once Tarmac is all configured, simply run ``tarmac merge``.  Voila!  If there
+are issues at all, you can run ``tarmac merge --debug`` to get more debug
 imformation.
 
 ==============
@@ -80,7 +80,7 @@ Tarmac on Cron
 Tarmac runs best on a cron, because it's doing stuff you shouldn't even need to
 worry about.  To make Tarmac run on a cron, add this to your crontab::
 
-0 1/2/3/4/5/6/7/8/9/10/11/12 * * * tarmac land
+0 1/2/3/4/5/6/7/8/9/10/11/12 * * * tarmac merge
 
 This will run Tarmac every hour, and merge branches if needed, and just quickly
 shut down if not needed.  Depending on the velocity of your project and what
