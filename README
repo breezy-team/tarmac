@@ -11,7 +11,7 @@ Installation
 ============
 
 Download the most recent Tarmac tarball or checkout the branch with ``bzr
-branch lp:tarmac``.  Within the tarmac directory, one can run ``tarmac-lander``
+branch lp:tarmac``.  Within the tarmac directory, one can run ``tarmac land``
 straight from there, or run ``python setup.py install`` to install it to the
 system.
 
@@ -23,7 +23,7 @@ When running Tarmac for the first time, it will need to get an OAuth token from
 Launchpad to allow it to act as a user.  One can do this by running the
 following command:
 
-  ``tarmac-authenticate``
+  ``tarmac authenticate``
 
   ...and then follow the instructions.  The token will be placed in
 ``$HOME/.config/tarmac/credentials``.  Tarmac does need to write some data, so
@@ -33,21 +33,11 @@ it's required that the token have at least write access as the user.
 Usage
 =====
 
-Run ``tarmac-lander <project>`` to get Tarmac to look for the development
-focus of a project and any branches approved to merge into the branch.  One
-may test it out without merging by running:
-
-  ``tarmac-lander <project> --dry-run``
+To land branches with Tarmac, you should run ``tarmac land lp:<branch>``.  For
+instance, if I wanted to land all approved merge proposals for lp:tarmac, I'd
+run ``tarmac land lp:tarmac``.
 
 Tarmac recognizes branches to land when the merge proposal's status (not the
 votes) is "Approved" and a valid commit message has been set for the branch.
 If a branch isn't being picked up by Tarmac to land, then one of these issues
 is probably the culprit.
-
-
-Web Interface
-=============
-
-Tarmac includes an optional web interface to display the status of Tarmac.
-The web interface is a wsgi app that can easily be loaded into mod_wsgi in
-your apache or nginx server, or run standalone.
