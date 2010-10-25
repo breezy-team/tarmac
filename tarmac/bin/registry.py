@@ -19,6 +19,9 @@ class CommandRegistry(object):
 
     def _get_command(self, command, name):
         '''Return the command.'''
+        if name.startswith('--'):
+            if name == '--help':
+                name = 'help'
         _command = None
         try:
             _command = self._registry[name]
