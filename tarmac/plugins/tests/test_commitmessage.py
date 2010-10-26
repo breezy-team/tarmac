@@ -25,7 +25,8 @@ class TestCommitMessageTemplateInfo(TarmacTestCase):
                     comment=Thing(vote=u"Approve"),
                     reviewer=Thing(
                         display_name="Virginia Voter", name="virginia")),
-                ])
+                ],
+            self_link=u"http://api.launchpad.net/1.0/~rockstar/tarmac/tarmac/+merge/1")
         self.info = CommitMessageTemplateInfo(self.proposal)
 
     def test_author(self):
@@ -44,6 +45,11 @@ class TestCommitMessageTemplateInfo(TarmacTestCase):
         self.assertEqual(
             "Virgil Voter, Virginia Voter",
             self.info.approved_by)
+
+    def test_review_url(self):
+        self.assertEqual(
+            u"http://code.launchpad.net/~rockstar/tarmac/tarmac/+merge/1",
+            self.info.review_url)
 
     def test_approved_by_nicks(self):
         self.assertEqual(
