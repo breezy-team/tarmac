@@ -1,3 +1,35 @@
+====================
+Submitting your code
+====================
+
+  <rockstar> mars, I don't accept patches. I only accept merge proposals. :)
+
+                    -- Seen in #tarmac on FreeNode
+
+
+(I'll assume you already have a Launchpad account, or you would not be using a
+tool that works with Launchpad merge proposals ;)
+
+To get your patch into the Tarmac mainline, do the following:
+
+1. Check your changes into a bzr branch of lp:tarmac
+
+2. Push your changes: ``bzr push lp:~myuser/tarmac/my-descriptive-patch``
+
+3. Use ``bzr send`` or the Launchpad web interface to propose your branch for
+   merging into the Tarmac trunk.
+
+4. Wait for a Tarmac committer to review the code and reply to your proposal.
+
+5. If you have been waiting a long time for someone to review your code, join
+   the #tarmac IRC channel on FreeNode and ask rockstar and dobey personally
+   to look at your branch.
+
+6. When your code is ready to land, set the merge proposal's status to
+   'Approved'. The Tarmac project's own instance will land the changes for
+   you.
+
+
 =============
 Writing Tests
 =============
