@@ -150,7 +150,8 @@ class cmd_merge(TarmacCommand):
 
         lp_branch = self.launchpad.branches.getByUrl(url=branch_url)
 
-        proposals = self._get_mergable_proposals_for_branch(lp_branch)
+        proposals = self._get_mergable_proposals_for_branch(
+            lp_branch, imply_commit_message)
 
         if not proposals:
             self.logger.info(
@@ -289,7 +290,8 @@ class cmd_merge(TarmacCommand):
         finally:
             target.cleanup()
 
-    def _get_mergable_proposals_for_branch(self, lp_branch):
+    def _get_mergable_proposals_for_branch(self, lp_branch,
+                                           imply_commit_message):
         """Return a list of the mergable proposals for the given branch."""
         proposals = []
         for entry in lp_branch.landing_candidates:
