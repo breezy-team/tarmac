@@ -66,15 +66,29 @@ class TarmacCommand(Command):
         else:
             SERVICE_ROOT = EDGE_SERVICE_ROOT
 
+        self.logger.debug(
+            "Connecting to the Launchpad API at {0}".format(SERVICE_ROOT))
+
+        self.logger.debug("  Loading credentials from {0}".format(filename))
         if not os.path.exists(filename):
+            self.logger.debug("  No existing API credentials were found")
+            self.logger.debug("  Fetching new credentials from {0}".format(
+                SERVICE_ROOT))
+
             launchpad = Launchpad.get_token_and_login(
                 'Tarmac', SERVICE_ROOT, self.config.CACHE_HOME)
             launchpad.credentials.save(file(filename, 'w'))
+
+            self.logger.debug("  Credentials saved to {0}".format(filename))
         else:
             credentials = Credentials()
             credentials.load(open(filename))
+            self.logger.debug("  Credentials loaded".format(filename))
+
             launchpad = Launchpad(
                 credentials, SERVICE_ROOT, self.config.CACHE_HOME)
+
+        self.logger.debug("Connected")
         return launchpad
 
 
@@ -136,9 +150,9 @@ class cmd_merge(TarmacCommand):
 
         lp_branch = self.launchpad.branches.getByUrl(url=branch_url)
 
-        proposals = [entry for entry in lp_branch.landing_candidates
-                        if entry.queue_status == u'Approved' and
-                        (imply_commit_message or entry.commit_message)]
+        proposals = self._get_mergable_proposals_for_branch(
+            lp_branch, imply_commit_message)
+
         if not proposals:
             self.logger.info(
                 'No approved proposals found for %(branch_url)s' % {
@@ -275,6 +289,27 @@ class cmd_merge(TarmacCommand):
                 self, target)
         finally:
             target.cleanup()
+
+    def _get_mergable_proposals_for_branch(self, lp_branch,
+                                           imply_commit_message):
+        """Return a list of the mergable proposals for the given branch."""
+        proposals = []
+        for entry in lp_branch.landing_candidates:
+            self.logger.debug("Considering merge proposal: {0}".format(entry))
+
+            if entry.queue_status != u'Approved':
+                self.logger.debug(
+                    "  Skipping proposal: status is {0}, not "
+                    "'Approved'".format(entry.queue_status))
+                continue
+
+            if not imply_commit_message and not entry.commit_message:
+                self.logger.debug(
+                    "  Skipping proposal: proposal has no commit message")
+                continue
+
+            proposals.append(entry)
+        return proposals
 
     def _get_reviews(self, proposal):
         """Get the set of reviews from the proposal."""
