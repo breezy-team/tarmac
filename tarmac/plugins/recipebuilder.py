@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Tarmac.  If not, see <http://www.gnu.org/licenses/>.
 '''Tarmac plug-in for triggering package recipe builds on Launchpad.'''
+from lazr.restfulclient.errors import ResponseError
 from tarmac.hooks import tarmac_hooks
 from tarmac.plugins import TarmacPlugin
 
@@ -48,8 +49,10 @@ class PackageRecipe(TarmacPlugin):
                                        pocket=u'Release')
         except (KeyError, ValueError, AttributeError):
             self.logger.error('Recipe not found: %s' % self.package_recipe)
-            return
-
+        except ResponseError, error:
+            self.logger.error('Failed to request build of recipe: %s: (%s) %s',
+                              self.package_recipe,
+                              error.response.status, error.response.reason)
 
 tarmac_hooks['tarmac_post_merge'].hook(PackageRecipe(),
                                        'Package recipe builder plug-in.')
