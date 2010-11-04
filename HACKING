@@ -16,18 +16,11 @@ To get your patch into the Tarmac mainline, do the following:
 
 2. Push your changes: ``bzr push lp:~myuser/tarmac/my-descriptive-patch``
 
-3. Use ``bzr send`` or the Launchpad web interface to propose your branch for
-   merging into the Tarmac trunk.
+3. Follow the Launchpad help instructions to create a new merge proposal
+   containing your changes: https://help.launchpad.net/Code/Review
 
-4. Wait for a Tarmac committer to review the code and reply to your proposal.
-
-5. If you have been waiting a long time for someone to review your code, join
-   the #tarmac IRC channel on FreeNode and ask rockstar and dobey personally
-   to look at your branch.
-
-6. When your code is ready to land, set the merge proposal's status to
-   'Approved'. The Tarmac project's own instance will land the changes for
-   you.
+4. The Tarmac core developers will review your code and provide feedback.
+   When your code is approved they will commit it for you.
 
 
 =============
