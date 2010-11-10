@@ -23,6 +23,10 @@ class InvalidContributor(TarmacMergeError):
     """Error for when a contributor does not meet validation requirements."""
 
 
+class InvalidPersonOrTeam(TarmacMergeError):
+    """Error for when a required team could not be found."""
+
+
 class AllowedContributors(TarmacPlugin):
     """Tarmac plug-in for checking whether a contributor is allowed to.
 
@@ -52,9 +56,25 @@ class AllowedContributors(TarmacPlugin):
                 in_team = False
                 for team in self.allowed_contributors:
                     launchpad = command.launchpad
-                    lp_members = launchpad.people[team].getMembersByStatus(
-                        status=[u'Approved', u'Administrator'])
-                    members = [x.name for x in lp_members]
+                    try:
+                        lp_members = launchpad.people[team].getMembersByStatus(
+                            status=u'Approved')
+                        lp_members.extend(
+                            launchpad.people[team].getMembersByStatus(
+                                status=u'Administrator'))
+                        members = [x.name for x in lp_members]
+                    except KeyError:
+                        message = (u'Could not find person or team "%s" on '
+                                   u'Launchpad.' % team)
+                        comment = (u'Merging into %(target) requires that '
+                                   u'contributing authors be a member of an '
+                                   u'acceptable team, or a specified person. '
+                                   u'However, the person or team "%(team)s" '
+                                   u'was not found on Launchpad.' % {
+                                'target': proposal.target_branch.display_name,
+                                'team': team})
+                        raise InvalidPersonOrTeam(message, comment)
+
                     if author in members:
                         in_team = True
                         break
