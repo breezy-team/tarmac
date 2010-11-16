@@ -16,7 +16,7 @@
 """Tests for the Allowed Contributors plug-in."""
 
 from tarmac.plugins.allowedcontributors import (
-    InvalidContributor, AllowedContributors)
+    InvalidContributor, InvalidPersonOrTeam, AllowedContributors)
 from tarmac.tests import TarmacTestCase
 from tarmac.tests.mock import Thing
 
@@ -47,7 +47,7 @@ class AllowedContributorTests(TarmacTestCase):
                    Thing(name=u'person3', status=u'Approved'),
                    Thing(name=u'person8', status=u'Invited'),
                    Thing(name=u'personX', status=u'Expired')]
-        return [x for x in members if x.status in status]
+        return [x for x in members if x.status == status]
 
     def noMembersByStatus(self, status=None):
         """Fake method to not return any members for people."""
@@ -74,3 +74,16 @@ class AllowedContributorTests(TarmacTestCase):
                           self.plugin.run,
                           command=command, target=target, source=source,
                           proposal=self.proposal)
+
+    def test_run_private_team(self):
+        """Test that the plug-in runs correctly."""
+        config = Thing(allowed_contributors=u'private_team')
+        source = Thing(authors=[u'person1', u'person2', u'person3'])
+        target = Thing(config=config)
+        launchpad = Thing(people=self.people)
+        command = Thing(launchpad=launchpad)
+        self.assertRaises(InvalidPersonOrTeam,
+                          self.plugin.run,
+                          command=command, target=target, source=source,
+                          proposal=self.proposal)
+
