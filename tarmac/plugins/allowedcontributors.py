@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with Tarmac.  If not, see <http://www.gnu.org/licenses/>.
 """Tarmac plug-in for checking for a list of allowable contributors."""
+import re
+
 from tarmac.exceptions import TarmacMergeError
 from tarmac.hooks import tarmac_hooks
 from tarmac.plugins import TarmacPlugin
@@ -48,21 +50,21 @@ class AllowedContributors(TarmacPlugin):
                 'source': proposal.source_branch.display_name,
                 'target': proposal.target_branch.display_name})
 
+        launchpad = command.launchpad
+
         invalid_contributors = []
-        for author in source.authors:
-            if author in self.allowed_contributors:
+        for name in source.authors:
+            email = re.sub(r'>$', '', re.sub(r'^.*\<', '', name))
+            author = launchpad.people.getByEmail(email=email)
+            if author.name in self.allowed_contributors:
                 continue
             else:
                 in_team = False
                 for team in self.allowed_contributors:
-                    launchpad = command.launchpad
                     try:
-                        lp_members = launchpad.people[team].getMembersByStatus(
-                            status=u'Approved')
-                        lp_members.extend(
-                            launchpad.people[team].getMembersByStatus(
-                                status=u'Administrator'))
-                        members = [x.name for x in lp_members]
+                        lp_team = launchpad.people[team]
+                        if not lp_team.is_team:
+                            continue
                     except KeyError:
                         message = (u'Could not find person or team "%s" on '
                                    u'Launchpad.' % team)
@@ -75,11 +77,11 @@ class AllowedContributors(TarmacPlugin):
                                 'team': team})
                         raise InvalidPersonOrTeam(message, comment)
 
-                    if author in members:
+                    if author in lp_team.members:
                         in_team = True
                         break
-                if not in_team and author not in invalid_contributors:
-                    invalid_contributors.append(author)
+                if not in_team and name not in invalid_contributors:
+                    invalid_contributors.append(name)
         if len(invalid_contributors) > 0:
             message = u'Some contributors are not acceptable.'
             comment = (u'There was a problem validating some authors of the '

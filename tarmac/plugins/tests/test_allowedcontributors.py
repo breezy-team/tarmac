@@ -30,28 +30,35 @@ class AllowedContributorTests(TarmacTestCase):
         self.proposal = Thing(source_branch=Thing(display_name=u'lp:source'),
                               target_branch=Thing(display_name=u'lp:target'))
         self.plugin = AllowedContributors()
-        people = {u'person1': Thing(name=u'person1',
-                                    getMembersByStatus=self.noMembersByStatus),
-                  u'person2': Thing(name=u'person2',
-                                    getMembersByStatus=self.noMembersByStatus),
-                  u'person3': Thing(name=u'person3',
-                                    getMembersByStatus=self.noMembersByStatus),
-                  u'team1': Thing(name=u'team1',
-                                  getMembersByStatus=self.getMembersByStatus),
-                  }
+        people = Thing(
+            person1=Thing(name=u'person1',
+                          is_team=False,
+                          preferred_email_address=Thing(email=u'person1'),
+                          confirmed_email_addresses=Thing()),
+            person2=Thing(name=u'person2',
+                          is_team=False,
+                          preferred_email_address=Thing(email=u'person2'),
+                          confirmed_email_addresses=Thing()),
+            person3=Thing(name=u'person3',
+                          is_team=False,
+                          preferred_email_address=Thing(email=u'person3'),
+                          confirmed_email_addresses=Thing()),
+            team1=Thing(name=u'team1',
+                        is_team=True,
+                        preferred_email_address=Thing(email=None),
+                        confirmed_email_addresses=Thing(),
+                        members=None),
+            getByEmail=self.getByEmail)
         self.people = people
+        self.people.team1.members = [self.people.person1, self.people.person3]
 
-    def getMembersByStatus(self, status=None):
-        """Fake method to return some team members."""
-        members = [Thing(name=u'person1', status=u'Administrator'),
-                   Thing(name=u'person3', status=u'Approved'),
-                   Thing(name=u'person8', status=u'Invited'),
-                   Thing(name=u'personX', status=u'Expired')]
-        return [x for x in members if x.status == status]
-
-    def noMembersByStatus(self, status=None):
-        """Fake method to not return any members for people."""
-        return []
+    def getByEmail(self, email=None):
+        """Fake method to return a person based on e-mail address."""
+        for person in self.people:
+            if person.preferred_email_address.email == email:
+                return person
+            if email in [y.email for y in person.confirmed_email_addresses]:
+                return person
 
     def test_run(self):
         """Test that the plug-in runs correctly."""
