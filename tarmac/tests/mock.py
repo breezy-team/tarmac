@@ -77,4 +77,3 @@ class Thing(dict):
         for item in self.values():
             if not callable(item):
                 yield item
-

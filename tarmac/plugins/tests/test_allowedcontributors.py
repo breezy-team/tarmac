@@ -100,7 +100,6 @@ class AllowedContributorTests(TarmacTestCase):
                           command=command, target=target, source=source,
                           proposal=self.proposal)
 
-
     def test_person_is_in_subteam(self):
         """Test that is_in_team returns True for person in a subteam."""
         self.assertTrue(self.plugin.is_in_team(self.people.person1,

@@ -94,14 +94,12 @@ class AllowedContributors(TarmacPlugin):
 
     def is_in_team(self, person, team):
         """Check that a person is a member of team, or one of its subteams."""
-        in_team = False
         for subteam in team.members:
             if subteam == person:
-                in_team = True
-                break
-            if subteam.is_team:
-                in_team = self.is_in_team(person, subteam)
-        return in_team
+                return True
+            if subteam.is_team and self.is_in_team(person, subteam):
+                return True
+        return False
 
 
 tarmac_hooks['tarmac_pre_commit'].hook(
