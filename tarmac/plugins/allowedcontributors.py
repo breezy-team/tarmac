@@ -65,6 +65,8 @@ class AllowedContributors(TarmacPlugin):
                         lp_team = launchpad.people[team]
                         if lp_team.is_team:
                             in_team = self.is_in_team(author, lp_team)
+                            if in_team:
+                                break
                     except KeyError:
                         message = (u'Could not find person or team "%s" on '
                                    u'Launchpad.' % team)
