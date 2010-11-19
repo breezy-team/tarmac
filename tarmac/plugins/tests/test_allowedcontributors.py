@@ -48,9 +48,15 @@ class AllowedContributorTests(TarmacTestCase):
                         preferred_email_address=Thing(email=None),
                         confirmed_email_addresses=Thing(),
                         members=None),
+            team2=Thing(name=u'team2',
+                        is_team=True,
+                        preferred_email_address=Thing(email=None),
+                        confirmed_email_address=Thing(),
+                        members=None),
             getByEmail=self.getByEmail)
         self.people = people
         self.people.team1.members = [self.people.person1, self.people.person3]
+        self.people.team2.members = [self.people.team1, self.people.person2]
 
     def getByEmail(self, email=None):
         """Fake method to return a person based on e-mail address."""
@@ -94,3 +100,13 @@ class AllowedContributorTests(TarmacTestCase):
                           command=command, target=target, source=source,
                           proposal=self.proposal)
 
+
+    def test_person_is_in_subteam(self):
+        """Test that is_in_team returns True for person in a subteam."""
+        self.assertTrue(self.plugin.is_in_team(self.people.person1,
+                                               self.people.team2))
+
+    def test_person_not_in_team(self):
+        """Test that is_in_team returns False for person not in a team."""
+        self.assertFalse(self.plugin.is_in_team(self.people.person2,
+                                                self.people.team1))

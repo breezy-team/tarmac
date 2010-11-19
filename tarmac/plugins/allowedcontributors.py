@@ -63,8 +63,8 @@ class AllowedContributors(TarmacPlugin):
                 for team in self.allowed_contributors:
                     try:
                         lp_team = launchpad.people[team]
-                        if not lp_team.is_team:
-                            continue
+                        if lp_team.is_team:
+                            in_team = self.is_in_team(author, lp_team)
                     except KeyError:
                         message = (u'Could not find person or team "%s" on '
                                    u'Launchpad.' % team)
@@ -77,11 +77,9 @@ class AllowedContributors(TarmacPlugin):
                                 'team': team})
                         raise InvalidPersonOrTeam(message, comment)
 
-                    if author in lp_team.members:
-                        in_team = True
-                        break
                 if not in_team and name not in invalid_contributors:
                     invalid_contributors.append(name)
+
         if len(invalid_contributors) > 0:
             message = u'Some contributors are not acceptable.'
             comment = (u'There was a problem validating some authors of the '
@@ -93,6 +91,17 @@ class AllowedContributors(TarmacPlugin):
                     'teams': '\n    '.join(sorted(self.allowed_contributors)),
                     'authors': '\n    '.join(sorted(invalid_contributors))})
             raise InvalidContributor(message, comment)
+
+    def is_in_team(self, person, team):
+        """Check that a person is a member of team, or one of its subteams."""
+        in_team = False
+        for subteam in team.members:
+            if subteam == person:
+                in_team = True
+                break
+            if subteam.is_team:
+                in_team = self.is_in_team(person, subteam)
+        return in_team
 
 
 tarmac_hooks['tarmac_pre_commit'].hook(
