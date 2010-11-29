@@ -125,3 +125,6 @@ class BranchConfig:
         if config.has_section(branch_name):
             for key, val in config.items(branch_name):
                 setattr(self, key, val)
+
+    def get(self, key, default=None):
+        return getattr(self, key, default)
