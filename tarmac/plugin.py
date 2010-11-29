@@ -18,6 +18,7 @@
 
 import imp
 import os
+import sys
 
 from tarmac import plugins as _mod_plugins
 
@@ -40,6 +41,9 @@ def load_plugins():
 
     plugin_names = set()
     for path in TARMAC_PLUGIN_PATHS:
+        if path not in sys.path:
+            sys.path.append(path)
+
         try:
             for _file in os.listdir(path):
                 full_path = os.path.join(path, _file)
@@ -75,6 +79,6 @@ def load_plugins():
 
     for name in plugin_names:
         try:
-            exec 'import tarmac.plugins.%s' % name in {}
+            exec 'import %s' % name in {}
         except KeyboardInterrupt:
             raise
