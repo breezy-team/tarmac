@@ -42,7 +42,7 @@ def load_plugins():
     plugin_names = set()
     for path in TARMAC_PLUGIN_PATHS:
         if path not in sys.path:
-            sys.path.append(path)
+            sys.path.insert(0, path)
 
         try:
             for _file in os.listdir(path):
