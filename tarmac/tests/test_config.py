@@ -61,3 +61,23 @@ class TestTarmacConfig(TarmacTestCase):
         self.assertRaises(NoOptionError,
                           self.config.get, 'test', 'test_option')
         self.config.remove_section('test')
+
+
+class BranchConfigTestCase(TarmacTestCase):
+    '''Tests for the tarmac.config.BranchConfig object.'''
+
+    def test_get_value(self):
+        expected_value = 'test value'
+        self.config.add_section('lp:test_get_value')
+        self.config.set('lp:test_get_value', 'test_key', expected_value)
+
+        config = BranchConfig('lp:test_get_value', self.config)
+
+        self.assertTrue(hasattr(config, 'test_key'))
+        self.assertEqual(config.test_key, expected_value)
+        self.assertEqual(config.get('test_key'), expected_value)
+
+    def test_get_unset_value_returns_none(self):
+        config = BranchConfig('lp:test_no_keys', self.config)
+        self.assertFalse(hasattr(config, 'missing_key'))
+        self.assertIs(None, config.get('missing_key'))

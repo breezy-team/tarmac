@@ -126,5 +126,9 @@ class BranchConfig:
             for key, val in config.items(branch_name):
                 setattr(self, key, val)
 
-    def get(self, key, default=None):
-        return getattr(self, key, default)
+    def get(self, attr, default=None):
+        '''A convenient method for getting a config key that may be missing.
+
+        Defaults to None if the key is not set.
+        '''
+        return getattr(self, attr, default)
