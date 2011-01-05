@@ -66,8 +66,14 @@ class MockModule(object):
         self.__dict__['cmd_mock'] = cmd_mock
 
 
-class Thing(object):
+class Thing(dict):
     """Quickly create an object with given attributes."""
 
     def __init__(self, **names):
+        super(Thing, self).__init__(self, **names)
         self.__dict__.update(names)
+
+    def __iter__(self):
+        for item in self.values():
+            if not callable(item):
+                yield item
