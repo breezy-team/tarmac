@@ -2,6 +2,7 @@
 import httplib2
 import logging
 import os
+import re
 
 from bzrlib.commands import Command
 from bzrlib.errors import PointlessMerge
@@ -32,6 +33,10 @@ class TarmacCommand(Command):
 
         set_up_logging(self.config)
         self.logger = logging.getLogger('tarmac')
+
+        for option in self.takes_options:
+            name = re.sub(r'-', '_', option.name)
+            self.config.set('Tarmac', name, False)
 
     def _usage(self):
         """Custom _usage for referencing "tarmac" instead of "bzr."""
@@ -146,12 +151,11 @@ class cmd_merge(TarmacCommand):
         options.debug_option,
         options.imply_commit_message_option]
 
-    def _do_merges(self, branch_url, imply_commit_message):
+    def _do_merges(self, branch_url):
 
         lp_branch = self.launchpad.branches.getByUrl(url=branch_url)
 
-        proposals = self._get_mergable_proposals_for_branch(
-            lp_branch, imply_commit_message)
+        proposals = self._get_mergable_proposals_for_branch(lp_branch)
 
         if not proposals:
             self.logger.info(
@@ -266,7 +270,7 @@ class cmd_merge(TarmacCommand):
                 revprops = {'merge_url': merge_url}
 
                 commit_message = proposal.commit_message
-                if commit_message is None and imply_commit_message:
+                if commit_message is None and self.config.imply_commit_message:
                     commit_message = proposal.description
                 target.commit(commit_message,
                              revprops=revprops,
@@ -290,8 +294,7 @@ class cmd_merge(TarmacCommand):
         finally:
             target.cleanup()
 
-    def _get_mergable_proposals_for_branch(self, lp_branch,
-                                           imply_commit_message):
+    def _get_mergable_proposals_for_branch(self, lp_branch):
         """Return a list of the mergable proposals for the given branch."""
         proposals = []
         for entry in lp_branch.landing_candidates:
@@ -303,7 +306,8 @@ class cmd_merge(TarmacCommand):
                     "'Approved'".format(entry.queue_status))
                 continue
 
-            if not imply_commit_message and not entry.commit_message:
+            if (not self.config.imply_commit_message and 
+                not entry.commit_message):
                 self.logger.debug(
                     "  Skipping proposal: proposal has no commit message")
                 continue
@@ -326,12 +330,14 @@ class cmd_merge(TarmacCommand):
 
         return reviews
 
-    def run(self, branch_url=None, debug=False, http_debug=False,
-            launchpad=None, imply_commit_message=False):
-        if debug:
+    def run(self, branch_url=None, launchpad=None, **kwargs):
+        for key, value in kwargs.iteritems():
+            self.config.set('Tarmac', key, value)
+
+        if self.config.debug:
             set_up_debug_logging()
             self.logger.debug('Debug logging enabled')
-        if http_debug:
+        if self.config.http_debug:
             httplib2.debuglevel = 1
             self.logger.debug('HTTP debugging enabled.')
         self.logger.debug('Loading plugins')
@@ -350,7 +356,7 @@ class cmd_merge(TarmacCommand):
                     'branch_url': branch_url})
             if not branch_url.startswith('lp:'):
                 raise TarmacCommandError('Branch urls must start with lp:')
-            self._do_merges(branch_url, imply_commit_message)
+            self._do_merges(branch_url)
 
         else:
             for branch in self.config.branches:
@@ -358,7 +364,7 @@ class cmd_merge(TarmacCommand):
                     'Merging approved branches against %(branch)s' % {
                         'branch': branch})
                 try:
-                    self._do_merges(branch, imply_commit_message)
+                    self._do_merges(branch)
                 except Exception, error:
                     self.logger.error(
                         'An error occurred trying to merge %s: %s',

@@ -50,7 +50,7 @@ class TarmacConfig(ConfigParser):
 
     def set(self, section, option, value):
         """Wrap the set method, so we can tweak our attrs."""
-        ConfigParser.set(self, section, option, value)
+        ConfigParser.set(self, section, option, str(value))
         if section == 'Tarmac':
             setattr(self, option, value)
 
