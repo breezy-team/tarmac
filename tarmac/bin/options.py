@@ -13,5 +13,5 @@ staging_option = Option(
     help='Use staging as API source.')
 imply_commit_message_option = Option(
     'imply-commit-message',
-    help=("Use the description as a commit message if thef branch "
+    help=("Use the description as a commit message if the branch "
           "doesn't have a message"))
