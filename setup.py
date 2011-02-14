@@ -17,6 +17,7 @@
 # along with Tarmac.  If not, see <http://www.gnu.org/licenses/>.
 '''Tarmac installation script.'''
 
+from distutils.command import clean
 from distutils.core import Command, setup
 import os
 
@@ -35,13 +36,15 @@ class BaseCommand(Command):
         self.cwd = os.getcwd()
 
 
-class CleanCommand(BaseCommand):
+class CleanCommand(clean.clean):
     '''Customized command for clean.'''
 
     description = 'Customized clean command'
 
     def run(self):
         os.system('rm -rf build _trial_temp dist')
+
+        super(CleanCommand, self).run()
 
 
 class DocCommand(BaseCommand):
