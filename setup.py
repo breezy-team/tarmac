@@ -41,7 +41,7 @@ class CleanCommand(BaseCommand):
     description = 'Customized clean command'
 
     def run(self):
-        os.system('rm -rf build _trial_temp')
+        os.system('rm -rf build _trial_temp dist')
 
 
 class DocCommand(BaseCommand):
@@ -56,6 +56,17 @@ class DocCommand(BaseCommand):
             'rst2html docs/introduction.txt build/docs/introduction.html')
         os.system(
             'rst2html docs/writingplugins.txt build/docs/writingplugins.html')
+
+
+class ReleaseCommand(BaseCommand):
+    '''A command for cutting releases.'''
+
+    description = 'Cut a release'
+
+    def run(self):
+        os.system('python setup.py sdist')
+        os.system(
+            'gpg --armor --sign --detach-sig `find dist -name "tarmac-*"`')
 
 
 class TestCommand(BaseCommand):
@@ -73,6 +84,7 @@ setup(
     cmdclass={
         'clean': CleanCommand,
         'docs': DocCommand,
+        'release': ReleaseCommand,
         'test': TestCommand
         },
     name=u'tarmac',
