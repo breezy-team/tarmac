@@ -7,7 +7,8 @@ import re
 from bzrlib.commands import Command
 from bzrlib.errors import PointlessMerge
 from bzrlib.help import help_commands
-from launchpadlib.launchpad import (Credentials, Launchpad, EDGE_SERVICE_ROOT,
+from launchpadlib.launchpad import (Credentials, Launchpad)
+from launchpadlib.uris import (LPNET_SERVICE_ROOT,
     STAGING_SERVICE_ROOT)
 
 from tarmac.bin import options
@@ -69,7 +70,7 @@ class TarmacCommand(Command):
         if staging:
             SERVICE_ROOT = STAGING_SERVICE_ROOT
         else:
-            SERVICE_ROOT = EDGE_SERVICE_ROOT
+            SERVICE_ROOT = LPNET_SERVICE_ROOT
 
         self.logger.debug(
             "Connecting to the Launchpad API at {0}".format(SERVICE_ROOT))
