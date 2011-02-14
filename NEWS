@@ -16,3 +16,10 @@ Conflict handling improved
 Added docs
 Increased test coverage
 Minimal downloading of checkouts
+
+Tarmac 0.5 Released
+===================
+
+Actually using the NEWS file again
+Fix for api.edge.launchpad disappearing
+Speed improvements
