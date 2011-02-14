@@ -17,13 +17,36 @@
 # along with Tarmac.  If not, see <http://www.gnu.org/licenses/>.
 '''Tarmac installation script.'''
 
-from distutils.core import setup
+from distutils.core import Command, setup
+import os
 
 from tarmac import __version__
+
+
+class TestCommand(Command):
+    '''A Command for running the tests.'''
+
+    description = 'Run the tests'
+    user_options = []
+
+    def initialize_options(self):
+        self.cwd = None
+
+    def finalize_options(self):
+        self.cwd = os.getcwd()
+
+    def run(self):
+        if os.getcwd() != self.cwd:
+            raise AssertionError('Must be in package root: %s' % self.cwd)
+        os.system('trial tarmac')
+
 
 setup(
     author='Paul Hummer',
     author_email='Paul Hummer <paul@eventuallyanyway.com',
+    cmdclass={
+        'test': TestCommand
+        },
     name=u'tarmac',
     version=__version__,
     description=u'Tarmac - The Launchpad Lander',
