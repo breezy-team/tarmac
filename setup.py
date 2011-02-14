@@ -44,6 +44,20 @@ class CleanCommand(BaseCommand):
         os.system('rm -rf build _trial_temp')
 
 
+class DocCommand(BaseCommand):
+    '''Command for building the docs.'''
+
+    description = 'Build the docs'
+
+    def run(self):
+        if not os.path.exists('build/docs'):
+            os.makedirs('build/docs')
+        os.system(
+            'rst2html docs/introduction.txt build/docs/introduction.html')
+        os.system(
+            'rst2html docs/writingplugins.txt build/docs/writingplugins.html')
+
+
 class TestCommand(BaseCommand):
     '''A Command for running the tests.'''
 
@@ -58,6 +72,7 @@ setup(
     author_email='Paul Hummer <paul@eventuallyanyway.com',
     cmdclass={
         'clean': CleanCommand,
+        'docs': DocCommand,
         'test': TestCommand
         },
     name=u'tarmac',
