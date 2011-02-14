@@ -23,10 +23,9 @@ import os
 from tarmac import __version__
 
 
-class TestCommand(Command):
-    '''A Command for running the tests.'''
+class BaseCommand(Command):
+    '''A base command...'''
 
-    description = 'Run the tests'
     user_options = []
 
     def initialize_options(self):
@@ -35,9 +34,22 @@ class TestCommand(Command):
     def finalize_options(self):
         self.cwd = os.getcwd()
 
+
+class CleanCommand(BaseCommand):
+    '''Customized command for clean.'''
+
+    description = 'Customized clean command'
+
     def run(self):
-        if os.getcwd() != self.cwd:
-            raise AssertionError('Must be in package root: %s' % self.cwd)
+        os.system('rm -rf build _trial_temp')
+
+
+class TestCommand(BaseCommand):
+    '''A Command for running the tests.'''
+
+    description = 'Run the tests'
+
+    def run(self):
         os.system('trial tarmac')
 
 
@@ -45,6 +57,7 @@ setup(
     author='Paul Hummer',
     author_email='Paul Hummer <paul@eventuallyanyway.com',
     cmdclass={
+        'clean': CleanCommand,
         'test': TestCommand
         },
     name=u'tarmac',

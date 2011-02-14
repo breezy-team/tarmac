@@ -13,9 +13,6 @@ build/docs/writingplugins.html: build docs/writingplugins.txt
 
 doc: build/docs/introduction.html build/docs/writingplugins.html
 
-clean:
-	rm -rf build
-
 release:
 	python setup.py sdist
 	cd dist
