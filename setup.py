@@ -17,13 +17,79 @@
 # along with Tarmac.  If not, see <http://www.gnu.org/licenses/>.
 '''Tarmac installation script.'''
 
-from distutils.core import setup
+from distutils.command import clean
+from distutils.core import Command, setup
+import os
 
 from tarmac import __version__
+
+
+class BaseCommand(Command):
+    '''A base command...'''
+
+    user_options = []
+
+    def initialize_options(self):
+        self.cwd = None
+
+    def finalize_options(self):
+        self.cwd = os.getcwd()
+
+
+class CleanCommand(clean.clean):
+    '''Customized command for clean.'''
+
+    description = 'Customized clean command'
+
+    def run(self):
+        os.system('rm -rf build _trial_temp dist')
+
+        super(CleanCommand, self).run()
+
+
+class DocCommand(BaseCommand):
+    '''Command for building the docs.'''
+
+    description = 'Build the docs'
+
+    def run(self):
+        if not os.path.exists('build/docs'):
+            os.makedirs('build/docs')
+        os.system(
+            'rst2html docs/introduction.txt build/docs/introduction.html')
+        os.system(
+            'rst2html docs/writingplugins.txt build/docs/writingplugins.html')
+
+
+class ReleaseCommand(BaseCommand):
+    '''A command for cutting releases.'''
+
+    description = 'Cut a release'
+
+    def run(self):
+        os.system('python setup.py sdist')
+        os.system(
+            'gpg --armor --sign --detach-sig `find dist -name "tarmac-*"`')
+
+
+class TestCommand(BaseCommand):
+    '''A Command for running the tests.'''
+
+    description = 'Run the tests'
+
+    def run(self):
+        os.system('trial tarmac')
+
 
 setup(
     author='Paul Hummer',
     author_email='Paul Hummer <paul@eventuallyanyway.com',
+    cmdclass={
+        'clean': CleanCommand,
+        'docs': DocCommand,
+        'release': ReleaseCommand,
+        'test': TestCommand
+        },
     name=u'tarmac',
     version=__version__,
     description=u'Tarmac - The Launchpad Lander',
