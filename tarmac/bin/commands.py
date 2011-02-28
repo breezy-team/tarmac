@@ -254,7 +254,11 @@ class cmd_merge(TarmacCommand):
 
                     proposal.createComment(subject=subject,
                                            content=comment)
-                    proposal.setStatus(status=u'Needs review')
+                    try:
+                        proposal.setStatus(
+                            status=self.config.rejected_branch_status)
+                    except AttributeError:
+                        proposal.setStatus(status=u'Needs review')
                     proposal.lp_save()
                     target.cleanup()
                     continue

@@ -175,6 +175,14 @@ place in the chroot.  The chroot is configured in /etc/schroot/schroot.conf as
 "tarmac-jail" and is run in the schroot with ``schroot -c tarmac-jail
 <script-to-run-in-chroot>``.
 
+By default the branch failing the verify_command is set back to the
+'Needs review' status. If you want it to be set back to another status (like
+'Work in progress'), you can use the 'rejected_branch_status' parameter in the
+global configuration:
+
+  [Tarmac]
+  rejected_branch_status = Work in progress
+
 
 CIA.vc Notifier
 ===============
