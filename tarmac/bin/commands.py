@@ -7,7 +7,7 @@ import re
 from bzrlib.commands import Command
 from bzrlib.errors import PointlessMerge
 from bzrlib.help import help_commands
-from launchpadlib.launchpad import (Credentials, Launchpad)
+from launchpadlib.launchpad import Launchpad
 from launchpadlib.uris import (LPNET_SERVICE_ROOT,
     STAGING_SERVICE_ROOT)
 
@@ -81,18 +81,10 @@ class TarmacCommand(Command):
             self.logger.debug("  Fetching new credentials from {0}".format(
                 SERVICE_ROOT))
 
-            launchpad = Launchpad.get_token_and_login(
-                'Tarmac', SERVICE_ROOT, self.config.CACHE_HOME)
-            launchpad.credentials.save(file(filename, 'w'))
-
-            self.logger.debug("  Credentials saved to {0}".format(filename))
-        else:
-            credentials = Credentials()
-            credentials.load(open(filename))
-            self.logger.debug("  Credentials loaded".format(filename))
-
-            launchpad = Launchpad(
-                credentials, SERVICE_ROOT, self.config.CACHE_HOME)
+        launchpad = Launchpad.login_with(
+            u'Tarmac', service_root=SERVICE_ROOT,
+            credentials_file=filename,
+            launchpadlib_dir=self.config.CACHE_HOME)
 
         self.logger.debug("Connected")
         return launchpad
