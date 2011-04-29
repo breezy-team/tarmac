@@ -30,14 +30,19 @@ class TestVotes(TarmacTestCase):
             target_branch=Thing(isPersonTrustedReviewer=self.isReviewer),
             votes=[
                 Thing(comment=Thing(vote=u"Approve"),
+                      is_pending=False,
                       reviewer=Thing(display_name=u'Reviewer')),
                 Thing(comment=Thing(vote=u"Approve"),
+                      is_pending=False,
                       reviewer=Thing(display_name=u'Reviewer')),
                 Thing(comment=Thing(vote=u"Abstain"),
+                      is_pending=False,
                       reviewer=Thing(display_name=u'Reviewer')),
                 Thing(comment=Thing(vote=u"Needs Information"),
+                      is_pending=False,
                       reviewer=Thing(display_name=u'Reviewer')),
                 Thing(comment=Thing(vote=u'Disapprove'),
+                      is_pending=False,
                       reviewer=Thing(display_name=u'Community')),
                 ])
         self.plugin = Votes()
@@ -164,3 +169,15 @@ class TestVotes(TarmacTestCase):
                 error.comment)
         else:
             self.fail("Votes.run() did not raise VotingViolation.")
+
+    def test_count_pending(self):
+        """Test that is_pending gets counted as Pending."""
+        expected = {u"Approve": 1, u"Pending": 1}
+        self.proposal.votes = [
+            Thing(comment=Thing(vote=u''),
+                  is_pending=True,
+                  reviewer=Thing(display_name=u'Reviewer')),
+            Thing(comment=Thing(vote=u'Approve'),
+                  is_pending=False,
+                  reviewer=Thing(display_name=u'Reviewer'))]
+        self.assertEqual(expected, self.plugin.count_votes(self.proposal))
