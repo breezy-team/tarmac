@@ -96,9 +96,12 @@ class Votes(TarmacPlugin):
         for vote in proposal.votes:
             if not target.isPersonTrustedReviewer(reviewer=vote.reviewer):
                 continue
-            comment = vote.comment
-            if comment is not None and comment.vote != u'Abstain':
-                counter[comment.vote] += 1
+            if vote.is_pending:
+                counter[u'Pending'] += 1
+            else:
+                comment = vote.comment
+                if comment is not None and comment.vote != u'Abstain':
+                    counter[comment.vote] += 1
         return counter
 
     def parse_criteria(self, criteria):
