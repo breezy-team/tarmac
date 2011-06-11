@@ -80,13 +80,16 @@ Tarmac on Cron
 Tarmac runs best on a cron, because it's doing stuff you shouldn't even need to
 worry about.  To make Tarmac run on a cron, add this to your crontab::
 
-0 1 * * * tarmac merge
+0 * * * * tarmac merge
 
 This will run Tarmac every hour, and merge branches if needed, and just quickly
 shut down if not needed.  Depending on the velocity of your project and what
 things Tarmac is doing when it merges (are your tests taking FOREVER?), you'll
 want to tune this to work best for your project.
 
+If the above cron does not work for you, try giving the full path to tarmac::
+
+0 * * * * /usr/local/bin/tarmac merge
 
 ==========================
 Authenticating with Tarmac
