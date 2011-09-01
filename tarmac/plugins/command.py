@@ -143,7 +143,7 @@ class Command(TarmacPlugin):
                 if chunk == "":
                     open_readers.remove(proc.stdout)
                 else:
-                    self.logger.info(chunk)
+                    self.logger.info(chunk.rstrip())
                     stdout.write(chunk)
                     
             if proc.stderr in rlist:
@@ -151,7 +151,7 @@ class Command(TarmacPlugin):
                 if chunk == "":
                     open_readers.remove(proc.stderr)
                 else:
-                    self.logger.debug(chunk)
+                    self.logger.debug(chunk.rstrip())
                     stderr.write(chunk)
 
         return_code = proc.wait()
