@@ -17,18 +17,53 @@
 '''Tarmac plugin for running tests pre-commit.'''
 
 # Head off lint warnings.
+errno = None
 os = None
+select = None
+signal = None
 subprocess = None
+sys = None
+tempfile = None
+time = None
+
+# The TIMEOUT setting (expressed in seconds) affects how long a test will run
+# before it is deemed to be hung, and then appropriately terminated.
+# It's principal use is preventing a job from hanging indefinitely and
+# backing up the queue.
+# e.g. Usage: TIMEOUT = 60 * 15
+# This will set the timeout to 15 minutes.
+TIMEOUT = 60 * 15
 
 from bzrlib.lazy_import import lazy_import
 lazy_import(globals(), '''
+    import errno
     import os
+    import select
+    import signal
     import subprocess
+    import sys
+    import tempfile
+    import time
     ''')
 
 from tarmac.exceptions import TarmacMergeError
 from tarmac.hooks import tarmac_hooks
 from tarmac.plugins import TarmacPlugin
+
+
+def killem(pid, signal):
+    """
+    Kill the process group leader identified by pid and other group members
+
+    The verify_command should set it's process to a process group leader.
+    """
+    try:
+        os.killpg(os.getpgid(pid), signal)
+    except OSError, x:
+        if x.errno == errno.ESRCH:
+            pass
+        else:
+            raise
 
 
 class VerifyCommandFailed(TarmacMergeError):
@@ -62,21 +97,73 @@ class Command(TarmacPlugin):
         self.logger.debug('Running test command: %s' % self.verify_command)
         cwd = os.getcwd()
         os.chdir(target.tree.abspath(''))
-        proc = subprocess.Popen(
-            self.verify_command,
-            shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE)
-        stdout_value, stderr_value = proc.communicate()
+
+
+        proc = subprocess.Popen(self.verify_command,
+                                stdin=subprocess.PIPE,
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
+        proc.stdin.close()
+        stdout = tempfile.TemporaryFile()
+        stderr = tempfile.TemporaryFile()
+
+        # Do proc.communicate(), but timeout if there's no activity on stdout or
+        # stderr for too long.
+        open_readers = set([proc.stdout, proc.stderr])
+
+        while open_readers:
+            rlist, wlist, xlist = select.select(open_readers, [], [], TIMEOUT)
+
+            if len(rlist) == 0:
+                if proc.poll() is not None:
+                    break
+
+                self.logger.debug(
+                    "Command appears to be hung. There has been no output for"
+                    " %d seconds. Sending SIGTERM." % TIMEOUT)
+                killem(proc.pid, signal.SIGTERM)
+                time.sleep(5)
+
+                if proc.poll() is not None:
+                    self.logger.debug("SIGTERM did not work. Sending SIGKILL.")
+                    killem(proc.pid, signal.SIGKILL)
+
+                # Drain the subprocess's stdout and stderr.
+                out_rest = proc.stdout.read()
+                self.logger.info(out_rest)
+                stdout.write(out_rest)
+
+                err_rest = proc.stderr.read()
+                self.logger.debug(err_rest)
+                stderr.write(err_rest)
+                break
+
+            if proc.stdout in rlist:
+                chunk = os.read(proc.stdout.fileno(), 1024)
+                if chunk == "":
+                    open_readers.remove(proc.stdout)
+                else:
+                    self.logger.info(chunk)
+                    stdout.write(chunk)
+                    
+            if proc.stderr in rlist:
+                chunk = os.read(proc.stderr.fileno(), 1024)
+                if chunk == "":
+                    open_readers.remove(proc.stderr)
+                else:
+                    self.logger.debug(chunk)
+                    stderr.write(chunk)
+
         return_code = proc.wait()
+
         os.chdir(cwd)
         self.logger.debug('Completed test command: %s' % self.verify_command)
 
+        stdout.seek(0)
+        stderr.seek(0)
+
         if return_code != 0:
-            self.do_failed(stdout_value, stderr_value)
-        else:
-            self.logger.info('==========')
-            self.logger.info(stdout_value)
+            self.do_failed(stdout.read(), stderr.read())
 
     def do_failed(self, stdout_value, stderr_value):
         '''Perform failure tests.
