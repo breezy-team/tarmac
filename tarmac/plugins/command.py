@@ -100,6 +100,7 @@ class Command(TarmacPlugin):
 
 
         proc = subprocess.Popen(self.verify_command,
+                                shell=True,
                                 stdin=subprocess.PIPE,
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
