@@ -131,11 +131,13 @@ class Command(TarmacPlugin):
 
                 # Drain the subprocess's stdout and stderr.
                 out_rest = proc.stdout.read()
-                self.logger.info(out_rest)
+                if command.config.debug:
+                    sys.stdout.write(out_rest)
                 stdout.write(out_rest)
 
                 err_rest = proc.stderr.read()
-                self.logger.debug(err_rest)
+                if command.config.debug:
+                    sys.stderr.write(err_rest)
                 stderr.write(err_rest)
                 break
 
@@ -144,7 +146,8 @@ class Command(TarmacPlugin):
                 if chunk == "":
                     open_readers.remove(proc.stdout)
                 else:
-                    self.logger.info(chunk.rstrip())
+                    if command.config.debug:
+                        sys.stdout.write(chunk)
                     stdout.write(chunk)
                     
             if proc.stderr in rlist:
@@ -152,7 +155,8 @@ class Command(TarmacPlugin):
                 if chunk == "":
                     open_readers.remove(proc.stderr)
                 else:
-                    self.logger.debug(chunk.rstrip())
+                    if command.config.debug:
+                        sys.stderr.write(chunk)
                     stderr.write(chunk)
 
         return_code = proc.wait()
