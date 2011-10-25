@@ -147,6 +147,9 @@ class cmd_merge(TarmacCommand):
     def _do_merges(self, branch_url):
 
         lp_branch = self.launchpad.branches.getByUrl(url=branch_url)
+        if lp_branch is None:
+            self.logger.info('Not a valid branch: {0}'.format(branch_url))
+            return
 
         proposals = self._get_mergable_proposals_for_branch(lp_branch)
 
