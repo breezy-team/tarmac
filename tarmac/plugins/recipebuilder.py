@@ -50,9 +50,15 @@ class PackageRecipe(TarmacPlugin):
         except (KeyError, ValueError, AttributeError):
             self.logger.error('Recipe not found: %s' % self.package_recipe)
         except ResponseError, error:
+            if str(error.response.status).startswith('50'):
+                reason = u'{0} - OOPS: {1}'.format(
+                    error.response.reason,
+                    error.response.get('x-lazr-oopsid', None))
+            else:
+                reason = error.response.reason
             self.logger.error('Failed to request build of recipe: %s: (%s) %s',
                               self.package_recipe,
-                              error.response.status, error.response.reason)
+                              error.response.status, reason)
 
 tarmac_hooks['tarmac_post_merge'].hook(PackageRecipe(),
                                        'Package recipe builder plug-in.')
