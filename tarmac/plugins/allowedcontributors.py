@@ -97,7 +97,7 @@ class AllowedContributors(TarmacPlugin):
     def is_in_team(self, person, team):
         """Check that a person is a member of team, or one of its subteams."""
         for subteam in team.members:
-            if subteam == person:
+            if str(subteam) == str(person):
                 return True
             if subteam.is_team and self.is_in_team(person, subteam):
                 return True
