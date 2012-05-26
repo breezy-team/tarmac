@@ -280,7 +280,7 @@ class cmd_merge(TarmacCommand):
 
                 # If we've been asked to only merge one branch, then exit.
                 if self.config.one:
-                    break
+                    return True
 
         # This except is here because we need the else and can't have it
         # without an except as well.
@@ -361,7 +361,11 @@ class cmd_merge(TarmacCommand):
                     'Merging approved branches against %(branch)s' % {
                         'branch': branch})
                 try:
-                    self._do_merges(branch)
+                    merged = self._do_merges(branch)
+
+                    # If we've been asked to only merge one branch, then exit.
+                    if merged and self.config.one:
+                        break
                 except Exception, error:
                     self.logger.error(
                         'An error occurred trying to merge %s: %s',
