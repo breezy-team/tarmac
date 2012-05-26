@@ -194,7 +194,7 @@ class cmd_merge(TarmacCommand):
                         elif len(merges) == 1:
                             if merges[0].queue_status != u'Merged':
                                 raise TarmacMergeError(
-                                    u'Prerequsiite not yet merged.',
+                                    u'Prerequisite not yet merged.',
                                     u'The prerequisite %s has not yet been '
                                     u'merged into %s.' % (
                                         prerequisite.web_link,
@@ -254,6 +254,11 @@ class cmd_merge(TarmacCommand):
                     except AttributeError:
                         proposal.setStatus(status=u'Needs review')
                     proposal.lp_save()
+
+                    # If we've been asked to only merge one branch, then exit.
+                    if self.config.one:
+                        return True
+
                     continue
                 except PointlessMerge:
                     self.logger.warn(
