@@ -16,6 +16,8 @@
 
 '''Hooks for Tarmac.'''
 
+import logging
+
 from bzrlib import hooks
 
 
@@ -25,29 +27,33 @@ class TarmacHookRegistry(hooks.Hooks):
     def __init__(self):
         hooks.Hooks.__init__(self)
 
+        self.logger = logging.getLogger('tarmac')
         self._hooks = [
             ('tarmac_pre_commit',
              'Called right after Tarmac checks out and merges in a new '
              'branch, but before committing.',
-             (0, 2)),
+             (0, 2), False),
             ('tarmac_post_commit',
              'Called right after Tarmac commits the merged revision',
-             (0, 2)),
+             (0, 2), False),
             ('tarmac_pre_merge',
              'Called right before tarmac begins attempting to merge '
              'approved branches into the target branch.',
-             (0, 3, 3)),
+             (0, 3, 3), False),
             ('tarmac_post_merge',
              'Called right after Tarmac finishes merging approved '
              'branches into the target branch.',
-             (0, 3, 3)),
+             (0, 3, 3), False),
             ]
         for hook in self._hooks:
-            name, doc, added = hook
+            name, doc, added, deprecated = hook
             try:
-                self.add_hook(name, doc, added)
+                self.add_hook(name, doc, added, deprecated=deprecated)
             except AttributeError:
-                self.create_hook(hooks.HookPoint(name, doc, added))
+                self.logger.warn(
+                    'Using deprecated bzrlib API. You should upgrade to '
+                    'a newer release of bzr.')
+                self.create_hook(hooks.HookPoint(name, doc, added, deprecated))
 
     def fire(self, hook_name, *args, **kwargs):
         """Fire all registered hooks for hook_name.
