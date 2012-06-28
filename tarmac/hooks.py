@@ -25,24 +25,29 @@ class TarmacHookRegistry(hooks.Hooks):
     def __init__(self):
         hooks.Hooks.__init__(self)
 
-        self.add_hook('tarmac_pre_commit',
-            'Called right after Tarmac checks out and merges in a new '
-            'branch, but before committing.',
-            (0, 2))
-
-        self.add_hook('tarmac_post_commit',
-            'Called right after Tarmac commits the merged revision',
-            (0, 2))
-
-        self.add_hook('tarmac_pre_merge',
-            'Called right before tarmac begins attempting to merge '
-            'approved branches into the target branch.',
-            (0, 3, 3))
-
-        self.add_hook('tarmac_post_merge',
-            'Called right after Tarmac finishes merging approved '
-            'branches into the target branch.',
-            (0, 3, 3))
+        self._hooks = [
+            ('tarmac_pre_commit',
+             'Called right after Tarmac checks out and merges in a new '
+             'branch, but before committing.',
+             (0, 2)),
+            ('tarmac_post_commit',
+             'Called right after Tarmac commits the merged revision',
+             (0, 2)),
+            ('tarmac_pre_merge',
+             'Called right before tarmac begins attempting to merge '
+             'approved branches into the target branch.',
+             (0, 3, 3)),
+            ('tarmac_post_merge',
+             'Called right after Tarmac finishes merging approved '
+             'branches into the target branch.',
+             (0, 3, 3)),
+            ]
+        for hook in self._hooks:
+            name, doc, added = hook
+            try:
+                self.add_hook(name, doc, added)
+            except AttributeError:
+                self.create_hook(hooks.HookPoint(name, doc, added))
 
     def fire(self, hook_name, *args, **kwargs):
         """Fire all registered hooks for hook_name.
