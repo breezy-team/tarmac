@@ -19,44 +19,41 @@
 from bzrlib import hooks
 
 
-class TarmacHookPoint(hooks.HookPoint):
-    '''A special HookPoint for Tarmac.
-
-    This HookPoint implements a fire method that the bzrlib.hooks.HookPoint
-    doesn't have.  If this turns out to be helpful, than a patch to Bazaar
-    should be made to implement it in Bazaar.
-    '''
-
-    def fire(self, *args, **kwargs):
-        '''Fire all registered hooks for self.'''
-        for hook in self:
-            hook(*args, **kwargs)
-
-
 class TarmacHookRegistry(hooks.Hooks):
     '''Hooks for Tarmac.'''
 
     def __init__(self):
         hooks.Hooks.__init__(self)
 
-        self.create_hook(TarmacHookPoint('tarmac_pre_commit',
+        self.add_hook('tarmac_pre_commit',
             'Called right after Tarmac checks out and merges in a new '
             'branch, but before committing.',
-            (0, 2), False))
+            (0, 2))
 
-        self.create_hook(TarmacHookPoint('tarmac_post_commit',
+        self.add_hook('tarmac_post_commit',
             'Called right after Tarmac commits the merged revision',
-            (0, 2), False))
+            (0, 2))
 
-        self.create_hook(TarmacHookPoint('tarmac_pre_merge',
+        self.add_hook('tarmac_pre_merge',
             'Called right before tarmac begins attempting to merge '
             'approved branches into the target branch.',
-            (0, 3, 3), False))
+            (0, 3, 3))
 
-        self.create_hook(TarmacHookPoint('tarmac_post_merge',
+        self.add_hook('tarmac_post_merge',
             'Called right after Tarmac finishes merging approved '
             'branches into the target branch.',
-            (0, 3, 3), False))
+            (0, 3, 3))
+
+    def fire(self, hook_name, *args, **kwargs):
+        """Fire all registered hooks for hook_name.
+
+        This implements a way to fire the hook, which bzrlib.hooks.Hooks
+        doesn't have. If this turns out to be helpful, than a patch to Bazaar
+        should be made to implement it in Bazaar.
+        """
+        hook_point = self[hook_name]
+        for callback in hook_point:
+            callback(*args, **kwargs)
 
 
 tarmac_hooks = TarmacHookRegistry()
