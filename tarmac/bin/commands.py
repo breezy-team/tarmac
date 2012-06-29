@@ -40,7 +40,7 @@ class TarmacCommand(Command):
             self.config.set('Tarmac', name, False)
 
     def _usage(self):
-        """Custom _usage for referencing "tarmac" instead of "bzr."""
+        """Custom _usage for referencing 'tarmac' instead of 'bzr'."""
         s = 'tarmac ' + self.name() + ' '
         for aname in self.takes_args:
             aname = aname.upper()
@@ -306,7 +306,7 @@ class cmd_merge(TarmacCommand):
                     "'Approved'".format(entry.queue_status))
                 continue
 
-            if (not self.config.imply_commit_message and 
+            if (not self.config.imply_commit_message and
                 not entry.commit_message):
                 self.logger.debug(
                     "  Skipping proposal: proposal has no commit message")
