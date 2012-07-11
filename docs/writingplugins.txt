@@ -53,7 +53,7 @@ This is a trivial example, but one that demonstrates how it works.  The
 arguments to the plugin are explained below.
 
 **command**
-  The tarmac command.  For instance, a ``tarmac land`` call.
+  The tarmac command.  For instance, a ``tarmac merge`` call.
 
 **target**
   An instance of ``tarmac.branch.Branch`` containing details about the target

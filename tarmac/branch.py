@@ -72,6 +72,11 @@ class Branch(object):
                 self.tree = WorkingTree.open(self.config.tree_dir)
             else:
                 self.logger.debug('Tree does not exist.  Creating dir')
+                # Create the path up to but not including tree_dir if it does
+                # not exist.
+                parent_dir = os.path.dirname(self.config.tree_dir)
+                if not os.path.exists(parent_dir):
+                    os.makedirs(parent_dir)
                 self.tree = self.bzr_branch.create_checkout(
                     self.config.tree_dir, lightweight=True)
         except AttributeError:
