@@ -291,7 +291,7 @@ class cmd_merge(TarmacCommand):
         else:
             self.logger.debug('Firing tarmac_post_merge hook')
             tarmac_hooks.fire('tarmac_post_merge',
-                              self, target, success_count)
+                              self, target, success_count=success_count)
         finally:
             target.cleanup()
 

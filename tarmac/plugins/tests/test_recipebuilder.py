@@ -50,4 +50,4 @@ class RecipeBuilderTests(TarmacTestCase):
         command = Thing(launchpad=launchpad)
         target = Thing(config=Thing(package_recipe=u'owner/recipe',
                                     recipe_series=u'current,previous'))
-        self.plugin.run(command=command, target=target, success_count=0)
+        self.plugin.run(command=command, target=target)

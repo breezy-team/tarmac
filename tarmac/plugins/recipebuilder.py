@@ -26,8 +26,10 @@ class PackageRecipe(TarmacPlugin):
     configuration, and if found, triggers that recipe to build on Launchpad.
     '''
 
-    def run(self, command, target, success_count):
+    def run(self, command, target, *args, **kwargs):
         '''Trigger a package recipe build.'''
+        success_count = kwargs.get('success_count', 0)
+        
         try:
             self.package_recipe = target.config.package_recipe
             self.series_list = target.config.recipe_series.split(',')
