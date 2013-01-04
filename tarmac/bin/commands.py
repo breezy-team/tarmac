@@ -165,6 +165,7 @@ class cmd_merge(TarmacCommand):
         tarmac_hooks.fire('tarmac_pre_merge',
                           self, target)
 
+        success_count = 0
         try:
             for proposal in proposals:
 
@@ -280,7 +281,7 @@ class cmd_merge(TarmacCommand):
                 self.logger.debug('Firing tarmac_post_commit hook')
                 tarmac_hooks.fire('tarmac_post_commit',
                                   self, target, source, proposal)
-
+                success_count += 1
                 target.cleanup()
 
         # This except is here because we need the else and can't have it
@@ -290,7 +291,7 @@ class cmd_merge(TarmacCommand):
         else:
             self.logger.debug('Firing tarmac_post_merge hook')
             tarmac_hooks.fire('tarmac_post_merge',
-                              self, target)
+                              self, target, success_count=success_count)
         finally:
             target.cleanup()
 
