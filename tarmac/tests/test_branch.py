@@ -41,6 +41,25 @@ class TestBranch(BranchTestCase):
         self.assertFalse(hasattr(a_branch, 'tree'))
         self.remove_branch_config(tree_dir)
 
+    def test_create_missing_parent_dir(self):
+        '''Test the creation of a TarmacBranch instance in a path that does
+        not fully exist, with a tree'''
+        branch_name = 'test_branch'
+        parent_dir = os.path.join(self.TEST_ROOT, 'missing')
+        tree_dir = os.path.join(parent_dir, branch_name)
+        self.add_branch_config(tree_dir)
+        # Create the mock somewhere other than where the tarmac branch will be
+        # located.  Keep it right under TEST_ROOT so the
+        # TarmacDirectoryFactory mocking will work.
+        mock = MockLPBranch(os.path.join(self.TEST_ROOT, branch_name))
+        self.assertFalse(os.path.exists(parent_dir))
+        a_branch = branch.Branch.create(mock, self.config, create_tree=True)
+        self.assertTrue(os.path.exists(parent_dir))
+        self.assertTrue(isinstance(a_branch, branch.Branch))
+        self.assertTrue(a_branch.lp_branch.bzr_identity is not None)
+        self.assertTrue(hasattr(a_branch, 'tree'))
+        self.remove_branch_config(tree_dir)
+
     def test_create_with_tree(self):
         '''Test the creation of a TarmacBranch with a created tree.'''
         self.assertTrue(isinstance(self.branch1, branch.Branch))

@@ -40,7 +40,7 @@ class TarmacCommand(Command):
             self.config.set('Tarmac', name, False)
 
     def _usage(self):
-        """Custom _usage for referencing "tarmac" instead of "bzr."""
+        """Custom _usage for referencing 'tarmac' instead of 'bzr'."""
         s = 'tarmac ' + self.name() + ' '
         for aname in self.takes_args:
             aname = aname.upper()
@@ -163,8 +163,10 @@ class cmd_merge(TarmacCommand):
         target = Branch.create(lp_branch, self.config, create_tree=True)
 
         self.logger.debug('Firing tarmac_pre_merge hook')
-        tarmac_hooks['tarmac_pre_merge'].fire(self, target)
+        tarmac_hooks.fire('tarmac_pre_merge',
+                          self, target)
 
+        success_count = 0
         try:
             for proposal in proposals:
                 target.cleanup()
@@ -228,8 +230,8 @@ class cmd_merge(TarmacCommand):
                     target.merge(source, str(proposal.reviewed_revid))
 
                     self.logger.debug('Firing tarmac_pre_commit hook')
-                    tarmac_hooks['tarmac_pre_commit'].fire(
-                        self, target, source, proposal)
+                    tarmac_hooks.fire('tarmac_pre_commit',
+                                      self, target, source, proposal)
 
                 except TarmacMergeError, failure:
                     self.logger.warn(
@@ -280,10 +282,10 @@ class cmd_merge(TarmacCommand):
                              reviews=self._get_reviews(proposal))
 
                 self.logger.debug('Firing tarmac_post_commit hook')
-                tarmac_hooks['tarmac_post_commit'].fire(
-                    self, target, source, proposal)
-
-                # If we've been asked to only merge one branch, then exit.
+                tarmac_hooks.fire('tarmac_post_commit',
+                                  self, target, source, proposal)
+                success_count += 1
+                target.cleanup()
                 if self.config.one:
                     return True
 
@@ -293,7 +295,8 @@ class cmd_merge(TarmacCommand):
             raise
         else:
             self.logger.debug('Firing tarmac_post_merge hook')
-            tarmac_hooks['tarmac_post_merge'].fire(self, target)
+            tarmac_hooks.fire('tarmac_post_merge',
+                              self, target, success_count=success_count)
         finally:
             target.cleanup()
 
@@ -309,7 +312,7 @@ class cmd_merge(TarmacCommand):
                     "'Approved'".format(entry.queue_status))
                 continue
 
-            if (not self.config.imply_commit_message and 
+            if (not self.config.imply_commit_message and
                 not entry.commit_message):
                 self.logger.debug(
                     "  Skipping proposal: proposal has no commit message")

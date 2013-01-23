@@ -104,7 +104,7 @@ class TarmacConfig(ConfigParser):
                 section.startswith('lp:')]
 
     def _check_config_dirs(self):
-        '''Create the configuration directory if it doesn't exist.'''
+        '''Create the configuration directory if it does not exist.'''
         if not os.path.exists(self.CONFIG_HOME):
             os.makedirs(self.CONFIG_HOME)
         if not os.path.exists(self.CACHE_HOME):
@@ -117,7 +117,7 @@ class TarmacConfig(ConfigParser):
 class BranchConfig:
     '''A Branch specific config.
 
-    Instead of providing the whole config for branches, it's better to provide
+    Instead of providing the whole config for branches, it is better to provide
     it with only its specific config vars.
     '''
 

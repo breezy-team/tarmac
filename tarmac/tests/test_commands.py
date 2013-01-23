@@ -60,7 +60,7 @@ class TestAuthCommand(TarmacTestCase):
     #    sys.stdout = old_stdout
 
     def test_run_already_authenticated(self):
-        '''If the user has already been authenticated, don't try again.'''
+        '''If the user has already been authenticated, do not try again.'''
         registry = CommandRegistry(config=self.config)
         registry.register_command('authenticate', commands.cmd_authenticate)
         command = registry._get_command(commands.cmd_authenticate,
