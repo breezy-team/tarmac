@@ -142,7 +142,8 @@ class cmd_merge(TarmacCommand):
     takes_options = [
         options.http_debug_option,
         options.debug_option,
-        options.imply_commit_message_option]
+        options.imply_commit_message_option,
+        options.one_option]
 
     def _do_merges(self, branch_url):
 
@@ -168,13 +169,10 @@ class cmd_merge(TarmacCommand):
         success_count = 0
         try:
             for proposal in proposals:
-
+                target.cleanup()
                 self.logger.debug(
                     u'Preparing to merge %(source_branch)s' % {
                         'source_branch': proposal.source_branch.web_link})
-                source = Branch.create(
-                    proposal.source_branch, self.config, target=target)
-
                 try:
                     prerequisite = proposal.prerequisite_branch
                     if prerequisite:
@@ -208,9 +206,14 @@ class cmd_merge(TarmacCommand):
                         raise TarmacMergeError(
                             u'No approved revision specified.')
 
+
+                    source = Branch.create(
+                        proposal.source_branch, self.config, target=target)
+
                     approved = source.bzr_branch.revision_id_to_revno(
                         str(proposal.reviewed_revid))
                     tip = source.bzr_branch.revno()
+
                     if tip > approved:
                         message = u'Unapproved changes made after approval'
                         lp_comment = (
@@ -253,7 +256,11 @@ class cmd_merge(TarmacCommand):
                     except AttributeError:
                         proposal.setStatus(status=u'Needs review')
                     proposal.lp_save()
-                    target.cleanup()
+
+                    # If we've been asked to only merge one branch, then exit.
+                    if self.config.one:
+                        return True
+
                     continue
                 except PointlessMerge:
                     self.logger.warn(
@@ -261,7 +268,6 @@ class cmd_merge(TarmacCommand):
                         'pointless.' % {
                             'source': proposal.source_branch.web_link,
                             'target': proposal.target_branch.web_link})
-                    target.cleanup()
                     continue
 
                 merge_url = get_review_url(proposal)
@@ -280,6 +286,8 @@ class cmd_merge(TarmacCommand):
                                   self, target, source, proposal)
                 success_count += 1
                 target.cleanup()
+                if self.config.one:
+                    return True
 
         # This except is here because we need the else and can't have it
         # without an except as well.
@@ -361,7 +369,11 @@ class cmd_merge(TarmacCommand):
                     'Merging approved branches against %(branch)s' % {
                         'branch': branch})
                 try:
-                    self._do_merges(branch)
+                    merged = self._do_merges(branch)
+
+                    # If we've been asked to only merge one branch, then exit.
+                    if merged and self.config.one:
+                        break
                 except Exception, error:
                     self.logger.error(
                         'An error occurred trying to merge %s: %s',
