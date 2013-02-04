@@ -5,7 +5,7 @@ import os
 import re
 
 from bzrlib.commands import Command
-from bzrlib.errors import PointlessMerge
+from bzrlib.errors import PointlessMerge, LockContention
 from bzrlib.help import help_commands
 from launchpadlib.launchpad import Launchpad
 from launchpadlib.uris import (LPNET_SERVICE_ROOT,
@@ -374,6 +374,8 @@ class cmd_merge(TarmacCommand):
                     # If we've been asked to only merge one branch, then exit.
                     if merged and self.config.one:
                         break
+                except LockContention:
+                    continue
                 except Exception, error:
                     self.logger.error(
                         'An error occurred trying to merge %s: %s',
