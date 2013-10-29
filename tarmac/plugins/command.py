@@ -20,6 +20,7 @@
 errno = None
 os = None
 select = None
+shutil = None
 signal = None
 subprocess = None
 sys = None
@@ -34,11 +35,13 @@ time = None
 # This will set the timeout to 15 minutes.
 TIMEOUT = 60 * 15
 
+from bzrlib.export import export
 from bzrlib.lazy_import import lazy_import
 lazy_import(globals(), '''
     import errno
     import os
     import select
+    import shutil
     import signal
     import subprocess
     import sys
@@ -96,8 +99,15 @@ class Command(TarmacPlugin):
 
         self.logger.debug('Running test command: %s' % self.verify_command)
         cwd = os.getcwd()
-        os.chdir(target.tree.abspath(''))
-
+        # Export the changes to a temporary directory, and run the command
+        # there, to prevent possible abuse of running commands in the tree.
+        temp_path = '/tmp/tarmac'
+        if not os.path.exists(temp_path):
+            os.makedirs(temp_path)
+        export_dest = tempfile.mkdtemp(prefix=temp_path + '/branch.')
+        export(target.tree, export_dest, None, None, None, filtered=False,
+               per_file_timestamps=False)
+        os.chdir(export_dest)
 
         proc = subprocess.Popen(self.verify_command,
                                 shell=True,
@@ -162,6 +172,7 @@ class Command(TarmacPlugin):
         return_code = proc.wait()
 
         os.chdir(cwd)
+        shutil.rmtree(export_dest)
         self.logger.debug('Completed test command: %s' % self.verify_command)
 
         stdout.seek(0)
