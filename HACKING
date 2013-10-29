@@ -27,12 +27,12 @@ To get your patch into the Tarmac mainline, do the following:
 Running Tests
 =============
 
-Tests are run using 'trial' from Twisted and rely on bzrlib.tests.  So
-you must install the `python-twisted-core` and `python-bzrlib.tests`
-packages in order to run the tests.  Once done, from the top of the
+Tests are run using `test_suite` from setuptools and rely on bzrlib.tests.  So
+you must install the 'python-setuptools' and `python-bzrlib.tests`
+packages in order to run the tests. Once done, from the top of the
 repository you can run:
 
-% trial tarmac
+% ./setup.py test
 
 =============
 Writing Tests

@@ -17,9 +17,11 @@
 # along with Tarmac.  If not, see <http://www.gnu.org/licenses/>.
 '''Tarmac installation script.'''
 
-from distutils.command import clean
-from distutils.core import Command, setup
 import os
+
+from distutils.command import clean
+from distutils.core import Command
+from setuptools import setup
 
 from tarmac import __version__
 
@@ -42,7 +44,7 @@ class CleanCommand(clean.clean):
     description = 'Customized clean command'
 
     def run(self):
-        os.system('rm -rf build _trial_temp dist')
+        os.system('rm -rf build dist')
 
         super(CleanCommand, self).run()
 
@@ -72,15 +74,6 @@ class ReleaseCommand(BaseCommand):
             'gpg --armor --sign --detach-sig `find dist -name "tarmac-*"`')
 
 
-class TestCommand(BaseCommand):
-    '''A Command for running the tests.'''
-
-    description = 'Run the tests'
-
-    def run(self):
-        os.system('trial tarmac')
-
-
 setup(
     author='Paul Hummer',
     author_email='Paul Hummer <paul@eventuallyanyway.com',
@@ -88,7 +81,6 @@ setup(
         'clean': CleanCommand,
         'docs': DocCommand,
         'release': ReleaseCommand,
-        'test': TestCommand
         },
     name=u'tarmac',
     version=__version__,
@@ -97,6 +89,7 @@ setup(
     license=u'GPLv3',
     package_dir={'tarmac': 'tarmac'},
     packages=['tarmac', 'tarmac.bin', 'tarmac.plugins', 'tarmac.tests'],
+    test_suite='tarmac',
     scripts=['bin/tarmac'],
     #data_files=[('share/tarmac/', ['tarmac-web']),
     #            ('share/tarmac/templates/', ['templates/index.html']),
