@@ -89,7 +89,7 @@ setup(
     license=u'GPLv3',
     package_dir={'tarmac': 'tarmac'},
     packages=['tarmac', 'tarmac.bin', 'tarmac.plugins', 'tarmac.tests'],
-    test_suite='tarmac.tests',
+    test_suite='tarmac',
     scripts=['bin/tarmac'],
     #data_files=[('share/tarmac/', ['tarmac-web']),
     #            ('share/tarmac/templates/', ['templates/index.html']),
