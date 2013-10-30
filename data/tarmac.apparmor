@@ -1,0 +1,50 @@
+#include <tunables/global>
+
+/**/tarmac {
+  #include <abstractions/base>
+  #include <abstractions/python>
+  #include <abstractions/private-files-strict>
+
+  @{HOME}/.cache/tarmac/ w,
+  @{HOME}/.cache/tarmac/** rwl,
+
+  @{HOME}/.config/tarmac/ w,
+  @{HOME}/.config/tarmac/** rwl,
+
+  owner /tmp/tarmac/ w,
+  owner /tmp/tarmac/** rwl,
+
+  owner /var/cache/tarmac/ w,
+  owner /var/cache/tarmac/** rwl,
+
+  /** Cx -> tarmac_child,
+
+  profile tarmac_child {
+    #include <abstractions/base>
+    #include <abstractions/bash>
+    #include <abstractions/dbus-session>
+    #include <abstractions/gnome>
+    #include <abstractions/kde>
+    #include <abstractions/perl>
+    #include <abstractions/python>
+    #include <abstractions/private-files-strict>
+
+    # Need to be able exec most anything, which unfortunately
+    # requires a lot of read permissions
+    /**/ r,
+    /** rmix,
+
+    # Don't allow access to bzr
+    audit deny @{HOME}/.bazaar/** mrukl,
+    audit deny @{HOME}/.bzr* mrukl,
+    audit deny /**/.bzr/** mrukl,
+
+    # Don't allow subprocesses to access the tarmac config, or cache
+    audit deny @{HOME}/.cache/tarmac/** mrukl,
+    audit deny @{HOME}/.config/tarmac/** mrukl,
+    audit deny /tmp/tarmac/merge.** mrukl,
+    audit deny /var/cache/tarmac/** mrukl,
+
+    owner /tmp/tarmac/branch.** rwl,
+  }
+}

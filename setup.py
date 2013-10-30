@@ -36,7 +36,10 @@ setup(
     #data_files=[('share/tarmac/', ['tarmac-web']),
     #            ('share/tarmac/templates/', ['templates/index.html']),
     #            ],
-    data_files=[('share/man/man1', ['docs/tarmac.1'])],
+    data_files=[
+        ('share/man/man1', ['docs/tarmac.1']),
+        ('/etc/apparmor.d', ['data/tarmac.apparmor']),
+    ],
     long_description='''
         Tarmac is a series of scripts to facilitate the landing of Bazaar
         branches in Launchpad (https://launchpad.net).''',
