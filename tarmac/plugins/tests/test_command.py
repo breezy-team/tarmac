@@ -73,10 +73,16 @@ class TestCommand(TarmacTestCase):
 
     @patch('tarmac.plugins.command.export')
     def test_run_nonascii_failure(self, mocked):
+        """Test that we avoid a UnicodeDecodeError from stdout/stderr.
+
+        We need to create a bit of an odd string here that gets written
+        to the stdout for the command, and check that we didn't get the
+        UnicodeDecodeError raised. See bug #750930 for more.
+        """
         self.config.debug = False
         target = Thing(config=Thing(
                 verify_command="python -c 'import sys;"
-                           " sys.stdout.write(\"f\\xc3\\xa5\\xc3\\xafl\"\n);"
+                           " sys.stdout.write(\"f\\xc3\\xa5\\xc3\\xafl\");"
                            " sys.exit(1)'"),
             tree=Thing(abspath=os.path.abspath))
         e = self.assertRaises(command.VerifyCommandFailed,
