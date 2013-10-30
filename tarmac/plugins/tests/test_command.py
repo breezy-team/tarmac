@@ -1,6 +1,4 @@
-# Copyright 2010 Canonical, Ltd.
-#
-# This file is part of Tarmac.
+# Copyright 2010-2013 Canonical, Ltd.
 #
 # Tarmac is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License version 3 as
@@ -63,7 +61,7 @@ class TestCommand(TarmacTestCase):
 
     @patch('tarmac.plugins.command.export')
     def test_run_exported_tree(self, mocked):
-        """Test that the plug-in runs without errors."""
+        """Test that the plug-in runs the command in an exported tree."""
         target = Thing(config=Thing(
                 verify_command="/bin/true"),
                        tree=Thing(abspath=os.path.abspath))

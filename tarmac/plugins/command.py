@@ -1,5 +1,5 @@
+# Copyright 2013 Canonical Ltd.
 # Copyright 2009 Paul Hummer
-# This file is part of Tarmac.
 #
 # Tarmac is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License version 3 as
@@ -13,7 +13,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Tarmac.  If not, see <http://www.gnu.org/licenses/>.
-
 '''Tarmac plugin for running tests pre-commit.'''
 
 # Head off lint warnings.
