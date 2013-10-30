@@ -39,5 +39,5 @@ setup(
     data_files=[('share/man/man1', ['docs/tarmac.1'])],
     long_description='''
         Tarmac is a series of scripts to facilitate the landing of Bazaar
-        branches in Launchpad (http://launchpad.net).''',
+        branches in Launchpad (https://launchpad.net).''',
 )
