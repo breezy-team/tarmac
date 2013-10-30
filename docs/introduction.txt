@@ -155,8 +155,9 @@ message.  Among those items are the following:
 Command
 =======
 
-The Command plugin takes the merged tree result and runs a command on that
-tree.  If the command fails, then it raises an exception that causes the merge
+The Command plugin exports the merged tree result to a temporary location,
+and runs a command on the tree in that new location, removing it when done.
+If the command fails, then it raises an exception that causes the merge
 to be abandoned, a comment on the merge proposal to be added, and the merge
 proposal set to "Needs Review" (so that Tarmac doesn't try to merge it in the
 next run).  This command can be a script that runs tests, verifies certain

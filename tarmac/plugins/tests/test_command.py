@@ -1,6 +1,4 @@
-# Copyright 2010 Canonical, Ltd.
-#
-# This file is part of Tarmac.
+# Copyright 2010-2013 Canonical, Ltd.
 #
 # Tarmac is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License version 3 as
@@ -17,6 +15,7 @@
 
 import os
 
+from mock import patch
 from tarmac.bin.registry import CommandRegistry
 from tarmac.plugins import command
 from tarmac.tests import TarmacTestCase
@@ -39,7 +38,8 @@ class TestCommand(TarmacTestCase):
         registry = CommandRegistry(config=self.config)
         self.command = FakeCommand(registry)
 
-    def test_run(self):
+    @patch('tarmac.plugins.command.export')
+    def test_run(self, mocked):
         """Test that the plug-in runs without errors."""
         target = Thing(config=Thing(
                 verify_command="/bin/true"),
@@ -48,7 +48,8 @@ class TestCommand(TarmacTestCase):
             command=self.command, target=target, source=None,
             proposal=self.proposal)
 
-    def test_run_failure(self):
+    @patch('tarmac.plugins.command.export')
+    def test_run_failure(self, mocked):
         """Test that a failure raises the correct exception."""
         target = Thing(config=Thing(
                 verify_command="/bin/false"),
@@ -57,3 +58,15 @@ class TestCommand(TarmacTestCase):
                           self.plugin.run,
                           command=self.command, target=target, source=None,
                           proposal=self.proposal)
+
+    @patch('tarmac.plugins.command.export')
+    def test_run_exported_tree(self, mocked):
+        """Test that the plug-in runs the command in an exported tree."""
+        target = Thing(config=Thing(
+                verify_command="/bin/true"),
+                       tree=Thing(abspath=os.path.abspath))
+        self.plugin.run(
+            command=self.command, target=target, source=None,
+            proposal=self.proposal)
+        self.assertTrue(mocked.called_args_list[1].startswith(
+            '/tmp/tarmac/branch.'))
