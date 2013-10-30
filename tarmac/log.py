@@ -1,8 +1,25 @@
 '''Logging utilities for Tarmac.'''
+import errno
 import logging
+import os
 import sys
 
 from tarmac.config import TarmacConfig
+
+
+def ensure_log_dir(log_file):
+    if not log_file:
+        return
+    log_dir = os.path.dirname(log_file)
+    try:
+        os.makedirs(log_dir)
+    except OSError, e:
+        # If the directory already exists, just pass. Otherwise, log to stderr
+        # because we probably can't write to the actual log file.
+        if getattr(e, 'errno', None) != errno.EEXIST:
+            err_msg = "Failed to create logging directory: %s\n%s\n" % (
+                log_dir, str(e))
+            sys.stderr.write(err_msg)
 
 
 def set_up_logging(config=None):
@@ -14,6 +31,7 @@ def set_up_logging(config=None):
     logger.setLevel(logging.DEBUG)
 
     log_file = config.get('Tarmac', 'log_file')
+    ensure_log_dir(log_file)
     file_handler = logging.FileHandler(filename=log_file)
     file_handler.setLevel(logging.INFO)
     file_handler.setFormatter(

@@ -26,12 +26,17 @@ class PackageRecipe(TarmacPlugin):
     configuration, and if found, triggers that recipe to build on Launchpad.
     '''
 
-    def run(self, command, target):
+    def run(self, command, target, *args, **kwargs):
         '''Trigger a package recipe build.'''
+        success_count = kwargs.get('success_count', 0)
+        
         try:
             self.package_recipe = target.config.package_recipe
             self.series_list = target.config.recipe_series.split(',')
         except AttributeError:
+            return
+
+        if success_count == 0:
             return
 
         self.logger.debug('Triggering package recipe: %s' %
@@ -50,9 +55,15 @@ class PackageRecipe(TarmacPlugin):
         except (KeyError, ValueError, AttributeError):
             self.logger.error('Recipe not found: %s' % self.package_recipe)
         except ResponseError, error:
+            if str(error.response.status).startswith('50'):
+                reason = u'{0} - OOPS: {1}'.format(
+                    error.response.reason,
+                    error.response.get('x-lazr-oopsid', None))
+            else:
+                reason = error.response.reason
             self.logger.error('Failed to request build of recipe: %s: (%s) %s',
                               self.package_recipe,
-                              error.response.status, error.response.reason)
+                              error.response.status, reason)
 
 tarmac_hooks['tarmac_post_merge'].hook(PackageRecipe(),
                                        'Package recipe builder plug-in.')

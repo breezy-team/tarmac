@@ -49,6 +49,7 @@ class MockLPBranch(object):
                 tree_dir)
             self.revision_count = 0
         self.bzr_identity = 'lp:%s' % os.path.basename(self.tree_dir)
+        self.web_link = self.bzr_identity
         self.project = MockLPProject()
 
 

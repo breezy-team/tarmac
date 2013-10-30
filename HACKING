@@ -24,6 +24,17 @@ To get your patch into the Tarmac mainline, do the following:
 
 
 =============
+Running Tests
+=============
+
+Tests are run using `test_suite` from setuptools and rely on the mock and 
+bzrlib.tests packages. So you must install the 'python-setuptools,'
+'python-mock', and `python-bzrlib.tests` packages in order to run the tests.
+Once done, from the top of the repository you can run:
+
+% ./setup.py test
+
+=============
 Writing Tests
 =============
 

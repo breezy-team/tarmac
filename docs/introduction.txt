@@ -25,13 +25,13 @@ Configuration
 =============
 
 Tarmac gets it's configuration data from ``~/.config/tarmac/tarmac.conf`` --
-The configuration is split up by projects.  As an example, Tarmac will
-demonstrate its own config throughout this project.  To start with, the Tarmac
-project should be added to the config (with the file being created if it
-doesn't exist already).::
+The configuration is split up by projects.  As an example, a fictional
+`phoo` project will be used.  The config file starts with items that
+apply to the Tarmac command.  Add to the following to the config file,
+creating it if it doesn't exist already).::
 
   [Tarmac]
-  # Configuration for the Tarmac project
+  # Configuration for the Tarmac command.
 
 This doesn't mean much by itself.  Optionally, we can also specify where to
 write the log (by default, it logs to ~/tarmac.log).  A basic log file setting
@@ -40,19 +40,22 @@ would look like this::
   [Tarmac]
   log_file = /var/log/tarmac.log
 
-Now let's provide some branches for Tarmac to manage.  How about Tarmac's
+If placing the file in ``/var/log`` be sure the user running
+``tarmac`` has write permission to that file.
+
+Now let's provide some branches for Tarmac to manage.  How about phoo's
 development focus first?  Specifying this is REALLY easy.  Now my config file
 will look like this::
 
   [Tarmac]
   log_file = /var/log/tarmac.log
 
-  [lp:tarmac]
+  [lp:phoo]
 
 That's it!  I specify the branch by it's lp: name, and Tarmac knows that when
-it's instructed to land branches, it should check up on lp:tarmac for approved
+it's instructed to land branches, it should check up on lp:phoo for approved
 merge proposals.  However, this means that Tarmac has to make a new tree of
-lp:tarmac every time it makes a landing run.  This is rather inefficient.  We
+lp:phoo every time it makes a landing run.  This is rather inefficient.  We
 can actually have Tarmac cache a tree, and just update it on every run.  This
 path to the cache tree can be specified by changing the config file to look
 like this::
@@ -60,8 +63,8 @@ like this::
   [Tarmac]
   log_file = /var/log/tarmac.log
 
-  [lp:tarmac]
-  tree_dir = /var/cache/tarmac
+  [lp:phoo]
+  tree_dir = /var/cache/tarmac/phoo/trunk
 
 If this directory or tree doesn't exist, Tarmac will go ahead and create it.
 
@@ -71,14 +74,15 @@ Running Tarmac
 
 Once Tarmac is all configured, simply run ``tarmac merge``.  Voila!  If there
 are issues at all, you can run ``tarmac merge --debug`` to get more debug
-imformation.
+information.
 
 ==============
 Tarmac on Cron
 ==============
 
-Tarmac runs best on a cron, because it's doing stuff you shouldn't even need to
-worry about.  To make Tarmac run on a cron, add this to your crontab::
+Tarmac runs best on a cron job, because it's doing stuff you shouldn't
+even need to worry about.  To make Tarmac run on a cron, add this to
+your crontab::
 
 0 * * * * tarmac merge
 
@@ -151,8 +155,9 @@ message.  Among those items are the following:
 Command
 =======
 
-The Command plugin takes the merged tree result and runs a command on that
-tree.  If the command fails, then it raises an exception that causes the merge
+The Command plugin exports the merged tree result to a temporary location,
+and runs a command on the tree in that new location, removing it when done.
+If the command fails, then it raises an exception that causes the merge
 to be abandoned, a comment on the merge proposal to be added, and the merge
 proposal set to "Needs Review" (so that Tarmac doesn't try to merge it in the
 next run).  This command can be a script that runs tests, verifies certain
@@ -190,10 +195,11 @@ global configuration:
 CIA.vc Notifier
 ===============
 
-The CIA.vc Notifier can be configured to notify the CIA.vc service of
-successful merges.  Tarmac has already been configured to work with the CIA.vc
-service and is set up to notify those in the #tarmac IRC channel on Freenode.
-This configuration looks like this::
+The CIA.vc Notifier (see ``http://cia.vc``) can be configured to
+notify the CIA.vc service of successful merges.  Tarmac has already
+been configured to work with the CIA.vc service and is set up to
+notify those in the #tarmac IRC channel on Freenode.  This
+configuration looks like this::
 
   [lp:tarmac]
   cia_project = tarmac

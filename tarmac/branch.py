@@ -72,6 +72,11 @@ class Branch(object):
                 self.tree = WorkingTree.open(self.config.tree_dir)
             else:
                 self.logger.debug('Tree does not exist.  Creating dir')
+                # Create the path up to but not including tree_dir if it does
+                # not exist.
+                parent_dir = os.path.dirname(self.config.tree_dir)
+                if not os.path.exists(parent_dir):
+                    os.makedirs(parent_dir)
                 self.tree = self.bzr_branch.create_checkout(
                     self.config.tree_dir, lightweight=True)
         except AttributeError:
@@ -113,10 +118,13 @@ class Branch(object):
     @property
     def unmanaged_files(self):
         """Get the list of ignored and unknown files in the tree."""
-        self.tree.lock_read()
-        unmanaged = [x for x in self.tree.unknowns()]
-        unmanaged.extend([x[0] for x in self.tree.ignored_files()])
-        self.tree.unlock()
+        unmanaged = []
+        try:
+            self.tree.lock_read()
+            unmanaged = [x for x in self.tree.unknowns()]
+            unmanaged.extend([x[0] for x in self.tree.ignored_files()])
+        finally:
+            self.tree.unlock()
         return unmanaged
 
     @property
@@ -160,26 +168,28 @@ class Branch(object):
         author_list = []
 
         if self.target:
-            self.bzr_branch.lock_read()
-            self.target.bzr_branch.lock_read()
+            try:
+                self.bzr_branch.lock_read()
+                self.target.bzr_branch.lock_read()
 
-            graph = self.bzr_branch.repository.get_graph(
-                self.target.bzr_branch.repository)
+                graph = self.bzr_branch.repository.get_graph(
+                    self.target.bzr_branch.repository)
 
-            unique_ids = graph.find_unique_ancestors(
-                self.bzr_branch.last_revision(),
-                [self.target.bzr_branch.last_revision()])
+                unique_ids = graph.find_unique_ancestors(
+                    self.bzr_branch.last_revision(),
+                    [self.target.bzr_branch.last_revision()])
 
-            revs = self.bzr_branch.repository.get_revisions(unique_ids)
-            for rev in revs:
-                apparent_authors = rev.get_apparent_authors()
-                for author in apparent_authors:
-                    author.replace('\n', '')
-                    if author not in author_list:
-                        author_list.append(author)
+                revs = self.bzr_branch.repository.get_revisions(unique_ids)
+                for rev in revs:
+                    apparent_authors = rev.get_apparent_authors()
+                    for author in apparent_authors:
+                        author.replace('\n', '')
+                        if author not in author_list:
+                            author_list.append(author)
 
-            self.target.bzr_branch.unlock()
-            self.bzr_branch.unlock()
+            finally:
+                self.target.bzr_branch.unlock()
+                self.bzr_branch.unlock()
         else:
             last_rev = self.bzr_branch.last_revision()
             if last_rev != 'null:':
@@ -195,18 +205,20 @@ class Branch(object):
         """Return the list of bugs fixed by the branch."""
         bugs_list = []
 
-        self.bzr_branch.lock_read()
-        oldrevid = self.bzr_branch.get_rev_id(self.lp_branch.revision_count)
-        for rev_info in self.bzr_branch.iter_merge_sorted_revisions(
-            stop_revision_id=oldrevid):
-            try:
-                rev = self.bzr_branch.repository.get_revision(rev_info[0])
-                for bug in rev.iter_bugs():
-                    if bug[0].startswith('https://launchpad.net/bugs/'):
-                        bugs_list.append(bug[0].replace(
-                                'https://launchpad.net/bugs/', ''))
-            except NoSuchRevision:
-                continue
+        try:
+            self.bzr_branch.lock_read()
+            oldrevid = self.bzr_branch.get_rev_id(self.lp_branch.revision_count)
+            for rev_info in self.bzr_branch.iter_merge_sorted_revisions(
+                stop_revision_id=oldrevid):
+                try:
+                    rev = self.bzr_branch.repository.get_revision(rev_info[0])
+                    for bug in rev.iter_bugs():
+                        if bug[0].startswith('https://launchpad.net/bugs/'):
+                            bugs_list.append(bug[0].replace(
+                                    'https://launchpad.net/bugs/', ''))
+                except NoSuchRevision:
+                    continue
 
-        self.bzr_branch.unlock()
+        finally:
+            self.bzr_branch.unlock()
         return bugs_list

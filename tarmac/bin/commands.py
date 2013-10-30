@@ -5,7 +5,7 @@ import os
 import re
 
 from bzrlib.commands import Command
-from bzrlib.errors import PointlessMerge
+from bzrlib.errors import PointlessMerge, LockContention
 from bzrlib.help import help_commands
 from launchpadlib.launchpad import Launchpad
 from launchpadlib.uris import (LPNET_SERVICE_ROOT,
@@ -40,7 +40,7 @@ class TarmacCommand(Command):
             self.config.set('Tarmac', name, False)
 
     def _usage(self):
-        """Custom _usage for referencing "tarmac" instead of "bzr."""
+        """Custom _usage for referencing 'tarmac' instead of 'bzr'."""
         s = 'tarmac ' + self.name() + ' '
         for aname in self.takes_args:
             aname = aname.upper()
@@ -142,11 +142,15 @@ class cmd_merge(TarmacCommand):
     takes_options = [
         options.http_debug_option,
         options.debug_option,
-        options.imply_commit_message_option]
+        options.imply_commit_message_option,
+        options.one_option]
 
     def _do_merges(self, branch_url):
 
         lp_branch = self.launchpad.branches.getByUrl(url=branch_url)
+        if lp_branch is None:
+            self.logger.info('Not a valid branch: {0}'.format(branch_url))
+            return
 
         proposals = self._get_mergable_proposals_for_branch(lp_branch)
 
@@ -159,18 +163,16 @@ class cmd_merge(TarmacCommand):
         target = Branch.create(lp_branch, self.config, create_tree=True)
 
         self.logger.debug('Firing tarmac_pre_merge hook')
-        tarmac_hooks['tarmac_pre_merge'].fire(
-            self, target)
+        tarmac_hooks.fire('tarmac_pre_merge',
+                          self, target)
 
+        success_count = 0
         try:
             for proposal in proposals:
-
+                target.cleanup()
                 self.logger.debug(
                     u'Preparing to merge %(source_branch)s' % {
-                        'source_branch': proposal.source_branch.bzr_identity})
-                source = Branch.create(
-                    proposal.source_branch, self.config, target=target)
-
+                        'source_branch': proposal.source_branch.web_link})
                 try:
                     prerequisite = proposal.prerequisite_branch
                     if prerequisite:
@@ -182,31 +184,36 @@ class cmd_merge(TarmacCommand):
                                 u'No proposals of prerequisite branch.',
                                 u'No proposals found for merge of %s '
                                 u'into %s.' % (
-                                    prerequisite.display_name,
-                                    target.lp_branch.display_name))
+                                    prerequisite.web_link,
+                                    target.lp_branch.web_link))
                         elif len(merges) > 1:
                             raise TarmacMergeError(
                                 u'Too many proposals of prerequisite.',
                                 u'More than one proposal found for merge '
                                 u'of %s into %s, which is not Superseded.' % (
-                                    prerequisite.display_name,
-                                    target.lp_branch.display_name))
+                                    prerequisite.web_link,
+                                    target.lp_branch.web_link))
                         elif len(merges) == 1:
                             if merges[0].queue_status != u'Merged':
                                 raise TarmacMergeError(
-                                    u'Prerequsiite not yet merged.',
+                                    u'Prerequisite not yet merged.',
                                     u'The prerequisite %s has not yet been '
                                     u'merged into %s.' % (
-                                        prerequisite.display_name,
-                                        target.lp_branch.display_name))
+                                        prerequisite.web_link,
+                                        target.lp_branch.web_link))
 
                     if not proposal.reviewed_revid:
                         raise TarmacMergeError(
                             u'No approved revision specified.')
 
+
+                    source = Branch.create(
+                        proposal.source_branch, self.config, target=target)
+
                     approved = source.bzr_branch.revision_id_to_revno(
                         str(proposal.reviewed_revid))
                     tip = source.bzr_branch.revno()
+
                     if tip > approved:
                         message = u'Unapproved changes made after approval'
                         lp_comment = (
@@ -217,22 +224,20 @@ class cmd_merge(TarmacCommand):
 
                     self.logger.debug(
                         'Merging %(source)s at revision %(revision)s' % {
-                            'source': proposal.source_branch.display_name,
+                            'source': proposal.source_branch.web_link,
                             'revision': proposal.reviewed_revid})
 
-                    target.merge(
-                        source,
-                        str(proposal.reviewed_revid))
+                    target.merge(source, str(proposal.reviewed_revid))
 
                     self.logger.debug('Firing tarmac_pre_commit hook')
-                    tarmac_hooks['tarmac_pre_commit'].fire(
-                        self, target, source, proposal)
+                    tarmac_hooks.fire('tarmac_pre_commit',
+                                      self, target, source, proposal)
 
                 except TarmacMergeError, failure:
                     self.logger.warn(
                         u'Merging %(source)s into %(target)s failed: %(msg)s' %
-                        {'source': proposal.source_branch.display_name,
-                         'target': proposal.target_branch.display_name,
+                        {'source': proposal.source_branch.web_link,
+                         'target': proposal.target_branch.web_link,
                          'msg': str(failure)})
 
                     subject = u'Re: [Merge] %(source)s into %(target)s' % {
@@ -244,23 +249,25 @@ class cmd_merge(TarmacCommand):
                     else:
                         comment = str(failure)
 
-                    proposal.createComment(subject=subject,
-                                           content=comment)
+                    proposal.createComment(subject=subject, content=comment)
                     try:
                         proposal.setStatus(
                             status=self.config.rejected_branch_status)
                     except AttributeError:
                         proposal.setStatus(status=u'Needs review')
                     proposal.lp_save()
-                    target.cleanup()
+
+                    # If we've been asked to only merge one branch, then exit.
+                    if self.config.one:
+                        return True
+
                     continue
                 except PointlessMerge:
                     self.logger.warn(
                         'Merging %(source)s into %(target)s would be '
                         'pointless.' % {
-                            'source': proposal.source_branch.display_name,
-                            'target': proposal.target_branch.display_name})
-                    target.cleanup()
+                            'source': proposal.source_branch.web_link,
+                            'target': proposal.target_branch.web_link})
                     continue
 
                 merge_url = get_review_url(proposal)
@@ -275,10 +282,12 @@ class cmd_merge(TarmacCommand):
                              reviews=self._get_reviews(proposal))
 
                 self.logger.debug('Firing tarmac_post_commit hook')
-                tarmac_hooks['tarmac_post_commit'].fire(
-                    self, target, source, proposal)
-
+                tarmac_hooks.fire('tarmac_post_commit',
+                                  self, target, source, proposal)
+                success_count += 1
                 target.cleanup()
+                if self.config.one:
+                    return True
 
         # This except is here because we need the else and can't have it
         # without an except as well.
@@ -286,8 +295,8 @@ class cmd_merge(TarmacCommand):
             raise
         else:
             self.logger.debug('Firing tarmac_post_merge hook')
-            tarmac_hooks['tarmac_post_merge'].fire(
-                self, target)
+            tarmac_hooks.fire('tarmac_post_merge',
+                              self, target, success_count=success_count)
         finally:
             target.cleanup()
 
@@ -295,7 +304,7 @@ class cmd_merge(TarmacCommand):
         """Return a list of the mergable proposals for the given branch."""
         proposals = []
         for entry in lp_branch.landing_candidates:
-            self.logger.debug("Considering merge proposal: {0}".format(entry))
+            self.logger.debug("Considering merge proposal: {0}".format(entry.web_link))
 
             if entry.queue_status != u'Approved':
                 self.logger.debug(
@@ -303,7 +312,7 @@ class cmd_merge(TarmacCommand):
                     "'Approved'".format(entry.queue_status))
                 continue
 
-            if (not self.config.imply_commit_message and 
+            if (not self.config.imply_commit_message and
                 not entry.commit_message):
                 self.logger.debug(
                     "  Skipping proposal: proposal has no commit message")
@@ -348,9 +357,8 @@ class cmd_merge(TarmacCommand):
             self.logger.debug('launchpad object loaded')
 
         if branch_url:
-            self.logger.debug(
-                '%(branch_url)s specified as branch_url' % {
-                    'branch_url': branch_url})
+            self.logger.debug('%(branch_url)s specified as branch_url' % {
+                'branch_url': branch_url})
             if not branch_url.startswith('lp:'):
                 raise TarmacCommandError('Branch urls must start with lp:')
             self._do_merges(branch_url)
@@ -361,7 +369,13 @@ class cmd_merge(TarmacCommand):
                     'Merging approved branches against %(branch)s' % {
                         'branch': branch})
                 try:
-                    self._do_merges(branch)
+                    merged = self._do_merges(branch)
+
+                    # If we've been asked to only merge one branch, then exit.
+                    if merged and self.config.one:
+                        break
+                except LockContention:
+                    continue
                 except Exception, error:
                     self.logger.error(
                         'An error occurred trying to merge %s: %s',

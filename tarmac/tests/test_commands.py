@@ -60,7 +60,7 @@ class TestAuthCommand(TarmacTestCase):
     #    sys.stdout = old_stdout
 
     def test_run_already_authenticated(self):
-        '''If the user has already been authenticated, don't try again.'''
+        '''If the user has already been authenticated, do not try again.'''
         registry = CommandRegistry(config=self.config)
         registry.register_command('authenticate', commands.cmd_authenticate)
         command = registry._get_command(commands.cmd_authenticate,
@@ -103,17 +103,20 @@ class TestMergeCommand(BranchTestCase):
         self.branches = [Thing(
                 bzr_identity=self.branch2.lp_branch.bzr_identity,
                 display_name=self.branch2.lp_branch.bzr_identity,
+                web_link=self.branch2.lp_branch.bzr_identity,
                 name='source',
                 revision_count=self.branch2.lp_branch.revision_count,
                 landing_candidates=[]),
                          Thing(
                 bzr_identity=self.branch1.lp_branch.bzr_identity,
                 display_name=self.branch1.lp_branch.bzr_identity,
+                web_link=self.branch1.lp_branch.bzr_identity,
                 name='target',
                 revision_count=self.branch1.lp_branch.revision_count,
                 landing_candidates=None)]
         self.proposals = [Thing(
                 self_link=u'http://api.edge.launchpad.net/devel/proposal0',
+                web_link=u'http://api.edge.launchpad.net/devel/proposal0',
                 queue_status=u'Needs Review',
                 commit_message=u'Commitable.',
                 source_branch=self.branches[0],
@@ -128,6 +131,7 @@ class TestMergeCommand(BranchTestCase):
                         reviewer=Thing(display_name=u'Reviewer'))]),
                           Thing(
                 self_link=u'https://api.launchpad.net/1.0/proposal1',
+                web_link=u'https://api.launchpad.net/1.0/proposal1',
                 queue_status=u'Approved',
                 commit_message=u'Commit this.',
                 source_branch=self.branches[0],
@@ -242,6 +246,7 @@ class TestMergeCommand(BranchTestCase):
         branch3.lp_branch.landing_candidates = []
         b3_proposal = Thing(
             self_link=u'http://api.edge.launchpad.net/devel/proposal3',
+            web_link=u'http://api.edge.launchpad.net/devel/proposal3',
             queue_status=u'Work in Progress',
             commit_message=u'Commitable.',
             source_branch=branch3.lp_branch,
@@ -289,6 +294,7 @@ class TestMergeCommand(BranchTestCase):
         branch3.lp_branch.landing_candidates = []
         b3_proposal = Thing(
             self_link=u'http://api.edge.launchpad.net/devel/proposal3',
+            web_link=u'http://api.edge.launchpad.net/devel/proposal3',
             queue_status=u'Work in Progress',
             commit_message=u'Commitable.',
             source_branch=branch3.lp_branch,
@@ -336,6 +342,7 @@ class TestMergeCommand(BranchTestCase):
         branch3.lp_branch.landing_candidates = []
         b3_proposal = Thing(
             self_link=u'http://api.edge.launchpad.net/devel/proposal3',
+            web_link=u'http://api.edge.launchpad.net/devel/proposal3',
             queue_status=u'Work in Progress',
             commit_message=u'Commitable.',
             source_branch=branch3.lp_branch,

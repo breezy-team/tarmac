@@ -16,21 +16,9 @@
 
 '''Hooks for Tarmac.'''
 
+import logging
+
 from bzrlib import hooks
-
-
-class TarmacHookPoint(hooks.HookPoint):
-    '''A special HookPoint for Tarmac.
-
-    This HookPoint implements a fire method that the bzrlib.hooks.HookPoint
-    doesn't have.  If this turns out to be helpful, than a patch to Bazaar
-    should be made to implement it in Bazaar.
-    '''
-
-    def fire(self, *args, **kwargs):
-        '''Fire all registered hooks for self.'''
-        for hook in self:
-            hook(*args, **kwargs)
 
 
 class TarmacHookRegistry(hooks.Hooks):
@@ -39,24 +27,44 @@ class TarmacHookRegistry(hooks.Hooks):
     def __init__(self):
         hooks.Hooks.__init__(self)
 
-        self.create_hook(TarmacHookPoint('tarmac_pre_commit',
-            'Called right after Tarmac checks out and merges in a new '
-            'branch, but before committing.',
-            (0, 2), False))
+        self.logger = logging.getLogger('tarmac')
+        self._hooks = [
+            ('tarmac_pre_commit',
+             'Called right after Tarmac checks out and merges in a new '
+             'branch, but before committing.',
+             (0, 2), False),
+            ('tarmac_post_commit',
+             'Called right after Tarmac commits the merged revision',
+             (0, 2), False),
+            ('tarmac_pre_merge',
+             'Called right before tarmac begins attempting to merge '
+             'approved branches into the target branch.',
+             (0, 3, 3), False),
+            ('tarmac_post_merge',
+             'Called right after Tarmac finishes merging approved '
+             'branches into the target branch.',
+             (0, 3, 3), False),
+            ]
+        for hook in self._hooks:
+            name, doc, added, deprecated = hook
+            try:
+                self.add_hook(name, doc, added, deprecated=deprecated)
+            except AttributeError:
+                self.logger.warn(
+                    'Using deprecated bzrlib API. You should upgrade to '
+                    'a newer release of bzr.')
+                self.create_hook(hooks.HookPoint(name, doc, added, deprecated))
 
-        self.create_hook(TarmacHookPoint('tarmac_post_commit',
-            'Called right after Tarmac commits the merged revision',
-            (0, 2), False))
+    def fire(self, hook_name, *args, **kwargs):
+        """Fire all registered hooks for hook_name.
 
-        self.create_hook(TarmacHookPoint('tarmac_pre_merge',
-            'Called right before tarmac begins attempting to merge '
-            'approved branches into the target branch.',
-            (0, 3, 3), False))
-
-        self.create_hook(TarmacHookPoint('tarmac_post_merge',
-            'Called right after Tarmac finishes merging approved '
-            'branches into the target branch.',
-            (0, 3, 3), False))
+        This implements a way to fire the hook, which bzrlib.hooks.Hooks
+        doesn't have. If this turns out to be helpful, than a patch to Bazaar
+        should be made to implement it in Bazaar.
+        """
+        hook_point = self[hook_name]
+        for callback in hook_point:
+            callback(*args, **kwargs)
 
 
 tarmac_hooks = TarmacHookRegistry()
