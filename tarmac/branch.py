@@ -115,6 +115,10 @@ class Branch(object):
                     "output": self.conflicts})
             raise BranchHasConflicts(message, lp_comment)
 
+    def merge_tags(self, branch):
+        """Merge tags from another branch into this one."""
+        branch.tags.merge_to(self.tags, overwrite=True)
+
     @property
     def unmanaged_files(self):
         """Get the list of ignored and unknown files in the tree."""
@@ -222,3 +226,8 @@ class Branch(object):
         finally:
             self.bzr_branch.unlock()
         return bugs_list
+
+    @property
+    def tags(self):
+        """Return the Tags container for the bzr_branch."""
+        return self.bzr_branch.tags
