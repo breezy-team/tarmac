@@ -17,8 +17,8 @@
 
 import imp
 import logging
-import new
 import os
+import types
 
 from tarmac import plugins as _mod_plugins
 
@@ -81,7 +81,7 @@ def load_plugins():
     for plugin_info in plugin_names:
         try:
             logger.debug('Loading plug-in: %s' % plugin_info[1])
-            _module = new.module(plugin_info[0])
+            _module = types.ModuleType(plugin_info[0])
             execfile(plugin_info[1], _module.__dict__)
             setattr(_mod_plugins, plugin_info[0], _module)
         except KeyboardInterrupt:
