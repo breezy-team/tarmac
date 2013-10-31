@@ -15,8 +15,12 @@ from tarmac.bin import options
 from tarmac.branch import Branch
 from tarmac.hooks import tarmac_hooks
 from tarmac.log import set_up_debug_logging, set_up_logging
-from tarmac.exceptions import (TarmacMergeError, TarmacCommandError,
-                               UnapprovedChanges)
+from tarmac.exceptions import (
+    TarmacCommandError,
+    TarmacMergeError,
+    TarmacMergeSkipError,
+    UnapprovedChanges,
+)
 from tarmac.plugin import load_plugins
 from tarmac.utility import get_review_url
 
@@ -261,6 +265,16 @@ class cmd_merge(TarmacCommand):
                     if self.config.one:
                         return True
 
+                    continue
+                except TarmacMergeSkipError as failure:
+                    self.logger.warn(
+                        'Skipping merge of %(source)s into %(target)s:'
+                        ' %(msg)s' % {
+                            'source': proposal.source_branch.web_link,
+                            'target': proposal.target_branch.web_link,
+                            'msg': str(failure),
+                        })
+                    target.cleanup()
                     continue
                 except PointlessMerge:
                     self.logger.warn(

@@ -110,6 +110,12 @@ attempt to merge the branch again, without having the issues resolved. If
 no ``comment`` argument is supplied, the ``message`` argument will be used
 for the comment when posting to Launchpad, instead.
 
+If your plug-in is a ``pre_commit`` hook, and you wish to tell tarmac to
+simply skip your proposal for now, as there is some possibly transient
+problem, such as a 500 error from a web service you need to use, and delay
+the merger until later, you can raise the ``TarmacMergeSkipError`` exception,
+and tarmac will simply log that the merge was skipped, and continue on.
+Passing a ``message`` will also result in the message being logged.
 
 
 Caveats
