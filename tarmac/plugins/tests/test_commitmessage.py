@@ -3,7 +3,7 @@
 from tarmac.plugins.commitmessage import (
     CommitMessageTemplate, CommitMessageTemplateInfo)
 from tarmac.tests import TarmacTestCase
-from tarmac.tests.mock import Thing
+from tarmac.tests import Thing
 
 
 class TestCommitMessageTemplateInfo(TarmacTestCase):

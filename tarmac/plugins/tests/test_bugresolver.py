@@ -17,7 +17,7 @@
 
 from tarmac.plugins.bugresolver import BugResolver
 from tarmac.tests import TarmacTestCase
-from tarmac.tests.mock import Thing
+from tarmac.tests import Thing
 
 
 class BugResolverTests(TarmacTestCase):

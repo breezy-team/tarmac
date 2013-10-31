@@ -20,7 +20,7 @@ from tarmac.bin.registry import CommandRegistry
 from tarmac.plugins import command
 from tarmac.tests import TarmacTestCase
 from tarmac.tests.test_commands import FakeCommand
-from tarmac.tests.mock import Thing
+from tarmac.tests import Thing
 
 
 class TestCommand(TarmacTestCase):

@@ -10,7 +10,7 @@ from tarmac.branch import Branch
 from tarmac.config import TarmacConfig
 from tarmac.exceptions import UnapprovedChanges
 from tarmac.tests import TarmacTestCase, BranchTestCase
-from tarmac.tests.mock import MockLPBranch, Thing
+from tarmac.tests import MockLPBranch, Thing
 
 
 class FakeCommand(commands.TarmacCommand):
