@@ -17,10 +17,13 @@
 # pylint: disable-msg=W0122,W0612
 
 import imp
+import logging
 import os
 
 from tarmac import plugins as _mod_plugins
 
+
+logger = logging.getLogger('tarmac')
 
 TARMAC_PLUGIN_PATHS = [
         os.path.expanduser('~/.config/tarmac/plugins'),
@@ -38,7 +41,7 @@ def load_plugins():
         if flags in (imp.PY_SOURCE, imp.PY_COMPILED)]
     package_entries = ['__init__' + suffix for suffix in valid_suffixes]
 
-    plugin_names = set()
+    plugin_files = set()
     for path in TARMAC_PLUGIN_PATHS:
         try:
             for _file in os.listdir(path):
@@ -69,12 +72,13 @@ def load_plugins():
                 elif getattr(_mod_plugins, _file, None):
                     continue  # Plugin is already loaded.
                 else:
-                    plugin_names.add(_file)
+                    plugin_files.add(full_path)
         except OSError:  # Usually the dir does not exist
             continue
 
-    for name in plugin_names:
+    for plugin_file in plugin_files:
         try:
-            exec 'import tarmac.plugins.%s' % name in {}
+            logger.debug('Loading plug-in: %s' % plugin_file)
+            execfile(plugin_file)
         except KeyboardInterrupt:
             raise
