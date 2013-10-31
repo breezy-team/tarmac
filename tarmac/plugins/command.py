@@ -189,6 +189,8 @@ class Command(TarmacPlugin):
         exception is then raised to prevent the commit from happening.
         '''
         message = u'Test command "%s" failed.' % self.verify_command
+        stdout_value = stdout_value.decode('UTF-8', 'replace')
+        stderr_value = stderr_value.decode('UTF-8', 'replace')
         comment = (u'The attempt to merge %(source)s into %(target)s failed. '
                    u'Below is the output from the failed tests.\n\n'
                    u'%(output)s') % {
