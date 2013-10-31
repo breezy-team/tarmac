@@ -17,30 +17,33 @@
 
 import imp
 import logging
+import new
 import os
 
 from tarmac import plugins as _mod_plugins
 
-
 logger = logging.getLogger('tarmac')
-
-TARMAC_PLUGIN_PATHS = [
-        os.path.expanduser('~/.config/tarmac/plugins'),
-        os.path.join(os.path.dirname(__file__), 'plugins')]
-try:
-    TARMAC_PLUGIN_PATHS.extend(os.environ['TARMAC_PLUGIN_PATH'].split(':'))
-except KeyError:
-    pass
 
 
 def load_plugins():
     '''Load the plugins for Tarmac.'''
 
+    TARMAC_PLUGIN_PATHS = [
+        os.path.expanduser('~/.config/tarmac/plugins'),
+        os.path.join(os.path.dirname(__file__), 'plugins'),
+    ]
+    try:
+        TARMAC_PLUGIN_PATHS.extend(
+            os.environ['TARMAC_PLUGIN_PATH'].split(':'))
+    except KeyError:
+        pass
+
+    logger.debug('Using plug-in paths: %s' % TARMAC_PLUGIN_PATHS)
     valid_suffixes = [suffix for suffix, mod_type, flags in imp.get_suffixes()
         if flags in (imp.PY_SOURCE, imp.PY_COMPILED)]
     package_entries = ['__init__' + suffix for suffix in valid_suffixes]
 
-    plugin_files = set()
+    plugin_names = set()
     for path in TARMAC_PLUGIN_PATHS:
         try:
             for _file in os.listdir(path):
@@ -71,13 +74,15 @@ def load_plugins():
                 elif getattr(_mod_plugins, _file, None):
                     continue  # Plugin is already loaded.
                 else:
-                    plugin_files.add(full_path)
+                    plugin_names.add((_file, full_path))
         except OSError:  # Usually the dir does not exist
             continue
 
-    for plugin_file in plugin_files:
+    for plugin_info in plugin_names:
         try:
-            logger.debug('Loading plug-in: %s' % plugin_file)
-            execfile(plugin_file)
+            logger.debug('Loading plug-in: %s' % plugin_info[1])
+            _module = new.module(plugin_info[0])
+            execfile(plugin_info[1], _module.__dict__)
+            setattr(_mod_plugins, plugin_info[0], _module)
         except KeyboardInterrupt:
             raise
