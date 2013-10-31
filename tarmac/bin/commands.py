@@ -268,7 +268,7 @@ class cmd_merge(TarmacCommand):
                     continue
                 except TarmacMergeSkipError as failure:
                     self.logger.warn(
-                        'SKipping merge of %(source)s into %(target)s:'
+                        'Skipping merge of %(source)s into %(target)s:'
                         ' %(msg)s' % {
                             'source': proposal.source_branch.web_link,
                             'target': proposal.target_branch.web_link,
