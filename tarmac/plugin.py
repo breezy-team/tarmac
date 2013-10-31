@@ -1,3 +1,4 @@
+# Copyright 2013 Canonical Ltd.
 # This file is part of Tarmac.
 #
 # Tarmac is free software: you can redistribute it and/or modify
@@ -12,9 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Tarmac.  If not, see <http://www.gnu.org/licenses/>.
-
 '''Plugin utilities for Tarmac.'''
-# pylint: disable-msg=W0122,W0612
 
 import imp
 import logging
