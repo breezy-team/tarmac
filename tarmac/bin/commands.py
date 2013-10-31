@@ -294,6 +294,7 @@ class cmd_merge(TarmacCommand):
                              revprops=revprops,
                              authors=source.authors,
                              reviews=self._get_reviews(proposal))
+                target.merge_tags(source)
 
                 self.logger.debug('Firing tarmac_post_commit hook')
                 tarmac_hooks.fire('tarmac_post_commit',

@@ -1,7 +1,5 @@
 # Copyright 2009 Paul Hummer
-# Copyright 2009 Canonical Ltd.
-#
-# This file is part of Tarmac.
+# Copyright 2009-2013 Canonical Ltd.
 #
 # Tarmac is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License version 3 as
@@ -98,6 +96,39 @@ class TestBranch(BranchTestCase):
         self.branch1.merge(self.branch2)
         self.assertTrue(self.branch1.tree.changes_from(
                 self.branch1.tree.basis_tree()).has_changed())
+
+    def test_merge_tags(self):
+        """Test that merging tags works as expected."""
+        tag_name = 'tag1'
+        self.branch2.commit('Just a tag.')
+        self.branch2.lp_branch.revision_count += 1
+        tag_revision_id = self.branch2.bzr_branch.get_rev_id(
+            self.branch2.lp_branch.revision_count)
+        self.branch2.tags.set_tag(tag_name, tag_revision_id)
+        self.branch1.merge(self.branch2)
+        self.branch1.merge_tags(self.branch2)
+        self.assertEqual(self.branch1.tags.lookup_tag(tag_name),
+                         tag_revision_id)
+
+    def test_merge_tags_overwrite(self):
+        """Test that merging tags overwrites tags as expected."""
+        tag_name = 'tag1'
+        self.branch1.commit('First commit, with a tag.')
+        self.branch1.lp_branch.revision_count += 1
+        tag_revision_id1 = self.branch1.bzr_branch.get_rev_id(
+            self.branch1.lp_branch.revision_count)
+        self.branch1.tags.set_tag(tag_name, tag_revision_id1)
+        self.branch2.merge(self.branch1)
+        self.branch2.commit('Merged branch1')
+        self.branch2.commit('Just a tag.')
+        self.branch2.lp_branch.revision_count += 2
+        tag_revision_id2 = self.branch2.bzr_branch.get_rev_id(
+            self.branch2.lp_branch.revision_count)
+        self.branch2.tags.set_tag(tag_name, tag_revision_id2)
+        self.branch1.merge(self.branch2)
+        self.branch1.merge_tags(self.branch2)
+        self.assertEqual(self.branch1.tags.lookup_tag(tag_name),
+                         tag_revision_id2)
 
     def test_merge_with_authors(self):
         '''A merge from a branch with authors'''

@@ -1,10 +1,5 @@
 # Copyright 2009 Paul Hummer
-# Copyright 2009 Canonical Ltd.
-#
-# This file is part of Tarmac.
-#
-# Authors: Paul Hummer
-#          Rodney Dawes
+# Copyright 2009-2013 Canonical Ltd.
 #
 # Tarmac is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License version 3 as
@@ -115,6 +110,10 @@ class Branch(object):
                     "output": self.conflicts})
             raise BranchHasConflicts(message, lp_comment)
 
+    def merge_tags(self, branch):
+        """Merge tags from another branch into this one."""
+        branch.tags.merge_to(self.tags, overwrite=True)
+
     @property
     def unmanaged_files(self):
         """Get the list of ignored and unknown files in the tree."""
@@ -222,3 +221,8 @@ class Branch(object):
         finally:
             self.bzr_branch.unlock()
         return bugs_list
+
+    @property
+    def tags(self):
+        """Return the Tags container for the bzr_branch."""
+        return self.bzr_branch.tags
