@@ -262,6 +262,13 @@ class cmd_merge(TarmacCommand):
                         return True
 
                     continue
+                except TarmacMergeSkipError:
+                    self.logger.warn(
+                        'SKipping merge of %(source)s into %(target)s.' % {
+                            'source': proposal.source_branch.web_link,
+                            'target': proposal.target_branch.web_link})
+                    target.cleanup()
+                    continue
                 except PointlessMerge:
                     self.logger.warn(
                         'Merging %(source)s into %(target)s would be '

@@ -1,5 +1,5 @@
 # Copyright 2009 Paul Hummer
-# This file is part of Tarmac.
+# Copyright 2013 Canonical Ltd.
 #
 # Tarmac is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License version 3 as
@@ -41,3 +41,7 @@ class TarmacCommandError(BzrCommandError):
 
 class UnapprovedChanges(TarmacMergeError):
     '''Exception for when a branch has unapproved changes.'''
+
+
+class TarmacMergeSkipError(Exception):
+    """Exception to raise for non-fatal errors that should skip the merge."""
