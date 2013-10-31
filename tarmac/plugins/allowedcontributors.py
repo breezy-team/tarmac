@@ -56,6 +56,10 @@ class AllowedContributors(TarmacPlugin):
         for name in source.authors:
             email = re.sub(r'>$', '', re.sub(r'^.*\<', '', name))
             author = launchpad.people.getByEmail(email=email)
+            if author is None:
+                invalid_contributors.append(email)
+                continue
+
             if author.name in self.allowed_contributors:
                 continue
             else:

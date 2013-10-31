@@ -60,6 +60,8 @@ class AllowedContributorTests(TarmacTestCase):
 
     def getByEmail(self, email=None):
         """Fake method to return a person based on e-mail address."""
+        if email == 'un@register.ed':
+            return None
         for person in self.people:
             if person.preferred_email_address.email == email:
                 return person
@@ -109,3 +111,15 @@ class AllowedContributorTests(TarmacTestCase):
         """Test that is_in_team returns False for person not in a team."""
         self.assertFalse(self.plugin.is_in_team(self.people.person2,
                                                 self.people.team1))
+
+    def test_email_not_registered(self):
+        """Test that unregistered e-mail address doesn't crash."""
+        config = Thing(allowed_contributors=u'private_team')
+        source = Thing(authors=[u'un@register.ed'])
+        target = Thing(config=config)
+        launchpad = Thing(people=self.people)
+        command = Thing(launchpad=launchpad)
+        self.assertRaises(InvalidContributor,
+                          self.plugin.run,
+                          command=command, target=target, source=source,
+                          proposal=self.proposal)
