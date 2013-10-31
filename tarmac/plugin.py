@@ -1,3 +1,4 @@
+# Copyright 2013 Canonical Ltd.
 # This file is part of Tarmac.
 #
 # Tarmac is free software: you can redistribute it and/or modify
@@ -12,28 +13,32 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Tarmac.  If not, see <http://www.gnu.org/licenses/>.
-
 '''Plugin utilities for Tarmac.'''
-# pylint: disable-msg=W0122,W0612
 
 import imp
+import logging
 import os
+import types
 
 from tarmac import plugins as _mod_plugins
 
-
-TARMAC_PLUGIN_PATHS = [
-        os.path.expanduser('~/.config/tarmac/plugins'),
-        os.path.join(os.path.dirname(__file__), 'plugins')]
-try:
-    TARMAC_PLUGIN_PATHS.extend(os.environ['TARMAC_PLUGIN_PATH'].split(':'))
-except KeyError:
-    pass
+logger = logging.getLogger('tarmac')
 
 
 def load_plugins():
     '''Load the plugins for Tarmac.'''
 
+    TARMAC_PLUGIN_PATHS = [
+        os.path.expanduser('~/.config/tarmac/plugins'),
+        os.path.join(os.path.dirname(__file__), 'plugins'),
+    ]
+    try:
+        TARMAC_PLUGIN_PATHS.extend(
+            os.environ['TARMAC_PLUGIN_PATH'].split(':'))
+    except KeyError:
+        pass
+
+    logger.debug('Using plug-in paths: %s' % TARMAC_PLUGIN_PATHS)
     valid_suffixes = [suffix for suffix, mod_type, flags in imp.get_suffixes()
         if flags in (imp.PY_SOURCE, imp.PY_COMPILED)]
     package_entries = ['__init__' + suffix for suffix in valid_suffixes]
@@ -69,12 +74,15 @@ def load_plugins():
                 elif getattr(_mod_plugins, _file, None):
                     continue  # Plugin is already loaded.
                 else:
-                    plugin_names.add(_file)
+                    plugin_names.add((_file, full_path))
         except OSError:  # Usually the dir does not exist
             continue
 
-    for name in plugin_names:
+    for plugin_info in plugin_names:
         try:
-            exec 'import tarmac.plugins.%s' % name in {}
+            logger.debug('Loading plug-in: %s' % plugin_info[1])
+            _module = types.ModuleType(plugin_info[0])
+            execfile(plugin_info[1], _module.__dict__)
+            setattr(_mod_plugins, plugin_info[0], _module)
         except KeyboardInterrupt:
             raise

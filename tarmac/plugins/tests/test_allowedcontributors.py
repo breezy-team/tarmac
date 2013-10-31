@@ -18,7 +18,7 @@
 from tarmac.plugins.allowedcontributors import (
     InvalidContributor, InvalidPersonOrTeam, AllowedContributors)
 from tarmac.tests import TarmacTestCase
-from tarmac.tests.mock import Thing
+from tarmac.tests import Thing
 
 
 class AllowedContributorTests(TarmacTestCase):

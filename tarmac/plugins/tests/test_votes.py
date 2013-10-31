@@ -19,7 +19,7 @@ import operator
 
 from tarmac.plugins.votes import InvalidCriterion, Votes, VotingViolation
 from tarmac.tests import TarmacTestCase
-from tarmac.tests.mock import Thing
+from tarmac.tests import Thing
 
 
 class TestVotes(TarmacTestCase):

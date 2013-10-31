@@ -17,7 +17,7 @@
 
 from tarmac.plugins.recipebuilder import PackageRecipe
 from tarmac.tests import TarmacTestCase
-from tarmac.tests.mock import Thing
+from tarmac.tests import Thing
 
 
 class RecipeBuilderTests(TarmacTestCase):

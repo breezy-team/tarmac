@@ -1,5 +1,4 @@
 # Copyright 2009 Paul Hummer
-# This file is part of Tarmac.
 #
 # Tarmac is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License version 3 as
@@ -15,17 +14,76 @@
 # along with Tarmac.  If not, see <http://www.gnu.org/licenses/>.
 
 '''Tests for Tarmac!'''
+import math
 import os
 import shutil
 import tempfile
 
+from base64 import b64encode
+from bzrlib.bzrdir import BzrDir
 from bzrlib.directory_service import directories
 from bzrlib.tests import TestCaseInTempDir
 from bzrlib.transport import register_urlparse_netloc_protocol
 
 from tarmac import branch
+from tarmac.bin.commands import TarmacCommand
 from tarmac.config import TarmacConfig
-from tarmac.tests.mock import MockLPBranch
+
+
+class MockLPProject(object):
+    '''A mock LP Project.'''
+
+    def __init__(self):
+        self.name = b64encode(
+            os.urandom(int(math.ceil(0.75 * 10))), '-_')[:10]
+
+
+class MockLPBranch(object):
+    '''A mock LP Branch.'''
+
+    def __init__(self, tree_dir, source_branch=None):
+        self.tree_dir = tree_dir
+        os.makedirs(tree_dir)
+        if source_branch:
+            source_dir = source_branch._internal_bzr_branch.bzrdir
+            bzrdir = source_dir.sprout(tree_dir)
+            self._internal_tree, self._internal_bzr_branch = \
+                    bzrdir.open_tree_or_branch(tree_dir)
+            self.revision_count = source_branch.revision_count
+        else:
+            self._internal_bzr_branch = BzrDir.create_branch_convenience(
+                tree_dir)
+            self.revision_count = 0
+        self.bzr_identity = 'lp:%s' % os.path.basename(self.tree_dir)
+        self.web_link = self.bzr_identity
+        self.project = MockLPProject()
+
+
+class cmd_mock(TarmacCommand):
+    '''A mock command.'''
+
+    def run(self):
+        """Just a dummy command that does nothing."""
+
+
+class MockModule(object):
+    """A mock module."""
+
+    def __init__(self):
+        self.__dict__['cmd_mock'] = cmd_mock
+
+
+class Thing(dict):
+    """Quickly create an object with given attributes."""
+
+    def __init__(self, **names):
+        super(Thing, self).__init__(self, **names)
+        self.__dict__.update(names)
+
+    def __iter__(self):
+        for item in self.values():
+            if not callable(item):
+                yield item
 
 
 class TarmacTestCase(TestCaseInTempDir):

@@ -24,7 +24,7 @@ from bzrlib.errors import PointlessMerge
 
 from tarmac import branch
 from tarmac.tests import BranchTestCase
-from tarmac.tests.mock import MockLPBranch
+from tarmac.tests import MockLPBranch
 
 
 class TestBranch(BranchTestCase):

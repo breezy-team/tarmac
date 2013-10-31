@@ -5,7 +5,7 @@ from tarmac.bin.commands import cmd_authenticate, TarmacCommand
 from tarmac.bin.registry import CommandRegistry
 from tarmac.exceptions import CommandNotFound
 from tarmac.tests import TarmacTestCase
-from tarmac.tests.mock import cmd_mock, MockModule
+from tarmac.tests import cmd_mock, MockModule
 
 
 class TestCommandRegistry(TarmacTestCase):
