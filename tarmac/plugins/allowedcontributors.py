@@ -16,6 +16,7 @@
 """Tarmac plug-in for checking for a list of allowable contributors."""
 import re
 
+from lazr.restfulclient.errors import Unauthorized
 from tarmac.exceptions import TarmacMergeError
 from tarmac.hooks import tarmac_hooks
 from tarmac.plugins import TarmacPlugin
@@ -71,6 +72,10 @@ class AllowedContributors(TarmacPlugin):
                             in_team = self.is_in_team(author, lp_team)
                             if in_team:
                                 break
+                    except Unauthorized:
+                        raise InvalidPersonOrTeam(
+                            'Received Unauthorized error while trying to '
+                            'list members of team: %s' % team)
                     except KeyError:
                         message = (u'Could not find person or team "%s" on '
                                    u'Launchpad.' % team)
