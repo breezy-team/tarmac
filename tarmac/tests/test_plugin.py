@@ -45,7 +45,7 @@ class PluginTestCase(TarmacTestCase):
         plugin_name = 'testplugin'
         plugin_file = os.path.join(plugin_path, plugin_name + '.py')
         self.addCleanup(delattr, _mod_plugins, plugin_name)
-        plugin.load_plugins()
+        plugin.load_plugins(load_only=plugin_name)
         mocked.assert_called_once_with(plugin_file, ANY)
 
     @patch('tarmac.plugin.execfile', create=True)
@@ -57,5 +57,17 @@ class PluginTestCase(TarmacTestCase):
         plugin_name = 'testplugin'
         plugin_file = os.path.join(plugin_path, plugin_name + '.py')
         self.addCleanup(delattr, _mod_plugins, plugin_name)
-        plugin.load_plugins()
+        plugin.load_plugins(load_only=plugin_name)
+        mocked.assert_called_once_with(plugin_file, ANY)
+
+    @patch('tarmac.plugin.execfile', create=True)
+    def test_load_plugins_package(self, mocked):
+        """Test that package plug-ins load."""
+        plugin_path = os.path.join(os.path.dirname(__file__), 'plugins')
+        self._patch_env('TARMAC_PLUGIN_PATH', plugin_path)
+        plugin_name = 'pkgplugin'
+        plugin_file = os.path.join(plugin_path, os.path.join(
+            plugin_name, '__init__.py'))
+        self.addCleanup(delattr, _mod_plugins, plugin_name)
+        plugin.load_plugins(load_only=plugin_name)
         mocked.assert_called_once_with(plugin_file, ANY)
