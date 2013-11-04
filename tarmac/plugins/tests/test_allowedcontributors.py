@@ -15,10 +15,17 @@
 # along with Tarmac.  If not, see <http://www.gnu.org/licenses/>.
 """Tests for the Allowed Contributors plug-in."""
 
+from lazr.restfulclient.errors import Unauthorized
+from mock import Mock
 from tarmac.plugins.allowedcontributors import (
-    InvalidContributor, InvalidPersonOrTeam, AllowedContributors)
-from tarmac.tests import TarmacTestCase
-from tarmac.tests import Thing
+    InvalidContributor,
+    InvalidPersonOrTeam,
+    AllowedContributors,
+)
+from tarmac.tests import (
+    TarmacTestCase,
+    Thing,
+)
 
 
 class AllowedContributorTests(TarmacTestCase):
@@ -97,6 +104,25 @@ class AllowedContributorTests(TarmacTestCase):
         target = Thing(config=config)
         launchpad = Thing(people=self.people)
         command = Thing(launchpad=launchpad)
+        self.assertRaises(InvalidPersonOrTeam,
+                          self.plugin.run,
+                          command=command, target=target, source=source,
+                          proposal=self.proposal)
+
+    def test_run_unauthorized_for_private_team(self):
+        """Test that is_in_team returns True for person in a subteam."""
+        config = Thing(allowed_contributors=u'private_team')
+        source = Thing(authors=[u'person1', u'person2', u'person3'])
+        target = Thing(config=config)
+        people = Mock(spec=dict)
+        people.getByEmail = self.getByEmail
+        launchpad = Thing(people=people)
+        command = Thing(launchpad=launchpad)
+
+        def _raise_unauthorized(*args, **kwargs):
+            raise Unauthorized(Mock(), 'Unauthorized')
+
+        people.__getitem__ = lambda *a: _raise_unauthorized(a)
         self.assertRaises(InvalidPersonOrTeam,
                           self.plugin.run,
                           command=command, target=target, source=source,
