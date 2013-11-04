@@ -88,7 +88,6 @@ def load_plugins(load_only=None):
             logger.debug('Loading plug-in: %s' % plugin_info[1])
             _module = types.ModuleType(plugin_info[0])
             execfile(plugin_info[1], _module.__dict__)
-            print(_module)
             setattr(_mod_plugins, plugin_info[0], _module)
         except KeyboardInterrupt:
             raise
