@@ -21,8 +21,11 @@ import shutil
 from bzrlib.errors import PointlessMerge
 
 from tarmac import branch
-from tarmac.tests import BranchTestCase
-from tarmac.tests import MockLPBranch
+from tarmac.exceptions import TarmacMergeError
+from tarmac.tests import (
+    BranchTestCase,
+    MockLPBranch,
+)
 
 
 class TestBranch(BranchTestCase):
@@ -199,3 +202,10 @@ class TestBranch(BranchTestCase):
         self.assertEqual(sorted(self.branch1.unmanaged_files), expected)
         self.branch1.cleanup()
         self.assertEqual(self.branch1.unmanaged_files, [])
+
+    def test_commit_with_author_with_newline(self):
+        """Test that committing a branch with an author containing \n fails."""
+        authors = ['author1', 'author2']
+        self.assertRaises(TarmacMergeError,
+                          self.branch2.commit,
+                          'Authors Merge test', authors=['\n'.join(authors)])
