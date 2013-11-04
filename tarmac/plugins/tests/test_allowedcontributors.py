@@ -16,8 +16,12 @@
 """Tests for the Allowed Contributors plug-in."""
 
 from lazr.restfulclient.errors import Unauthorized
+from mock import Mock
 from tarmac.plugins.allowedcontributors import (
-    InvalidContributor, InvalidPersonOrTeam, AllowedContributors)
+    InvalidContributor,
+    InvalidPersonOrTeam,
+    AllowedContributors,
+)
 from tarmac.tests import (
     TarmacTestCase,
     Thing,
@@ -110,13 +114,15 @@ class AllowedContributorTests(TarmacTestCase):
         config = Thing(allowed_contributors=u'private_team')
         source = Thing(authors=[u'person1', u'person2', u'person3'])
         target = Thing(config=config)
-        launchpad = Thing(people=self.people)
+        people = Mock(spec=dict)
+        people.getByEmail = self.getByEmail
+        launchpad = Thing(people=people)
         command = Thing(launchpad=launchpad)
 
         def _raise_unauthorized(*args, **kwargs):
-            raise Unauthorized('401', 'Unauthorized')
+            raise Unauthorized(Mock(), 'Unauthorized')
 
-        self.plugin.is_in_team = _raise_unauthorized
+        people.__getitem__ = lambda *a: _raise_unauthorized(a)
         self.assertRaises(InvalidPersonOrTeam,
                           self.plugin.run,
                           command=command, target=target, source=source,
