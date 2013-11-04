@@ -154,8 +154,11 @@ class Branch(object):
                                            'review identity or vote.')
             revprops['reviews'] = '\n'.join(reviews)
 
-        self.tree.commit(commit_message, committer='Tarmac',
-                         revprops=revprops, authors=authors)
+        try:
+            self.tree.commit(commit_message, committer='Tarmac',
+                             revprops=revprops, authors=authors)
+        except AssertionError as error:
+            raise TarmacMergeError(str(error))
 
     @property
     def landing_candidates(self):
