@@ -35,6 +35,10 @@ class CommandNotFound(Exception):
     '''Exception for calling a command that that hasn't been registered.'''
 
 
+class InvalidWorkingTree(TarmacMergeError):
+    """Exception for invalid working tree (not a lightweight checkout)."""
+
+
 class TarmacCommandError(BzrCommandError):
     '''Exception for various command errors.'''
 

@@ -149,8 +149,33 @@ class cmd_merge(TarmacCommand):
         options.imply_commit_message_option,
         options.one_option]
 
-    def _do_merges(self, branch_url):
+    def _handle_merge_error(self, proposal, failure):
+        """Handle TarmacMergeError cases from _do_merges."""
+        self.logger.warn(
+            u'Merging %(source)s into %(target)s failed: %(msg)s' %
+            {'source': proposal.source_branch.web_link,
+             'target': proposal.target_branch.web_link,
+             'msg': str(failure)})
 
+        subject = u'Re: [Merge] %(source)s into %(target)s' % {
+            "source": proposal.source_branch.display_name,
+            "target": proposal.target_branch.display_name}
+
+        if failure.comment:
+            comment = failure.comment
+        else:
+            comment = str(failure)
+
+        proposal.createComment(subject=subject, content=comment)
+        try:
+            proposal.setStatus(
+                status=self.config.rejected_branch_status)
+        except AttributeError:
+            proposal.setStatus(status=u'Needs review')
+        proposal.lp_save()
+
+    def _do_merges(self, branch_url):
+        """Merge the approved proposals for %branch_url."""
         lp_branch = self.launchpad.branches.getByUrl(url=branch_url)
         if lp_branch is None:
             self.logger.info('Not a valid branch: {0}'.format(branch_url))
@@ -164,7 +189,11 @@ class cmd_merge(TarmacCommand):
                     'branch_url': branch_url})
             return
 
-        target = Branch.create(lp_branch, self.config, create_tree=True)
+        try:
+            target = Branch.create(lp_branch, self.config, create_tree=True)
+        except TarmacMergeError as failure:
+            self._handle_merge_error(proposals[0], failure)
+            return
 
         self.logger.debug('Firing tarmac_pre_merge hook')
         tarmac_hooks.fire('tarmac_pre_merge',
@@ -237,29 +266,8 @@ class cmd_merge(TarmacCommand):
                     tarmac_hooks.fire('tarmac_pre_commit',
                                       self, target, source, proposal)
 
-                except TarmacMergeError, failure:
-                    self.logger.warn(
-                        u'Merging %(source)s into %(target)s failed: %(msg)s' %
-                        {'source': proposal.source_branch.web_link,
-                         'target': proposal.target_branch.web_link,
-                         'msg': str(failure)})
-
-                    subject = u'Re: [Merge] %(source)s into %(target)s' % {
-                        "source": proposal.source_branch.display_name,
-                        "target": proposal.target_branch.display_name}
-
-                    if failure.comment:
-                        comment = failure.comment
-                    else:
-                        comment = str(failure)
-
-                    proposal.createComment(subject=subject, content=comment)
-                    try:
-                        proposal.setStatus(
-                            status=self.config.rejected_branch_status)
-                    except AttributeError:
-                        proposal.setStatus(status=u'Needs review')
-                    proposal.lp_save()
+                except TarmacMergeError as failure:
+                    self._handle_merge_error(proposal, failure)
 
                     # If we've been asked to only merge one branch, then exit.
                     if self.config.one:

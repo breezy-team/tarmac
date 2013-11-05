@@ -25,7 +25,11 @@ from bzrlib.errors import NoSuchRevision
 from bzrlib.workingtree import WorkingTree
 
 from tarmac.config import BranchConfig
-from tarmac.exceptions import BranchHasConflicts, TarmacMergeError
+from tarmac.exceptions import (
+    BranchHasConflicts,
+    InvalidWorkingTree,
+    TarmacMergeError,
+)
 
 
 class Branch(object):
@@ -65,6 +69,16 @@ class Branch(object):
                     'tree_dir': self.config.tree_dir})
             if os.path.exists(self.config.tree_dir):
                 self.tree = WorkingTree.open(self.config.tree_dir)
+
+                if self.tree.user_url != self.tree.branch.user_url:
+                    print('URLs: %s - %s' % (self.tree.user_url,
+                                             self.tree.branch.user_url))
+                    self.logger.debug('Tree URLs do not match: %s - %s' % (
+                        self.tree.user_url, self.tree.branch.user_url))
+                    raise InvalidWorkingTree(
+                        'The `tree_dir` option for the target branch is not a '
+                        'lightweight checkout. Please ask a project '
+                        'administrator to resolve the issue, and try again.')
             else:
                 self.logger.debug('Tree does not exist.  Creating dir')
                 # Create the path up to but not including tree_dir if it does

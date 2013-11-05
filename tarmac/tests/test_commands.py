@@ -1,16 +1,39 @@
+# Copyright 2009 Paul Hummer
+# Copyright 2009-2013 Canonical Ltd.
+#
+# Tarmac is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License version 3 as
+# published by
+# the Free Software Foundation.
+#
+# Tarmac is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Tarmac.  If not, see <http://www.gnu.org/licenses/>.
 '''Tests for tarmac.bin.commands.py.'''
 from cStringIO import StringIO
 import os
 import shutil
 import sys
 
+from mock import patch
 from tarmac.bin import commands
 from tarmac.bin.registry import CommandRegistry
 from tarmac.branch import Branch
 from tarmac.config import TarmacConfig
-from tarmac.exceptions import UnapprovedChanges
-from tarmac.tests import TarmacTestCase, BranchTestCase
-from tarmac.tests import MockLPBranch, Thing
+from tarmac.exceptions import (
+    InvalidWorkingTree,
+    UnapprovedChanges,
+)
+from tarmac.tests import (
+    BranchTestCase,
+    MockLPBranch,
+    TarmacTestCase,
+    Thing,
+)
 
 
 class FakeCommand(commands.TarmacCommand):
@@ -372,3 +395,14 @@ class TestMergeCommand(BranchTestCase):
                          u'More than one proposal found for merge of '
                          u'lp:branch3 into lp:branch1, which is not '
                          u'Superseded.')
+
+    @patch('bzrlib.workingtree.WorkingTree.open')
+    def test_run_merge_with_invalid_workingtree(self, mocked):
+        """Test that InvalidWorkingTree is handled correctly."""
+        invalid_tree_comment = 'This tree is invalid.'
+        mocked.side_effect = InvalidWorkingTree(invalid_tree_comment)
+        self.proposals[1].reviewed_revid = \
+            self.branch2.bzr_branch.last_revision()
+        self.command.run(launchpad=self.launchpad)
+        self.assertEqual(self.error.comment,
+                         invalid_tree_comment)
