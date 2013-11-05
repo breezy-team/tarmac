@@ -25,8 +25,11 @@ from tarmac import plugins as _mod_plugins
 logger = logging.getLogger('tarmac')
 
 
-def load_plugins(load_only=None):
-    '''Load the plugins for Tarmac.'''
+def find_plugins(load_only=None):
+    """Find the plugins for Tarmac.
+
+    %load_only is a string containing the name of a single plug-in to find.
+    """
 
     TARMAC_PLUGIN_PATHS = [
         os.path.expanduser('~/.config/tarmac/plugins'),
@@ -71,20 +74,29 @@ def load_plugins(load_only=None):
                         logger.debug('Skipping file `%s` for plug-in.' % _file)
                         continue
 
-                if _file != load_only:
+                if  load_only and _file != load_only:
                     continue
 
-                if _file == '__init__':
+                if _file == '__init__' or (_file, full_path) in plugin_names:
                     continue
-                elif getattr(_mod_plugins, _file, None):
-                    continue  # Plugin is already loaded.
                 else:
                     plugin_names.add((_file, full_path))
         except OSError:  # Usually the dir does not exist
             continue
 
-    for plugin_info in plugin_names:
+    return plugin_names
+
+
+def load_plugins(load_only=None):
+    """Find the plugins for Tarmac.
+
+    %load_only is a string containing the name of a single plug-in to find.
+    """
+    for plugin_info in find_plugins(load_only=load_only):
         try:
+            if getattr(_mod_plugins, plugin_info[0], None) is not None:
+                continue
+
             logger.debug('Loading plug-in: %s' % plugin_info[1])
             _module = types.ModuleType(plugin_info[0])
             execfile(plugin_info[1], _module.__dict__)
