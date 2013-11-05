@@ -26,7 +26,10 @@ logger = logging.getLogger('tarmac')
 
 
 def find_plugins(load_only=None):
-    """Find the plugins for Tarmac."""
+    """Find the plugins for Tarmac.
+
+    %load_only is a string containing the name of a single plug-in to find.
+    """
 
     TARMAC_PLUGIN_PATHS = [
         os.path.expanduser('~/.config/tarmac/plugins'),
@@ -85,7 +88,10 @@ def find_plugins(load_only=None):
 
 
 def load_plugins(load_only=None):
-    """Find the plugins for Tarmac."""
+    """Find the plugins for Tarmac.
+
+    %load_only is a string containing the name of a single plug-in to find.
+    """
     for plugin_info in find_plugins(load_only=load_only):
         try:
             if getattr(_mod_plugins, plugin_info[0], None) is not None:
