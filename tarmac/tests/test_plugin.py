@@ -37,16 +37,14 @@ class PluginTestCase(TarmacTestCase):
         else:
             os.environ[envvar] = value
 
-    @patch('tarmac.plugin.execfile', create=True)
-    def test_load_plugins_external(self, mocked):
-        """Test that external plug-ins load."""
+    def test_find_plugins_external(self):
+        """Test that external plug-ins are found."""
         plugin_path = os.path.join(os.path.dirname(__file__), 'plugins')
         self._patch_env('TARMAC_PLUGIN_PATH', plugin_path)
         plugin_name = 'testplugin'
         plugin_file = os.path.join(plugin_path, plugin_name + '.py')
-        self.addCleanup(delattr, _mod_plugins, plugin_name)
-        plugin.load_plugins(load_only=plugin_name)
-        mocked.assert_called_once_with(plugin_file, ANY)
+        plugins = plugin.find_plugins()
+        self.assertIn((plugin_name, plugin_file), plugins)
 
     @patch('tarmac.plugin.execfile', create=True)
     def test_load_plugins_once_only(self, mocked):
@@ -55,19 +53,27 @@ class PluginTestCase(TarmacTestCase):
         self._patch_env('TARMAC_PLUGIN_PATH',
                         '%s:%s' % (plugin_path, plugin_path))
         plugin_name = 'testplugin'
-        plugin_file = os.path.join(plugin_path, plugin_name + '.py')
         self.addCleanup(delattr, _mod_plugins, plugin_name)
+        plugin_file = os.path.join(plugin_path, plugin_name + '.py')
         plugin.load_plugins(load_only=plugin_name)
         mocked.assert_called_once_with(plugin_file, ANY)
 
-    @patch('tarmac.plugin.execfile', create=True)
-    def test_load_plugins_package(self, mocked):
-        """Test that package plug-ins load."""
+    def test_find_plugins_package(self):
+        """Test that package plug-ins are found."""
         plugin_path = os.path.join(os.path.dirname(__file__), 'plugins')
         self._patch_env('TARMAC_PLUGIN_PATH', plugin_path)
         plugin_name = 'pkgplugin'
         plugin_file = os.path.join(plugin_path, os.path.join(
             plugin_name, '__init__.py'))
-        self.addCleanup(delattr, _mod_plugins, plugin_name)
-        plugin.load_plugins(load_only=plugin_name)
-        mocked.assert_called_once_with(plugin_file, ANY)
+        plugins = plugin.find_plugins()
+        self.assertIn((plugin_name, plugin_file), plugins)
+
+    @patch('tarmac.plugin.execfile', create=True)
+    def test_load_plugins(self, mocked):
+        """Test that plug-ins load."""
+        for _plugin in plugin.find_plugins():
+            delattr(_mod_plugins, _plugin[0])
+            self.addCleanup(delattr, _mod_plugins, _plugin[0])
+
+        plugin.load_plugins()
+        self.assertTrue(mocked.call_count > 0)
