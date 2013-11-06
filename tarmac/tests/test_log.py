@@ -18,7 +18,6 @@
 '''Tests for tarmac.log'''
 import cStringIO
 import os
-import shutil
 import sys
 
 from tarmac.tests import TarmacTestCase
