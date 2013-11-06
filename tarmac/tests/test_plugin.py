@@ -16,6 +16,7 @@
 import os
 
 from mock import ANY, patch
+from operator import setitem
 from tarmac import plugin
 from tarmac import plugins as _mod_plugins
 from tarmac.tests import TarmacTestCase

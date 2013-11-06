@@ -30,9 +30,11 @@ Running Tests
 Tests are run using `test_suite` from setuptools and rely on the mock and 
 bzrlib.tests packages. So you must install the 'python-setuptools,'
 'python-mock', and `python-bzrlib.tests` packages in order to run the tests.
-Once done, from the top of the repository you can run:
+Tarmac also uses 'pyflakes' to do static code checking. You will need to
+install the 'pyflakes' package as well, to ensure your changes do not report
+any new warnings. Once done, from the top of the repository you can run:
 
-% ./setup.py test
+% ./run-tests
 
 =============
 Writing Tests
