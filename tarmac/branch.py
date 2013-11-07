@@ -70,11 +70,9 @@ class Branch(object):
             if os.path.exists(self.config.tree_dir):
                 self.tree = WorkingTree.open(self.config.tree_dir)
 
-                if self.tree.user_url != self.tree.branch.user_url:
-                    print('URLs: %s - %s' % (self.tree.user_url,
-                                             self.tree.branch.user_url))
+                if self.tree.branch.user_url != self.bzr_branch.user_url:
                     self.logger.debug('Tree URLs do not match: %s - %s' % (
-                        self.tree.user_url, self.tree.branch.user_url))
+                        self.bzr_branch.user_url, self.tree.branch.user_url))
                     raise InvalidWorkingTree(
                         'The `tree_dir` option for the target branch is not a '
                         'lightweight checkout. Please ask a project '

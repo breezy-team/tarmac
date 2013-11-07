@@ -19,9 +19,12 @@ import os
 import shutil
 
 from bzrlib.errors import PointlessMerge
-
+from mock import patch
 from tarmac import branch
-from tarmac.exceptions import TarmacMergeError
+from tarmac.exceptions import (
+    InvalidWorkingTree,
+    TarmacMergeError,
+)
 from tarmac.tests import (
     BranchTestCase,
     MockLPBranch,
@@ -209,3 +212,14 @@ class TestBranch(BranchTestCase):
         self.assertRaises(TarmacMergeError,
                           self.branch2.commit,
                           'Authors Merge test', authors=['\n'.join(authors)])
+
+    @patch('tarmac.branch.bzr_branch.Branch.user_url')
+    def test_create_tree_invalid_workingtree(self, mocked):
+        """Test that InvalidWorkingTree is raised when it should be."""
+        tree_dir = os.path.join(self.TEST_ROOT, 'test_invalid_workingtree')
+        self.add_branch_config(tree_dir)
+        self.addCleanup(self.remove_branch_config, tree_dir)
+        a_branch = branch.Branch(MockLPBranch(tree_dir), self.config)
+        a_branch.bzr_branch.user_url = 'lp:invalid'
+        self.assertRaises(InvalidWorkingTree,
+                          a_branch.create_tree)
