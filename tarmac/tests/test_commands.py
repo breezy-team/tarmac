@@ -172,7 +172,8 @@ class TestMergeCommand(BranchTestCase):
                         reviewer=Thing(display_name=u'Reviewer2'))])]
         self.branches[1].landing_candidates = self.proposals
 
-        self.launchpad = Thing(branches=Thing(getByUrl=self.getBranchByUrl))
+        self.launchpad = Thing(branches=Thing(getByUrl=self.getBranchByUrl),
+                               me=Thing(display_name='Tarmac'))
         self.error = None
         registry = CommandRegistry(config=self.config)
         registry.register_command('merge', commands.cmd_merge)

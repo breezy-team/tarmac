@@ -28,6 +28,7 @@ from tarmac.exceptions import (
 from tarmac.tests import (
     BranchTestCase,
     MockLPBranch,
+    Thing,
 )
 
 
@@ -223,3 +224,17 @@ class TestBranch(BranchTestCase):
         a_branch.bzr_branch.user_url = 'lp:invalid'
         self.assertRaises(InvalidWorkingTree,
                           a_branch.create_tree)
+
+    def test_committer_is_launchpad_user(self):
+        """Test that the committer when committing, is the LP user's name."""
+        tree_dir = os.path.join(self.TEST_ROOT, 'test_lp_committer')
+        self.add_branch_config(tree_dir)
+        self.addCleanup(self.remove_branch_config, tree_dir)
+        self.addCleanup(shutil.rmtree, tree_dir)
+
+        committer = 'LP User'
+        a_branch = branch.Branch.create(MockLPBranch(tree_dir), self.config,
+                                        create_tree=True, launchpad=Thing(
+                                            me=Thing(display_name=committer)))
+        a_branch.commit('Test LP User.')
+        self.assertEqual(committer, a_branch.authors[0])

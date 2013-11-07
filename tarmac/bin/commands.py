@@ -190,7 +190,8 @@ class cmd_merge(TarmacCommand):
             return
 
         try:
-            target = Branch.create(lp_branch, self.config, create_tree=True)
+            target = Branch.create(lp_branch, self.config, create_tree=True,
+                                   launchpad=self.launchpad)
         except TarmacMergeError as failure:
             self._handle_merge_error(proposals[0], failure)
             return
