@@ -237,6 +237,19 @@ of the Ubuntu distribution. The [recipe_series] option accepts a comma-
 separated list of Ubuntu distribution series names or versions.
 
 
+Bug Resolver
+============
+
+The Bug Resolver plug-in will automatically mark bugs as 'Fix Committed' on
+Launchpad, when the bug is tagged in the proposed branch using the '--fixes'
+option to the 'bzr commit' command, upon the branch being successfully merged
+and committed into its target. You can specify that your branch fixes a bug
+by committing to it with the following command, replacing '000000' with the
+bug number your commit fixes:
+
+  bzr commit --fixes=lp:000000
+
+
 ========================
 Installing other plugins
 ========================
