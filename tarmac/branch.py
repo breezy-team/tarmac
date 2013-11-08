@@ -34,7 +34,7 @@ from tarmac.exceptions import (
 
 class Branch(object):
 
-    def __init__(self, lp_branch, config=False, target=None):
+    def __init__(self, lp_branch, config=False, target=None, launchpad=None):
         self.lp_branch = lp_branch
         self.bzr_branch = bzr_branch.Branch.open(self.lp_branch.bzr_identity)
         if config:
@@ -42,6 +42,7 @@ class Branch(object):
         else:
             self.config = None
 
+        self.launchpad = launchpad
         self.target = target
         self.logger = logging.getLogger('tarmac')
 
@@ -55,8 +56,10 @@ class Branch(object):
             pass
 
     @classmethod
-    def create(cls, lp_branch, config, create_tree=False, target=None):
-        clazz = cls(lp_branch, config, target)
+    def create(cls, lp_branch, config, create_tree=False, target=None,
+               launchpad=None):
+        clazz = cls(lp_branch, config=config, target=target,
+                    launchpad=launchpad)
         if create_tree:
             clazz.create_tree()
         return clazz
@@ -166,8 +169,13 @@ class Branch(object):
                                            'review identity or vote.')
             revprops['reviews'] = '\n'.join(reviews)
 
+        if self.launchpad is not None:
+            committer = self.launchpad.me.display_name
+        else:
+            committer = 'Tarmac'
+
         try:
-            self.tree.commit(commit_message, committer='Tarmac',
+            self.tree.commit(commit_message, committer=committer,
                              revprops=revprops, authors=authors)
         except AssertionError as error:
             raise TarmacMergeError(str(error))
