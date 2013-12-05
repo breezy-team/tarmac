@@ -6,7 +6,6 @@ Merging branches is boring.  Really, it is.  After humans have looked over a
 merge, it should really just magically be merged.  That's what Tarmac does, and
 it does it well.
 
-
 How it works
 ============
 
@@ -20,6 +19,20 @@ it doesn't meet specific requirements, or perform specific tasks after the
 branch has landed.  This opens up all sorts of branch landing options that can
 happen behind the scenes, while you can safely do more exciting work.
 
+Prerequisite Branches
+=====================
+
+Tarmac understands the launchpad concept of prerequisite branches.  The
+following conditions are supported when evaluating a candidate merge
+proposal (MP).
+
+ * Multiple prerequisite non-superseded MPs => error
+ * Prerequiste branch but no associated MP => error
+ * Exactly one prerequisite non-superseded unmerged MP => skip
+ * Exactly one prerequisite non-superseded *Merged* MP => proceed
+
+Additionally, the tarmac queue is processed taking into account prerequisite
+branches.  That is, dependent branches are processed *after* their prerequisites.
 
 Configuration
 =============

@@ -25,6 +25,17 @@ from tarmac.plugin import load_plugins
 from tarmac.utility import get_review_url
 
 
+def _compare_proposals(a, b):
+    """Helper to sort proposals based on a prerequisite branch"""
+    if a.prerequisite_branch is not None:
+        if a.prerequisite_branch.unique_name == b.source_branch.unique_name:
+            return 1
+    if b.prerequisite_branch is not None:
+        if b.prerequisite_branch.unique_name == a.source_branch.unique_name:
+            return -1
+    return 0
+
+
 class TarmacCommand(Command):
     '''A command class.'''
 
@@ -210,9 +221,7 @@ class cmd_merge(TarmacCommand):
                 try:
                     prerequisite = proposal.prerequisite_branch
                     if prerequisite:
-                        merges = [x for x in  prerequisite.landing_targets
-                                  if x.target_branch == target.lp_branch and
-                                  x.queue_status != u'Superseded']
+                        merges = self._get_prerequisite_proposals(proposal)
                         if len(merges) == 0:
                             raise TarmacMergeError(
                                 u'No proposals of prerequisite branch.',
@@ -227,14 +236,6 @@ class cmd_merge(TarmacCommand):
                                 u'of %s into %s, which is not Superseded.' % (
                                     prerequisite.web_link,
                                     target.lp_branch.web_link))
-                        elif len(merges) == 1:
-                            if merges[0].queue_status != u'Merged':
-                                raise TarmacMergeError(
-                                    u'Prerequisite not yet merged.',
-                                    u'The prerequisite %s has not yet been '
-                                    u'merged into %s.' % (
-                                        prerequisite.web_link,
-                                        target.lp_branch.web_link))
 
                     if not proposal.reviewed_revid:
                         raise TarmacMergeError(
@@ -325,10 +326,16 @@ class cmd_merge(TarmacCommand):
             target.cleanup()
 
     def _get_mergable_proposals_for_branch(self, lp_branch):
-        """Return a list of the mergable proposals for the given branch."""
+        """
+        Return a list of the mergable proposals for the given branch.  The
+        list returned will be in the order that they should be processed.
+        """
         proposals = []
-        for entry in lp_branch.landing_candidates:
+        sorted_proposals = sorted(
+            lp_branch.landing_candidates, cmp=_compare_proposals)
+        for entry in sorted_proposals:
             self.logger.debug("Considering merge proposal: {0}".format(entry.web_link))
+            prereqs = self._get_prerequisite_proposals(entry)
 
             if entry.queue_status != u'Approved':
                 self.logger.debug(
@@ -342,8 +349,30 @@ class cmd_merge(TarmacCommand):
                     "  Skipping proposal: proposal has no commit message")
                 continue
 
+            if len(prereqs) == 1 and prereqs[0].queue_status != u'Merged':
+                # N.B.: The case of a MP with more than one prereq MP open
+                #       will be caught as a merge error.
+                self.logger.debug(
+                    "  Skipping proposal: prerequisite not yet merged")
+                continue
+
             proposals.append(entry)
         return proposals
+
+    def _get_prerequisite_proposals(self, proposal):
+        """
+        Given a proposal, return all prerequisite
+        proposals that are not in the superseded state.  There ideally
+        should be one and only one here (or zero), but sometimes there
+        are not, depending on developer habits
+        """
+        prerequisite = proposal.prerequisite_branch
+        target_branch = proposal.target_branch
+        if not prerequisite or not prerequisite.landing_targets:
+            return []
+        return [x for x in prerequisite.landing_targets
+            if x.target_branch.unique_name == target_branch.unique_name and
+            x.queue_status != u'Superseded']
 
     def _get_reviews(self, proposal):
         """Get the set of reviews from the proposal."""
@@ -405,3 +434,4 @@ class cmd_merge(TarmacCommand):
                         'An error occurred trying to merge %s: %s',
                         branch, error)
                     raise
+
