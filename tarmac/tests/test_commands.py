@@ -338,7 +338,7 @@ class TestMergeCommand(BranchTestCase):
     def test_run_merge_with_unproposed_prerequisite_fails(self):
         """Test that mereging a branch with an unmerged prerequisite fails."""
         # Create a 3rd prerequisite branch we'll use to test with
-        branch3_dir = os.path.join(self.TEST_ROOT, 'branch-prereq-fails')
+        branch3_dir = os.path.join(self.TEST_ROOT, 'branch3')
         mock3 = MockLPBranch(branch3_dir, source_branch=self.branch1.lp_branch)
         branch3 = Branch.create(mock3, self.config, create_tree=True,
                                 target=self.branch1)
@@ -353,8 +353,8 @@ class TestMergeCommand(BranchTestCase):
 
         # Set up an unapproved proposal for the prerequisite
         branch3.lp_branch.display_name = branch3.lp_branch.bzr_identity
-        branch3.lp_branch.name = 'branch-prereq-fails'
-        branch3.lp_branch.unique_name = 'branch-prereq-fails'
+        branch3.lp_branch.name = 'branch3'
+        branch3.lp_branch.unique_name = 'branch3'
         branch3.lp_branch.landing_candidates = []
         b3_proposal = Thing(
             self_link=u'http://api.edge.launchpad.net/devel/proposal3',
@@ -381,13 +381,13 @@ class TestMergeCommand(BranchTestCase):
         self.command.run(launchpad=self.launchpad)
         shutil.rmtree(branch3_dir)
         self.assertEqual(self.error.comment,
-                         u'No proposals found for merge of lp:branch-prereq-fails '
+                         u'No proposals found for merge of lp:branch3 '
                          u'into lp:branch1.')
 
     def test_run_merge_with_prerequisite_with_multiple_proposals_fails(self):
         """Test that mereging a branch with an unmerged prerequisite fails."""
         # Create a 3rd prerequisite branch we'll use to test with
-        branch3_dir = os.path.join(self.TEST_ROOT, 'branch-proposals-fails')
+        branch3_dir = os.path.join(self.TEST_ROOT, 'branch3')
         mock3 = MockLPBranch(branch3_dir, source_branch=self.branch1.lp_branch)
         branch3 = Branch.create(mock3, self.config, create_tree=True,
                                 target=self.branch1)
@@ -402,8 +402,8 @@ class TestMergeCommand(BranchTestCase):
 
         # Set up an unapproved proposal for the prerequisite
         branch3.lp_branch.display_name = branch3.lp_branch.bzr_identity
-        branch3.lp_branch.name = 'branch-proposals-fails'
-        branch3.lp_branch.unique_name = 'branch-proposals-fails'
+        branch3.lp_branch.name = 'branch3'
+        branch3.lp_branch.unique_name = 'branch3'
         branch3.lp_branch.landing_candidates = []
         b3_proposal = Thing(
             self_link=u'http://api.edge.launchpad.net/devel/proposal3',
@@ -435,7 +435,7 @@ class TestMergeCommand(BranchTestCase):
         shutil.rmtree(branch3_dir)
         self.assertEqual(self.error.comment,
                          u'More than one proposal found for merge of '
-                         u'lp:branch-proposals-fails into lp:branch1, '
+                         u'lp:branch3 into lp:branch1, '
                          u'which is not Superseded.')
 
     @patch('bzrlib.workingtree.WorkingTree.open')
