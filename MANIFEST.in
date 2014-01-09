@@ -2,4 +2,3 @@ include MANIFEST.in
 include AUTHORS HACKING LICENSE NEWS README
 recursive-include bin *
 recursive-include docs *
-recursive-include templates *
