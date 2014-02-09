@@ -26,13 +26,14 @@ Tarmac understands the launchpad concept of prerequisite branches.  The
 following conditions are supported when evaluating a candidate merge
 proposal (MP).
 
- * Multiple prerequisite non-superseded MPs => error
- * Prerequiste branch but no associated MP => error
- * Exactly one prerequisite non-superseded unmerged MP => skip
- * Exactly one prerequisite non-superseded *Merged* MP => proceed
+ * Prerequisite branch without an associated MP => error
+ * Prerequisite branch with multiple non-superseded MPs => error
+ * Prerequisite branch with exactly one non-superseded unmerged MP => skip
+ * Prerequisite branch with exactly one non-superseded *Merged* MP => proceed
 
 Additionally, the tarmac queue is processed taking into account prerequisite
-branches.  That is, dependent branches are processed *after* their prerequisites.
+branches.  That is, dependent branches are processed *after* their
+prerequisites.
 
 Configuration
 =============
