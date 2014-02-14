@@ -128,13 +128,16 @@ class TestMergeCommand(BranchTestCase):
                 display_name=self.branch2.lp_branch.bzr_identity,
                 web_link=self.branch2.lp_branch.bzr_identity,
                 name='source',
+                unique_name='source',
                 revision_count=self.branch2.lp_branch.revision_count,
-                landing_candidates=[]),
+                landing_candidates=[],
+                landing_targets=[]),
                          Thing(
                 bzr_identity=self.branch1.lp_branch.bzr_identity,
                 display_name=self.branch1.lp_branch.bzr_identity,
                 web_link=self.branch1.lp_branch.bzr_identity,
                 name='target',
+                unique_name='target',
                 revision_count=self.branch1.lp_branch.revision_count,
                 landing_candidates=None)]
         self.proposals = [Thing(
@@ -171,6 +174,8 @@ class TestMergeCommand(BranchTestCase):
                         comment=Thing(vote=u'Abstain'),
                         reviewer=Thing(display_name=u'Reviewer2'))])]
         self.branches[1].landing_candidates = self.proposals
+        self.branches[0].landing_targets = [
+                self.proposals[0], self.proposals[1]]
 
         self.launchpad = Thing(branches=Thing(getByUrl=self.getBranchByUrl),
                                me=Thing(display_name='Tarmac'))
@@ -179,6 +184,42 @@ class TestMergeCommand(BranchTestCase):
         registry.register_command('merge', commands.cmd_merge)
 
         self.command = registry._get_command(commands.cmd_merge, 'merge')
+
+    def addProposal(self, name, prerequisite_branch=None):
+        """Create a 3rd branch with a proposal"""
+        # Create a 3rd branch we'll use to test with
+        branch3_dir = os.path.join(self.TEST_ROOT, name)
+        mock3 = MockLPBranch(branch3_dir, source_branch=self.branch1.lp_branch)
+        branch3 = Branch.create(mock3, self.config, create_tree=True,
+                                target=self.branch1)
+        branch3.commit('Prerequisite commit.')
+        branch3.lp_branch.revision_count += 1
+
+        # Set up an approved proposal for the branch (prereq on branches[0])
+        branch3.lp_branch.display_name = branch3.lp_branch.bzr_identity
+        branch3.lp_branch.name = name
+        branch3.lp_branch.unique_name = '~user/branch/' + name
+        branch3.lp_branch.landing_candidates = []
+        b3_proposal = Thing(
+            self_link=u'http://api.edge.launchpad.net/devel/proposal3',
+            web_link=u'http://edge.launchpad.net/proposal3',
+            queue_status=u'Approved',
+            commit_message=u'Commitable.',
+            source_branch=branch3.lp_branch,
+            target_branch=self.branches[1],
+            prerequisite_branch=prerequisite_branch,
+            createComment=self.createComment,
+            setStatus=self.lp_save,
+            lp_save=self.lp_save,
+            reviewed_revid=None,
+            votes=[Thing(
+                    comment=Thing(vote=u'Approve'),
+                    reviewer=Thing(display_name=u'Reviewer'))])
+
+        branch3.lp_branch.landing_targets = [b3_proposal]
+        self.proposals.append(b3_proposal)
+        self.branches.append(branch3.lp_branch)
+
 
     def lp_save(self, *args, **kwargs):
         """Do nothing here."""
@@ -248,8 +289,8 @@ class TestMergeCommand(BranchTestCase):
         self.assertEqual(last_rev.properties.get('merge_url', None),
                          u'http://code.launchpad.net/proposal0')
 
-    def test_run_merge_with_unmerged_prerequisite_fails(self):
-        """Test that mereging a branch with an unmerged prerequisite fails."""
+    def test_run_merge_with_unmerged_prerequisite_skips(self):
+        """Test that mereging a branch with an unmerged prerequisite skips."""
         # Create a 3rd prerequisite branch we'll use to test with
         branch3_dir = os.path.join(self.TEST_ROOT, 'branch3')
         mock3 = MockLPBranch(branch3_dir, source_branch=self.branch1.lp_branch)
@@ -267,6 +308,7 @@ class TestMergeCommand(BranchTestCase):
         # Set up an unapproved proposal for the prerequisite
         branch3.lp_branch.display_name = branch3.lp_branch.bzr_identity
         branch3.lp_branch.name = 'branch3'
+        branch3.unique_name = 'branch3'
         branch3.lp_branch.landing_candidates = []
         b3_proposal = Thing(
             self_link=u'http://api.edge.launchpad.net/devel/proposal3',
@@ -290,11 +332,8 @@ class TestMergeCommand(BranchTestCase):
         self.proposals[1].prerequisite_branch = branch3.lp_branch
         self.proposals[1].reviewed_revid = \
             self.branch2.bzr_branch.last_revision()
-        self.command.run(launchpad=self.launchpad)
+        self.assertEqual(self.command.run(launchpad=self.launchpad), None)
         shutil.rmtree(branch3_dir)
-        self.assertEqual(self.error.comment,
-                         u'The prerequisite lp:branch3 has not yet been '
-                         u'merged into lp:branch1.')
 
     def test_run_merge_with_unproposed_prerequisite_fails(self):
         """Test that mereging a branch with an unmerged prerequisite fails."""
@@ -315,6 +354,7 @@ class TestMergeCommand(BranchTestCase):
         # Set up an unapproved proposal for the prerequisite
         branch3.lp_branch.display_name = branch3.lp_branch.bzr_identity
         branch3.lp_branch.name = 'branch3'
+        branch3.lp_branch.unique_name = 'branch3'
         branch3.lp_branch.landing_candidates = []
         b3_proposal = Thing(
             self_link=u'http://api.edge.launchpad.net/devel/proposal3',
@@ -363,6 +403,7 @@ class TestMergeCommand(BranchTestCase):
         # Set up an unapproved proposal for the prerequisite
         branch3.lp_branch.display_name = branch3.lp_branch.bzr_identity
         branch3.lp_branch.name = 'branch3'
+        branch3.lp_branch.unique_name = 'branch3'
         branch3.lp_branch.landing_candidates = []
         b3_proposal = Thing(
             self_link=u'http://api.edge.launchpad.net/devel/proposal3',
@@ -394,8 +435,8 @@ class TestMergeCommand(BranchTestCase):
         shutil.rmtree(branch3_dir)
         self.assertEqual(self.error.comment,
                          u'More than one proposal found for merge of '
-                         u'lp:branch3 into lp:branch1, which is not '
-                         u'Superseded.')
+                         u'lp:branch3 into lp:branch1, '
+                         u'which is not Superseded.')
 
     @patch('bzrlib.workingtree.WorkingTree.open')
     def test_run_merge_with_invalid_workingtree(self, mocked):
@@ -407,3 +448,55 @@ class TestMergeCommand(BranchTestCase):
         self.command.run(launchpad=self.launchpad)
         self.assertEqual(self.error.comment,
                          invalid_tree_comment)
+
+    def test__compare_proposals(self):
+        """
+        _compare_proposals is meant to be a sort routine comparison function
+        """
+        self.addProposal("compare_proposals", self.branches[0])
+        self.assertEqual(
+            commands._compare_proposals(self.proposals[0], self.proposals[1]),
+            0)
+        self.assertEqual(
+            commands._compare_proposals(self.proposals[0], self.proposals[2]),
+            -1)
+        self.assertEqual(
+            commands._compare_proposals(self.proposals[2], self.proposals[0]),
+            1)
+
+    def test__get_mergable_proposals_for_branch_are_sorted(self):
+        """
+        Mergable proposals should be in sorted order (prereqs should come
+        first in the list)
+        """
+        self.addProposal("sorted_test", self.branches[0])
+        proposals = self.command._get_mergable_proposals_for_branch(
+                self.branches[1])
+        self.assertEqual(len(proposals), 2)
+        self.assertTrue(proposals[1].source_branch.name == "sorted_test")
+
+    def test__get_mergable_proposals_for_branch_prereq_unmerged(self):
+        """
+        skip mergable proposals that have specified a prereq,
+        but that prereq is not merged yet.  This is edge-casey, since
+        we now process the queue in an order that makes sense for
+        prereqs
+        """
+        self.addProposal("unmerged")
+        self.proposals[0].prerequisite_branch = self.branches[2]
+        self.proposals[1].prerequisite_branch = self.branches[2]
+        proposals = self.command._get_mergable_proposals_for_branch(
+                self.branches[1])
+        self.assertEqual(len(proposals), 1)
+        self.assertEqual(proposals[0].source_branch.name, "unmerged")
+
+    def test__get_prerequisite_proposals_no_prerequisites(self):
+        """proposals[0] does not have a prerequisite branch listed"""
+        proposals = self.command._get_prerequisite_proposals(self.proposals[0])
+        self.assertEqual(len(proposals), 0)
+
+    def test__get_prerequisite_proposals_one_prerequisite(self):
+        """Branches[0] (source) has two open MPs against it"""
+        self.addProposal("one_prerequisite", self.branches[0])
+        proposals = self.command._get_prerequisite_proposals(self.proposals[2])
+        self.assertEqual(len(proposals), 2)
