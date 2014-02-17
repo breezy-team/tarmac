@@ -1,3 +1,18 @@
+# Copyright 2009-2012 Paul Hummer
+# Copyright 2009-2014 Canonical Ltd.
+#
+# Tarmac is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License version 3 as
+# published by
+# the Free Software Foundation.
+#
+# Tarmac is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Tarmac.  If not, see <http://www.gnu.org/licenses/>.
 '''Command handling for Tarmac.'''
 import httplib2
 import logging
@@ -158,7 +173,9 @@ class cmd_merge(TarmacCommand):
         options.http_debug_option,
         options.debug_option,
         options.imply_commit_message_option,
-        options.one_option]
+        options.one_option,
+        options.list_approved_option,
+    ]
 
     def _handle_merge_error(self, proposal, failure):
         """Handle TarmacMergeError cases from _do_merges."""
@@ -198,6 +215,11 @@ class cmd_merge(TarmacCommand):
             self.logger.info(
                 'No approved proposals found for %(branch_url)s' % {
                     'branch_url': branch_url})
+            return
+
+        if self.config.list_approved:
+            for proposal in proposals:
+                print(get_review_url(proposal))
             return
 
         try:

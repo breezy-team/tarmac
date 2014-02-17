@@ -449,6 +449,13 @@ class TestMergeCommand(BranchTestCase):
         self.assertEqual(self.error.comment,
                          invalid_tree_comment)
 
+    @patch('tarmac.bin.commands.get_review_url')
+    def test_run_merge_with_list_approved_option(self, mocked):
+        """Teast that --list-reviews option prints a list and returns."""
+        self.addProposal('list_approved')
+        self.command.run(launchpad=self.launchpad, list_approved=True)
+        self.assertEqual(mocked.call_count, 2)
+
     def test__compare_proposals(self):
         """
         _compare_proposals is meant to be a sort routine comparison function
