@@ -451,7 +451,7 @@ class TestMergeCommand(BranchTestCase):
 
     @patch('tarmac.bin.commands.get_review_url')
     def test_run_merge_with_list_approved_option(self, mocked):
-        """Teast that --list-reviews option prints a list and returns."""
+        """Test that --list-approved option prints a list and returns."""
         self.addProposal('list_approved')
         self.command.run(launchpad=self.launchpad, list_approved=True)
         self.assertEqual(mocked.call_count, 2)
