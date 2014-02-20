@@ -17,7 +17,6 @@
 '''Tarmac plugin for enforcing a commit message format.'''
 from tarmac.hooks import tarmac_hooks
 from tarmac.plugins import TarmacPlugin
-from tarmac.utility import get_review_url
 
 
 class CommitMessageTemplate(TarmacPlugin):
@@ -110,7 +109,7 @@ class CommitMessageTemplateInfo(object):
 
     @property
     def review_url(self):
-        return get_review_url(self._proposal)
+        return self._proposal.web_link
 
 
 tarmac_hooks['tarmac_pre_commit'].hook(CommitMessageTemplate(),

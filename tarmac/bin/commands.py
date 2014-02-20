@@ -37,7 +37,6 @@ from tarmac.exceptions import (
     UnapprovedChanges,
 )
 from tarmac.plugin import load_plugins
-from tarmac.utility import get_review_url
 
 
 def _compare_proposals(a, b):
@@ -219,7 +218,7 @@ class cmd_merge(TarmacCommand):
 
         if self.config.list_approved:
             for proposal in proposals:
-                print(get_review_url(proposal))
+                print(proposal.web_link)
             return
 
         try:
@@ -316,8 +315,7 @@ class cmd_merge(TarmacCommand):
                             'target': proposal.target_branch.web_link})
                     continue
 
-                merge_url = get_review_url(proposal)
-                revprops = {'merge_url': merge_url}
+                revprops = {'merge_url': proposal.web_link}
 
                 commit_message = proposal.commit_message
                 if commit_message is None and self.config.imply_commit_message:
