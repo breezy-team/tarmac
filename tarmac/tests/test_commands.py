@@ -190,36 +190,36 @@ class TestMergeCommand(BranchTestCase):
         # Create a 3rd branch we'll use to test with
         branch3_dir = os.path.join(self.TEST_ROOT, name)
         mock3 = MockLPBranch(branch3_dir, source_branch=self.branch1.lp_branch)
-        self.branch3 = Branch.create(mock3, self.config, create_tree=True,
-                                     target=self.branch1)
-        self.branch3.commit('Prerequisite commit.')
-        self.branch3.lp_branch.revision_count += 1
-        self.command.logger.debug('bzr_id: %s' % mock3.bzr_identity)
+        branch3 = Branch.create(mock3, self.config, create_tree=True,
+                                target=self.branch1)
+        branch3.commit('Prerequisite commit.')
+        branch3.lp_branch.revision_count += 1
+
         # Set up an approved proposal for the branch (prereq on branches[0])
-        self.branch3.lp_branch.display_name = mock3.bzr_identity
-        self.branch3.lp_branch.name = name
-        self.branch3.lp_branch.unique_name = '~user/branch/' + name
-        self.branch3.lp_branch.landing_candidates = []
+        branch3.lp_branch.display_name = mock3.bzr_identity
+        branch3.lp_branch.name = name
+        branch3.lp_branch.unique_name = '~user/branch/' + name
+        branch3.lp_branch.landing_candidates = []
         b3_proposal = Thing(
             self_link=u'https://api.launchpad.net/1.0/proposal3',
             web_link=u'https://code.launchpad.net/proposal3',
             queue_status=u'Approved',
             commit_message=u'Commitable.',
-            source_branch=self.branch3.lp_branch,
+            source_branch=branch3.lp_branch,
             target_branch=self.branches[1],
             prerequisite_branch=prerequisite_branch,
             createComment=self.createComment,
             setStatus=self.lp_save,
             lp_save=self.lp_save,
-            reviewed_revid=self.branch3.lp_branch.revision_count,
+            reviewed_revid=None,
             votes=[Thing(
                     comment=Thing(vote=u'Approve'),
                     reviewer=Thing(display_name=u'Reviewer'))])
 
-        self.branch3.lp_branch.landing_targets = [b3_proposal]
+        branch3.lp_branch.landing_targets = [b3_proposal]
         self.proposals.append(b3_proposal)
-        self.branches.append(self.branch3.lp_branch)
-
+        self.branches.append(branch3.lp_branch)
+        self.addCleanup(shutil.rmtree, branch3_dir)
 
     def lp_save(self, *args, **kwargs):
         """Do nothing here."""
@@ -494,11 +494,21 @@ class TestMergeCommand(BranchTestCase):
 
     @patch('tarmac.bin.commands.Launchpad.load')
     def test__get_proposal_from_mp_url(self, mocked):
-        """Test that the URl is substituted correctly."""
+        """Test that the URL is substituted correctly."""
         self.command.launchpad = MagicMock()
         self.command.launchpad.load = mocked
         self.command._get_proposal_from_mp_url(
             'https://code.launchpad.net/~foo/bar/baz/+merge/10')
+        mocked.assert_called_once_with(
+            'https://api.launchpad.net/1.0/~foo/bar/baz/+merge/10')
+
+    @patch('tarmac.bin.commands.Launchpad.load')
+    def test__get_proposal_from_mp_url_with_api_url(self, mocked):
+        """Test that the URL is ignored correctly."""
+        self.command.launchpad = MagicMock()
+        self.command.launchpad.load = mocked
+        self.command._get_proposal_from_mp_url(
+            'https://api.launchpad.net/1.0/~foo/bar/baz/+merge/10')
         mocked.assert_called_once_with(
             'https://api.launchpad.net/1.0/~foo/bar/baz/+merge/10')
 
@@ -511,5 +521,18 @@ class TestMergeCommand(BranchTestCase):
         self.command._get_reviews = MagicMock()
         self.config.proposal = self.proposals[1].web_link
         self.command.run(launchpad=self.launchpad)
+        self.launchpad.load.assert_called_once_with(self.proposals[1].self_link)
+        self.command._get_reviews.assert_called_once_with(self.proposals[1])
+
+    def test_run_merge_with_specific_proposal_with_branch_url(self):
+        """Test that a specific proposal is merged, with the others ignored."""
+        self.proposals[1].reviewed_revid = \
+            self.branch2.bzr_branch.last_revision()
+        self.addProposal('specific_merge_with_branch_url')
+        self.launchpad.load = MagicMock(return_value=self.proposals[1])
+        self.command._get_reviews = MagicMock()
+        self.config.proposal = self.proposals[1].web_link
+        self.command.run(launchpad=self.launchpad,
+                         branch_url=self.branches[1].bzr_identity)
         self.launchpad.load.assert_called_once_with(self.proposals[1].self_link)
         self.command._get_reviews.assert_called_once_with(self.proposals[1])
