@@ -442,8 +442,8 @@ class cmd_merge(TarmacCommand):
         proposal = None
         if self.config.proposal:
             proposal = self._get_proposal_from_mp_url(self.config.proposal)
-            if branch_url is None:
-                branch_url = proposal.target_branch.bzr_identity
+            # Always override branch_url with the correct one.
+            branch_url = proposal.target_branch.bzr_identity
 
         if branch_url:
             self.logger.debug('%(branch_url)s specified as branch_url' % {
