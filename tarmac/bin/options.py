@@ -36,3 +36,7 @@ one_option = Option(
 list_approved_option = Option(
     'list-approved', short_name='l',
     help='List Approved merge proposals for the target branch.')
+proposal_option = Option(
+    'proposal', short_name='p',
+    type=str, argname='url',
+    help='Pass the URL for a specific proposal to merge to the target branch.')
