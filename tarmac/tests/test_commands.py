@@ -196,7 +196,7 @@ class TestMergeCommand(BranchTestCase):
         branch3.lp_branch.revision_count += 1
 
         # Set up an approved proposal for the branch (prereq on branches[0])
-        branch3.lp_branch.display_name = mock3.bzr_identity
+        branch3.lp_branch.display_name = branch3.lp_branch.bzr_identity
         branch3.lp_branch.name = name
         branch3.lp_branch.unique_name = '~user/branch/' + name
         branch3.lp_branch.landing_candidates = []
