@@ -72,9 +72,10 @@ class PluginTestCase(TarmacTestCase):
     @patch('tarmac.plugin.execfile', create=True)
     def test_load_plugins(self, mocked):
         """Test that plug-ins load."""
-        for _plugin in plugin.find_plugins():
-            delattr(_mod_plugins, _plugin[0])
-            self.addCleanup(delattr, _mod_plugins, _plugin[0])
-
+        plugin_path = os.path.join(os.path.dirname(__file__), 'plugins')
+        self._patch_env('TARMAC_PLUGIN_PATH',
+                        '%s:%s' % (plugin_path, plugin_path))
+        plugin_name = 'testplugin'
+        self.addCleanup(delattr, _mod_plugins, plugin_name)
         plugin.load_plugins()
         self.assertTrue(mocked.call_count > 0)
