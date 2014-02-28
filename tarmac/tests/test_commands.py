@@ -19,7 +19,7 @@ import os
 import shutil
 import sys
 
-from mock import patch
+from mock import patch, MagicMock
 from tarmac.bin import commands
 from tarmac.bin.registry import CommandRegistry
 from tarmac.branch import Branch
@@ -157,7 +157,7 @@ class TestMergeCommand(BranchTestCase):
                         reviewer=Thing(display_name=u'Reviewer'))]),
                           Thing(
                 self_link=u'https://api.launchpad.net/1.0/proposal1',
-                web_link=u'https://codelaunchpad.net/proposal1',
+                web_link=u'https://code.launchpad.net/proposal1',
                 queue_status=u'Approved',
                 commit_message=u'Commit this.',
                 source_branch=self.branches[0],
@@ -201,8 +201,8 @@ class TestMergeCommand(BranchTestCase):
         branch3.lp_branch.unique_name = '~user/branch/' + name
         branch3.lp_branch.landing_candidates = []
         b3_proposal = Thing(
-            self_link=u'http://api.edge.launchpad.net/devel/proposal3',
-            web_link=u'http://edge.launchpad.net/proposal3',
+            self_link=u'https://api.launchpad.net/1.0/proposal3',
+            web_link=u'https://code.launchpad.net/proposal3',
             queue_status=u'Approved',
             commit_message=u'Commitable.',
             source_branch=branch3.lp_branch,
@@ -219,7 +219,7 @@ class TestMergeCommand(BranchTestCase):
         branch3.lp_branch.landing_targets = [b3_proposal]
         self.proposals.append(b3_proposal)
         self.branches.append(branch3.lp_branch)
-
+        self.addCleanup(shutil.rmtree, branch3_dir)
 
     def lp_save(self, *args, **kwargs):
         """Do nothing here."""
@@ -491,3 +491,48 @@ class TestMergeCommand(BranchTestCase):
         self.addProposal("one_prerequisite", self.branches[0])
         proposals = self.command._get_prerequisite_proposals(self.proposals[2])
         self.assertEqual(len(proposals), 2)
+
+    @patch('tarmac.bin.commands.Launchpad.load')
+    def test__get_proposal_from_mp_url(self, mocked):
+        """Test that the URL is substituted correctly."""
+        self.command.launchpad = MagicMock()
+        self.command.launchpad.load = mocked
+        self.command._get_proposal_from_mp_url(
+            'https://code.launchpad.net/~foo/bar/baz/+merge/10')
+        mocked.assert_called_once_with(
+            'https://api.launchpad.net/1.0/~foo/bar/baz/+merge/10')
+
+    @patch('tarmac.bin.commands.Launchpad.load')
+    def test__get_proposal_from_mp_url_with_api_url(self, mocked):
+        """Test that the URL is ignored correctly."""
+        self.command.launchpad = MagicMock()
+        self.command.launchpad.load = mocked
+        self.command._get_proposal_from_mp_url(
+            'https://api.launchpad.net/1.0/~foo/bar/baz/+merge/10')
+        mocked.assert_called_once_with(
+            'https://api.launchpad.net/1.0/~foo/bar/baz/+merge/10')
+
+    def test_run_merge_with_specific_proposal_without_branch_url(self):
+        """Test that a specific proposal is merged, with the others ignored."""
+        self.proposals[1].reviewed_revid = \
+            self.branch2.bzr_branch.last_revision()
+        self.addProposal('specific_merge_without_branch_url')
+        self.launchpad.load = MagicMock(return_value=self.proposals[1])
+        self.command._get_reviews = MagicMock()
+        self.config.proposal = self.proposals[1].web_link
+        self.command.run(launchpad=self.launchpad)
+        self.launchpad.load.assert_called_once_with(self.proposals[1].self_link)
+        self.command._get_reviews.assert_called_once_with(self.proposals[1])
+
+    def test_run_merge_with_specific_proposal_with_branch_url(self):
+        """Test that a specific proposal is merged, with the others ignored."""
+        self.proposals[1].reviewed_revid = \
+            self.branch2.bzr_branch.last_revision()
+        self.addProposal('specific_merge_with_branch_url')
+        self.launchpad.load = MagicMock(return_value=self.proposals[1])
+        self.command._get_reviews = MagicMock()
+        self.config.proposal = self.proposals[1].web_link
+        self.command.run(launchpad=self.launchpad,
+                         branch_url=self.branches[1].bzr_identity)
+        self.launchpad.load.assert_called_once_with(self.proposals[1].self_link)
+        self.command._get_reviews.assert_called_once_with(self.proposals[1])

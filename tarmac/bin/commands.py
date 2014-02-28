@@ -174,6 +174,7 @@ class cmd_merge(TarmacCommand):
         options.imply_commit_message_option,
         options.one_option,
         options.list_approved_option,
+        options.proposal_option,
     ]
 
     def _handle_merge_error(self, proposal, failure):
@@ -201,14 +202,17 @@ class cmd_merge(TarmacCommand):
             proposal.setStatus(status=u'Needs review')
         proposal.lp_save()
 
-    def _do_merges(self, branch_url):
+    def _do_merges(self, branch_url, source_mp=None):
         """Merge the approved proposals for %branch_url."""
         lp_branch = self.launchpad.branches.getByUrl(url=branch_url)
         if lp_branch is None:
             self.logger.info('Not a valid branch: {0}'.format(branch_url))
             return
 
-        proposals = self._get_mergable_proposals_for_branch(lp_branch)
+        if source_mp is not None:
+            proposals = [source_mp]
+        else:
+            proposals = self._get_mergable_proposals_for_branch(lp_branch)
 
         if not proposals:
             self.logger.info(
@@ -409,6 +413,12 @@ class cmd_merge(TarmacCommand):
 
         return reviews
 
+    def _get_proposal_from_mp_url(self, mp_url):
+        """Return a branch_merge_proposal object from its web URL."""
+        urlp = re.compile('http[s]?://code.launchpad\.net/')
+        api_url = urlp.sub('https://api.launchpad.net/1.0/', mp_url)
+        return self.launchpad.load(api_url)
+
     def run(self, branch_url=None, launchpad=None, **kwargs):
         for key, value in kwargs.iteritems():
             self.config.set('Tarmac', key, value)
@@ -429,12 +439,18 @@ class cmd_merge(TarmacCommand):
             self.launchpad = self.get_launchpad_object()
             self.logger.debug('launchpad object loaded')
 
+        proposal = None
+        if self.config.proposal:
+            proposal = self._get_proposal_from_mp_url(self.config.proposal)
+            # Always override branch_url with the correct one.
+            branch_url = proposal.target_branch.bzr_identity
+
         if branch_url:
             self.logger.debug('%(branch_url)s specified as branch_url' % {
                 'branch_url': branch_url})
             if not branch_url.startswith('lp:'):
                 raise TarmacCommandError('Branch urls must start with lp:')
-            self._do_merges(branch_url)
+            self._do_merges(branch_url, source_mp=proposal)
 
         else:
             for branch in self.config.branches:
