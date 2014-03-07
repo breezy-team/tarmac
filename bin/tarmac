@@ -20,9 +20,7 @@
 import os
 import sys
 
-cwd = os.getcwd()
-if os.path.exists(os.path.join(cwd, 'tarmac', '__init__.py')):
-    sys.path.append(cwd)
+sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir))
 
 from tarmac.bin import main
 main()
