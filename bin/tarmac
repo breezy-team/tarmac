@@ -1,6 +1,28 @@
 #!/usr/bin/env python
 # vim:filetype=python
-'''Main tarmac script.'''
+# Copyright 2009 Paul Hummer
+# Copyright 2014 Canonical Ltd.
+#
+# Tarmac is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License version 3 as
+# published by
+# the Free Software Foundation.
+#
+# Tarmac is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Tarmac.  If not, see <http://www.gnu.org/licenses/>.
+"""Main tarmac script."""
+
+import os
+import sys
+
+pardir = os.path.join(os.path.dirname(__file__), os.pardir)
+if os.path.exists(os.path.join(pardir, 'tarmac', '__init__.py')):
+    sys.path.append(pardir)
 
 from tarmac.bin import main
 main()
