@@ -84,26 +84,27 @@ class BugResolver(TarmacPlugin):
 
     def set_milestone(self, project, task):
         """
-        Attempt to auto-determine the milestone to set.
-        If the task already has a milestone set, don't do anything.
+        Attempt to auto-determine the milestone to set, and set the milestone
+        of the given task.  If the task already has a milestone set => noop.
         """
         if not self.config["set_milestone"]:
             return
-        now = datetime.utcnow()
-        target_milestone = self._find_target_milestone(project, now)
         task_milestone = task.milestone
         if task_milestone is not None:
             self.logger.info(
                 "Task: %s/%s already has milestone: %s set, skipping" % (
                     task.bug.id, task.bug_target_name, task_milestone.name))
             return
+        now = datetime.utcnow()
+        target_milestone = self._find_target_milestone(project, now)
+        self.logger.info("%s/%s: Setting Milestone: %s",
+                task.bug.id, task.bug_target_name, target_milestone)
         task.milestone = target_milestone
 
     def _find_milestones(self, project):
         """
-        Return list of milestones in a project.  Filter
-        list by active status.  If the config `default_milesstone` is set
-        filter by that instead.
+        Return list of milestones in a project.  Filter list by active status.
+        If the config `default_milestone` is set filter by that instead.
         """
         default = self.config["default_milestone"]
         milestones = []
@@ -121,6 +122,7 @@ class BugResolver(TarmacPlugin):
             self.logger.warning("Default Milestone not found: %s" % default)
         return milestones
 
+
     def _find_target_milestone(self, project, now):
         """
         Find a target milestone when resolving a bug task.
@@ -133,11 +135,30 @@ class BugResolver(TarmacPlugin):
         In this algorithm, milestones without targeted dates appear lexically
         sorted at the end of the list.  So the lowest sorting one will get
         chosen if all milestones with dates attached are exhausted.
+
+        In other words, pick one of the milestones for the target.  Preference:
+            1) closest milestone (by date) in the future
+            2) least lexically sorting milestone (by name)
+            3) the last milestone in the list (covers len()==1 case).
         """
+        # _find_milestones will take care of only getting 'active' milestones
+        # and the short-circuit case of the user config specifying the milestone
         milestones = self._find_milestones(project)
         if len(milestones) == 0:
             return None
-        milestones = sorted(milestones, key=lambda x: (x.name, x.date_targeted))
+
+        # Purpose here is to Move all milestones with no date to the end of the
+        # list in lexical order.
+        date_milestones = []
+        name_milestones = []
+        for milestone in milestones:
+            if milestone.date_targeted is None:
+                name_milestones.append(milestone)
+            else:
+                date_milestones.append(milestone)
+        milestones = sorted(date_milestones, key=lambda x: x.date_targeted)
+        milestones.extend(sorted(name_milestones, key=lambda x: x.name))
+
         previous_milestone = milestones[0]
         if previous_milestone.date_targeted is None or \
             now < previous_milestone.date_targeted:

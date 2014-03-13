@@ -33,6 +33,7 @@ class BugResolverTests(TarmacTestCase):
         self.plugin.config = {
             "set_milestone": "False",
             "default_milestone": None}
+        self.milestone0 = Thing(name="0", is_active=True, date_targeted=None)
         self.milestone1 = Thing(
             name="1", is_active=True,
             date_targeted=datetime.utcnow() - timedelta(weeks=2))
@@ -42,12 +43,8 @@ class BugResolverTests(TarmacTestCase):
         self.milestone3 = Thing(
             name="3", is_active=True,
             date_targeted=datetime.utcnow() + timedelta(weeks=6))
-        self.milestone4 = Thing(
-            name="4", is_active=True,
-            date_targeted=None)
-        self.milestone5 = Thing(
-            name="5", is_active=True,
-            date_targeted=None)
+        self.milestone4 = Thing(name="4", is_active=True, date_targeted=None)
+        self.milestone5 = Thing(name="5", is_active=True, date_targeted=None)
         self.milestone6 = Thing(
             name="6", is_active=False,
             date_targeted=datetime.utcnow() + timedelta(weeks=2),
@@ -81,7 +78,8 @@ class BugResolverTests(TarmacTestCase):
         self.milestones = [
                 self.milestone3, self.milestone6, self.milestone1,
                 self.milestone2]
-        self.milestones_extended = [self.milestone5, self.milestone4]
+        self.milestones_extended = [
+                self.milestone5, self.milestone4, self.milestone0]
         self.milestones_extended.extend(self.milestones)
         self.projects[0].all_milestones = self.milestones
         self.projects[1].all_milestones = []
@@ -189,7 +187,7 @@ class BugResolverTests(TarmacTestCase):
         self.projects[0].all_milestones = self.milestones_extended
         milestone = self.plugin._find_target_milestone(
             self.projects[0], self.milestone3.date_targeted + timedelta(weeks=1))
-        self.assertEqual(milestone, self.milestone4)
+        self.assertEqual(milestone, self.milestone0)
 
     def test__find_target_milestone_with_default(self):
         """Test that specifying a default gets a specific milestone."""
