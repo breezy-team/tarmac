@@ -101,8 +101,7 @@ class BugResolverTests(TarmacTestCase):
         """Test that the plug-in runs correctly."""
         target = Thing(fixed_bugs=self.bugs.keys(),
                        lp_branch=Thing(project=self.projects[0],
-                                       bzr_identity='lp:target'),
-                       set_milestone="true")
+                                       bzr_identity='lp:target'))
         launchpad = Thing(bugs=self.bugs)
         command = Thing(launchpad=launchpad)
         self.plugin.run(command=command, target=target, source=None,
@@ -116,7 +115,7 @@ class BugResolverTests(TarmacTestCase):
         target = Thing(fixed_bugs=self.bugs.keys(),
                        lp_branch=Thing(project=self.projects[0],
                                        bzr_identity='lp:target'),
-                       set_milestone="true")
+                       config=Thing(set_milestone="true"))
         all_bugs = self.bugs
         launchpad = Thing(bugs=all_bugs)
         command = Thing(launchpad=launchpad)
@@ -231,13 +230,22 @@ class BugResolverTests(TarmacTestCase):
 
     def test_get_and_parse_config(self):
         """Test config parsing."""
-        config = self.plugin.get_and_parse_config(Thing(set_milestone="True"))
+        config = self.plugin.get_and_parse_config(
+                Thing(config=Thing(set_milestone="True")))
         self.assertEqual(config["set_milestone"], True)
-        config = self.plugin.get_and_parse_config(Thing(set_milestone="1"))
+
+        config = self.plugin.get_and_parse_config(
+                Thing(config=Thing(set_milestone="1")))
         self.assertEqual(config["set_milestone"], True)
-        config = self.plugin.get_and_parse_config(Thing(set_milestone="true"))
+
+        config = self.plugin.get_and_parse_config(
+                Thing(config=Thing(set_milestone="true")))
         self.assertEqual(config["set_milestone"], True)
-        config = self.plugin.get_and_parse_config(Thing(default_milestone="A"))
+
+        config = self.plugin.get_and_parse_config(
+                Thing(config=Thing(default_milestone="A")))
         self.assertEqual(config["default_milestone"], "A")
-        config = self.plugin.get_and_parse_config(Thing(default_milestone=""))
+
+        config = self.plugin.get_and_parse_config(
+                Thing(config=Thing(default_milestone="")))
         self.assertEqual(config["default_milestone"], None)

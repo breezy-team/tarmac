@@ -43,6 +43,7 @@ class TarmacPlugin(object):
         @param *args: objects to probe looking for the requested attribute.
         '''
         for obj in args:
-            if hasattr(obj, attribute):
-                return getattr(obj, attribute)
+            if hasattr(obj, "config"):
+                if hasattr(obj.config, attribute):
+                    return getattr(obj.config, attribute)
         return default
