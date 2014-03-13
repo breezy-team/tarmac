@@ -19,6 +19,7 @@ from tarmac.plugins.bugresolver import BugResolver
 from tarmac.tests import TarmacTestCase
 from tarmac.tests import Thing
 from datetime import datetime, timedelta
+from mock import MagicMock
 
 
 class BugResolverTests(TarmacTestCase):
@@ -45,7 +46,10 @@ class BugResolverTests(TarmacTestCase):
             name="4", is_active=True,
             date_targeted=None)
         self.milestone5 = Thing(
-            name="5", is_active=False,
+            name="5", is_active=True,
+            date_targeted=None)
+        self.milestone6 = Thing(
+            name="6", is_active=False,
             date_targeted=datetime.utcnow() + timedelta(weeks=2),
             bug=Thing(id=12345), bug_target_name="foo_project")
         self.series = [Thing(name='trunk'),
@@ -69,14 +73,16 @@ class BugResolverTests(TarmacTestCase):
                                  bug_target_name=self.targets[2].name)]),
                      '1': Thing(
                 bug_tasks=[Thing(target=self.targets[1], status=u'Confirmed',
-                                 lp_save=self.lp_save, milestone=self.milestone5,
+                                 lp_save=self.lp_save, milestone=self.milestone6,
                                  bug=Thing(id="1"),
                                  bug_target_name=self.targets[2].name)])}
         self.now = datetime.utcnow()
         # Insert out of order to make sure they sort correctly.
         self.milestones = [
-                self.milestone3, self.milestone5, self.milestone1,
-                self.milestone2, self.milestone4]
+                self.milestone3, self.milestone6, self.milestone1,
+                self.milestone2]
+        self.milestones_extended = [self.milestone5, self.milestone4]
+        self.milestones_extended.extend(self.milestones)
         self.projects[0].all_milestones = self.milestones
         self.projects[1].all_milestones = []
 
@@ -115,10 +121,10 @@ class BugResolverTests(TarmacTestCase):
         launchpad = Thing(bugs=all_bugs)
         command = Thing(launchpad=launchpad)
         self.plugin.run(command=command, target=target, source=None,
-                        proposal=self.proposal)
+                            proposal=self.proposal)
         self.assertEqual(self.bugs['0'].bug_tasks[0].milestone, self.milestone2)
         self.assertEqual(self.bugs['0'].bug_tasks[1].milestone, None)
-        self.assertEqual(self.bugs['1'].bug_tasks[0].milestone, self.milestone5)
+        self.assertEqual(self.bugs['1'].bug_tasks[0].milestone, self.milestone6)
 
     def test_run_with_no_bugs(self):
         """Test that bug resolution for no bugs does nothing."""
@@ -164,45 +170,64 @@ class BugResolverTests(TarmacTestCase):
         milestone = self.plugin._find_target_milestone(
             self.projects[0],
             self.milestone1.date_targeted - timedelta(weeks=1))
-        self.assertEqual(milestone.date_targeted, self.milestone1.date_targeted)
-        pass
+        self.assertEqual(milestone, self.milestone1)
 
     def test__find_target_milestone_between(self):
         """Test that dates between milestones return the closest newest."""
         milestone = self.plugin._find_target_milestone(
             self.projects[0],
             self.milestone1.date_targeted + timedelta(weeks=1))
-        self.assertEqual(milestone.date_targeted, self.milestone2.date_targeted)
-        pass
+        self.assertEqual(milestone, self.milestone2)
 
     def test__find_target_milestone_newer(self):
         """Test that dates after milestones return the newest."""
         milestone = self.plugin._find_target_milestone(
             self.projects[0], self.milestone3.date_targeted + timedelta(weeks=1))
-        self.assertEqual(milestone.date_targeted, self.milestone3.date_targeted)
-        pass
+        self.assertEqual(milestone, self.milestone3)
+
+    def test__find_target_milestone_newer_no_expected_date(self):
+        """Test that dates after milestones return the least sorted no-expected-date."""
+        self.projects[0].all_milestones = self.milestones_extended
+        milestone = self.plugin._find_target_milestone(
+            self.projects[0], self.milestone3.date_targeted + timedelta(weeks=1))
+        self.assertEqual(milestone, self.milestone4)
 
     def test__find_target_milestone_with_default(self):
         """Test that specifying a default gets a specific milestone."""
+        self.projects[0].all_milestones = self.milestones_extended
+        self.plugin.config["default_milestone"] = "6"
+        milestone = self.plugin._find_target_milestone(
+            self.projects[0], self.milestone3.date_targeted + timedelta(weeks=1))
+        self.assertEqual(milestone, self.milestone6)
         self.plugin.config["default_milestone"] = "5"
         milestone = self.plugin._find_target_milestone(
             self.projects[0], self.milestone3.date_targeted + timedelta(weeks=1))
         self.assertEqual(milestone, self.milestone5)
-        pass
 
     def test__find_milestone(self):
         """Test that given a project, the list of milestones is returned."""
+        self.plugin.logger.warning = MagicMock()
         milestones = self.plugin._find_milestones(self.projects[0])
         self.assertEqual(len(milestones), 3)
         milestones = self.plugin._find_milestones(self.projects[1])
         self.assertEqual(len(milestones), 0)
+
+        # Search for a specific milestone that isn't there (this triggers the
+        # warning log)
         self.plugin.config["default_milestone"] = "FOO"
         milestones = self.plugin._find_milestones(self.projects[0])
         self.assertEqual(len(milestones), 0)
+
+        # Add in the milestones with no dates, and make sure I can search
+        # for something specific.
+        self.projects[0].all_milestones = self.milestones_extended
         self.plugin.config["default_milestone"] = "5"
         milestones = self.plugin._find_milestones(self.projects[0])
         self.assertEqual(len(milestones), 1)
         self.assertEqual(milestones[0], self.milestone5)
+
+        # Make sure warning log was only called once.
+        self.assertEqual(self.plugin.logger.warning.call_count, 1)
 
     def test_get_and_parse_config(self):
         """Test config parsing."""

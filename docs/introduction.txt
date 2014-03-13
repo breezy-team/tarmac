@@ -263,6 +263,22 @@ bug number your commit fixes:
 
   bzr commit --fixes=lp:000000
 
+This plugin supports options:
+
+  [lp:target_branch]
+  # When setting `Fixed Committed`, set the milestone on the bug to the
+  # closest upcoming milestone (based on the milestone "expected date")
+  # If past all milestones, set to the newest.  Milestones with no dates
+  # set are assumed to be in the future and lexically sorted -- making
+  # the one that sorts least amoung them the target.  If this algorithm
+  # doesn't work for you, see `default_milestone`.
+  set_milestone = True
+
+  # When setting `Fixed Committed`, set the milestone on the bug to this.
+  # Requires `set_milestone = True`.  If this doesn't match any of your
+  # milestone names, a warning message will be printed.
+  default_milestone = 12.10
+
 
 ========================
 Installing other plugins

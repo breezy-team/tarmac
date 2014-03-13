@@ -116,9 +116,8 @@ class BugResolver(TarmacPlugin):
                     continue
             if not milestone.is_active:
                 continue
-            if milestone.date_targeted is not None:
-                milestones.append(milestone)
-        if default is None and not len(milestones):
+            milestones.append(milestone)
+        if default is not None and not len(milestones):
             self.logger.warning("Default Milestone not found: %s" % default)
         return milestones
 
@@ -128,19 +127,25 @@ class BugResolver(TarmacPlugin):
 
         Compare the selected datetime `now` to the list of milestones.
         Return the milestone who's `targeted_date` is newer than the given
-        datetime.  If the given time is greater than all open milestones
+        datetime.  If the given time is greater than all open milestones:
         target to the newest milestone in the list.
+
+        In this algorithm, milestones without targeted dates appear lexically
+        sorted at the end of the list.  So the lowest sorting one will get
+        chosen if all milestones with dates attached are exhausted.
         """
         milestones = self._find_milestones(project)
         if len(milestones) == 0:
             return None
-        milestones = sorted(milestones, key=lambda x: x.date_targeted)
+        milestones = sorted(milestones, key=lambda x: (x.name, x.date_targeted))
         previous_milestone = milestones[0]
-        if now < previous_milestone.date_targeted:
+        if previous_milestone.date_targeted is None or \
+            now < previous_milestone.date_targeted:
             return previous_milestone
         for milestone in milestones:
             if now > previous_milestone.date_targeted:
-                if now < milestone.date_targeted:
+                if milestone.date_targeted is None or \
+                    now < milestone.date_targeted:
                     return milestone
             previous_milestone = milestone
         return milestones[-1]
