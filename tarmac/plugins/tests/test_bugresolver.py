@@ -226,24 +226,24 @@ class BugResolverTests(TarmacTestCase):
         # Make sure warning log was only called once.
         self.assertEqual(self.plugin.logger.warning.call_count, 1)
 
-    def test_get_and_parse_config(self):
+    def test__get_and_parse_config(self):
         """Test config parsing."""
-        config = self.plugin.get_and_parse_config(
+        config = self.plugin._get_and_parse_config(
                 Thing(config=Thing(set_milestone="True")))
         self.assertEqual(config["set_milestone"], True)
 
-        config = self.plugin.get_and_parse_config(
+        config = self.plugin._get_and_parse_config(
                 Thing(config=Thing(set_milestone="1")))
         self.assertEqual(config["set_milestone"], True)
 
-        config = self.plugin.get_and_parse_config(
+        config = self.plugin._get_and_parse_config(
                 Thing(config=Thing(set_milestone="true")))
         self.assertEqual(config["set_milestone"], True)
 
-        config = self.plugin.get_and_parse_config(
+        config = self.plugin._get_and_parse_config(
                 Thing(config=Thing(default_milestone="A")))
         self.assertEqual(config["default_milestone"], "A")
 
-        config = self.plugin.get_and_parse_config(
+        config = self.plugin._get_and_parse_config(
                 Thing(config=Thing(default_milestone="")))
         self.assertEqual(config["default_milestone"], None)

@@ -29,7 +29,7 @@ class BugResolver(TarmacPlugin):
             return
 
         # Retrieve configuration
-        self.config = self.get_and_parse_config(target, command)
+        self.config = self._get_and_parse_config(target, command)
 
         project = target.lp_branch.project
         try:
@@ -57,13 +57,13 @@ class BugResolver(TarmacPlugin):
 
             if task:
                 task.status = u'Fix Committed'
-                self.set_milestone(project, task)
+                self._set_milestone_on_task(project, task)
                 task.lp_save()
             else:
                 self.logger.info('Target %s/%s not found in bug #%s.',
                                  project.name, series.name, bug_id)
 
-    def get_and_parse_config(self, *args):
+    def _get_and_parse_config(self, *args):
         """
         Retrieve and parse configuration settings for this plugin.
         Return as a dict structure.
@@ -82,10 +82,11 @@ class BugResolver(TarmacPlugin):
             "set_milestone": set_milestone,
             "default_milestone": default}
 
-    def set_milestone(self, project, task):
+    def _set_milestone_on_task(self, project, task):
         """
         Attempt to auto-determine the milestone to set, and set the milestone
         of the given task.  If the task already has a milestone set => noop.
+        Only processed if config setting `set_milestone` == True.
         """
         if not self.config["set_milestone"]:
             return
