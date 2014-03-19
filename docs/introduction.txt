@@ -270,7 +270,7 @@ This plugin supports options:
   # closest upcoming milestone (based on the milestone "expected date")
   # If past all milestones, set to the newest.  Milestones with no dates
   # set are assumed to be in the future and lexically sorted -- making
-  # the one that sorts least amoung them the target.  If this algorithm
+  # the one that sorts least among them the target.  If this algorithm
   # doesn't work for you, see `default_milestone`.
   set_milestone = True
 

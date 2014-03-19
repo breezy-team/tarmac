@@ -30,7 +30,8 @@ class TarmacPlugin(object):
     def run(self, *args, **kwargs):
         '''Run the hook.'''
 
-    def get_config(self, attribute, default, *args):
+    @staticmethod
+    def get_config(attribute, default, *args):
         '''
         Lookup configuration and return to caller.
         Return value of `default` if not found.  Typically you would call
@@ -43,7 +44,6 @@ class TarmacPlugin(object):
         @param *args: objects to probe looking for the requested attribute.
         '''
         for obj in args:
-            if hasattr(obj, "config"):
-                if hasattr(obj.config, attribute):
-                    return getattr(obj.config, attribute)
+            if hasattr(obj, "config") and hasattr(obj.config, attribute):
+                return getattr(obj.config, attribute)
         return default

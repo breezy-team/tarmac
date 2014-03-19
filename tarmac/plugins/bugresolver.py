@@ -75,7 +75,7 @@ class BugResolver(TarmacPlugin):
             set_milestone = False
 
         default = self.get_config("default_milestone", None, *args)
-        if default is not None and not len(default):
+        if default == "":
             default = None
 
         return {
