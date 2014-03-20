@@ -276,7 +276,7 @@ This plugin supports options:
 
   # When setting `Fixed Committed`, set the milestone on the bug to this.
   # Requires `set_milestone = True`.  If this doesn't match any of your
-  # milestone names, a warning message will be printed.
+  # active milestone names, a warning message will be printed.
   default_milestone = 12.10
 
 

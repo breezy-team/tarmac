@@ -104,32 +104,25 @@ class BugResolver(TarmacPlugin):
 
     def _find_milestones(self, project):
         """
-        Return list of milestones in a project.  Filter list by active status.
-        If the config `default_milestone` is set filter by that instead.
+        Return list of active milestones in a project.  If the config
+        `default_milestone` is set filter by that.  If not found, an 
+        empty list will be returned.
         """
         default = self.config["default_milestone"]
-        milestones = []
-        for milestone in project.all_milestones:
-            if default is not None:
-                if milestone.name == default:
-                    milestones.append(milestone)
-                    return milestones
-                else:
-                    continue
-            if not milestone.is_active:
-                continue
-            milestones.append(milestone)
-        if default is not None and not len(milestones):
-            self.logger.warning("Default Milestone not found: %s" % default)
-        return milestones
-
+        if default is None:
+            return list(project.active_milestones)
+        for milestone in project.active_milestones:
+            if milestone.name == default:
+                return [milestone]
+        self.logger.warning("Default Milestone not found: %s" % default)
+        return []
 
     def _find_target_milestone(self, project, now):
         """
         Find a target milestone when resolving a bug task.
 
         Compare the selected datetime `now` to the list of milestones.
-        Return the milestone who's `targeted_date` is newer than the given
+        Return the milestone where `targeted_date` is newer than the given
         datetime.  If the given time is greater than all open milestones:
         target to the newest milestone in the list.
 
@@ -142,35 +135,34 @@ class BugResolver(TarmacPlugin):
             2) least lexically sorting milestone (by name)
             3) the last milestone in the list (covers len()==1 case).
         """
-        # _find_milestones will take care of only getting 'active' milestones
-        # and the short-circuit case of the user config specifying the milestone
         milestones = self._find_milestones(project)
-        if len(milestones) == 0:
-            return None
-
-        # Purpose here is to Move all milestones with no date to the end of the
-        # list in lexical order.
-        date_milestones = []
-        name_milestones = []
+        earliest_after = latest_before = untargeted = None
         for milestone in milestones:
             if milestone.date_targeted is None:
-                name_milestones.append(milestone)
-            else:
-                date_milestones.append(milestone)
-        milestones = sorted(date_milestones, key=lambda x: x.date_targeted)
-        milestones.extend(sorted(name_milestones, key=lambda x: x.name))
+                if untargeted is not None:
+                    if milestone.name < untargeted.name:
+                        untargeted = milestone
+                else:
+                    untargeted = milestone
+            elif milestone.date_targeted > now:
+                if earliest_after is not None:
+                    if earliest_after.date_targeted > milestone.date_targeted:
+                        earliest_after = milestone
+                else:
+                    earliest_after = milestone
+            elif milestone.date_targeted < now:
+                if latest_before is not None:
+                    if latest_before.date_targeted < milestone.date_targeted:
+                        latest_before = milestone
+                else:
+                    latest_before = milestone
 
-        previous_milestone = milestones[0]
-        if previous_milestone.date_targeted is None or \
-            now < previous_milestone.date_targeted:
-            return previous_milestone
-        for milestone in milestones:
-            if now > previous_milestone.date_targeted:
-                if milestone.date_targeted is None or \
-                    now < milestone.date_targeted:
-                    return milestone
-            previous_milestone = milestone
-        return milestones[-1]
+        if earliest_after is not None:
+            return earliest_after
+        elif untargeted is not None:
+            return untargeted
+        else:
+            return latest_before
 
 
 tarmac_hooks['tarmac_post_commit'].hook(BugResolver(), 'Bug resolver')
