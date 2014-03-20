@@ -175,18 +175,18 @@ class BugResolverTests(TarmacTestCase):
     def test__find_target_milestone_between(self):
         """Test that dates between milestones return the closest newest."""
         milestone = self.plugin._find_target_milestone(
-            self.projects[0],
+            self.projects[1],
             self.milestone_past.date_targeted + timedelta(weeks=1))
         self.assertEqual(milestone, self.milestone_future)
 
     def test__find_target_milestone_newer(self):
-        """Test that dates after milestones return the newest."""
+        """Test that dates after all milestones return the newest."""
         milestone = self.plugin._find_target_milestone(
             self.projects[0],
             self.milestone_far_future.date_targeted + timedelta(weeks=1))
         self.assertEqual(milestone, self.milestone_far_future)
 
-    def test__find_target_milestone_newer_no_expected_date(self):
+    def test__find_target_milestone_lexical_sort_past_dates(self):
         """Dates after milestones return the least sorted no-expected-date."""
         milestone = self.plugin._find_target_milestone(
             self.projects[1],
@@ -195,17 +195,16 @@ class BugResolverTests(TarmacTestCase):
 
     def test__find_target_milestone_with_default(self):
         """Test that specifying a default gets a specific milestone."""
-        self.projects[0].active_milestones = self.milestones_extended
         self.plugin.config["default_milestone"] = "c"
         milestone = self.plugin._find_target_milestone(
-            self.projects[0],
+            self.projects[1],
             self.milestone_far_future.date_targeted + timedelta(weeks=1))
         self.assertEqual(milestone, self.milestone_untargeted_c)
 
     def test__find_milestone_positive(self):
         """Given a project, the list of milestones is returned."""
-        milestones = self.plugin._find_milestones(self.projects[0])
-        self.assertEqual(len(milestones), 4)
+        milestones = self.plugin._find_milestones(self.projects[1])
+        self.assertEqual(len(milestones), 7)
 
     def test__find_milestone_negative(self):
         """Given a project with no milestones, _find_milestone handles it"""
