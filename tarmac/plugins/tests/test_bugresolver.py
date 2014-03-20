@@ -247,3 +247,33 @@ class BugResolverTests(TarmacTestCase):
         config = self.plugin._get_and_parse_config(
                 Thing(config=Thing(default_milestone="")))
         self.assertEqual(config["default_milestone"], None)
+
+    def test__set_milestone_on_task_config_not_set(self):
+        """config option not set, no-op"""
+        self.plugin.logger.info = MagicMock()
+        self.plugin.logger.warning = MagicMock()
+        self.plugin.config = {"set_milestone": False, "default_milestone": None}
+        self.plugin._set_milestone_on_task(
+                self.projects[0], self.bugs['0'].bug_tasks[0])
+        self.assertEqual(self.bugs['0'].bug_tasks[0].milestone, None)
+        self.assertEqual(self.plugin.logger.info.call_count, 0)
+        self.assertEqual(self.plugin.logger.warning.call_count, 0)
+
+    def test__set_milestone_on_task_milestone_already_set(self):
+        """milestone is already set, should leave task untouched"""
+        self.plugin.logger.info = MagicMock()
+        self.plugin.config = {"set_milestone": True, "default_milestone": "1"}
+        self.plugin._set_milestone_on_task(
+                self.projects[0], self.bugs['1'].bug_tasks[0])
+        self.assertEqual(self.bugs['1'].bug_tasks[0].milestone, self.milestone6)
+        self.assertIn("already has milestone",
+                      self.plugin.logger.info.call_args[0][0])
+
+    def test__set_milestone_on_task_config_set(self):
+        """config option set, milestone is being set, action logged"""
+        self.plugin.logger.info = MagicMock()
+        self.plugin.config = {"set_milestone": True, "default_milestone": None}
+        self.plugin._set_milestone_on_task(
+                self.projects[0], self.bugs['0'].bug_tasks[0])
+        self.assertEqual(self.bugs['0'].bug_tasks[0].milestone, self.milestone2)
+        self.assertEqual(self.plugin.logger.info.call_count, 1)
