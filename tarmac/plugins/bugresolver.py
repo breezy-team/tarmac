@@ -74,13 +74,13 @@ class BugResolver(TarmacPlugin):
         else:
             set_milestone = False
 
-        default = self.get_config("default_milestone", None, *args)
-        if default == "":
-            default = None
+        default_milestone = self.get_config("default_milestone", None, *args)
+        if default_milestone == "":
+            default_milestone = None
 
         return {
             "set_milestone": set_milestone,
-            "default_milestone": default}
+            "default_milestone": default_milestone}
 
     def _set_milestone_on_task(self, project, task):
         """

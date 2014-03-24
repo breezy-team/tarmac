@@ -28,6 +28,7 @@ class BugResolverTests(TarmacTestCase):
     def setUp(self):
         """Set up data for the tests."""
         super(BugResolverTests, self).setUp()
+        self.now = datetime.utcnow()
         self.proposal = Thing()
         self.plugin = BugResolver()
         self.plugin.config = {
@@ -36,18 +37,18 @@ class BugResolverTests(TarmacTestCase):
         self.milestone_untargeted_a = Thing(name="a", date_targeted=None)
         self.milestone_past = Thing(
             name="past",
-            date_targeted=datetime.utcnow() - timedelta(weeks=2))
+            date_targeted=self.now - timedelta(weeks=2))
         self.milestone_future = Thing(
             name="future",
-            date_targeted=datetime.utcnow() + timedelta(weeks=2))
+            date_targeted=self.now + timedelta(weeks=2))
         self.milestone_far_future = Thing(
             name="far_future",
-            date_targeted=datetime.utcnow() + timedelta(weeks=6))
+            date_targeted=self.now + timedelta(weeks=6))
         self.milestone_untargeted_b = Thing(name="b", date_targeted=None)
         self.milestone_untargeted_c = Thing(name="c", date_targeted=None)
         self.milestone_with_bug = Thing(
             name="with_bug",
-            date_targeted=datetime.utcnow() - timedelta(weeks=2),
+            date_targeted=self.now - timedelta(weeks=3),
             bug=Thing(id=12345), bug_target_name="foo_project")
         self.series = [Thing(name='trunk'),
                        Thing(name='stable')]
@@ -74,7 +75,6 @@ class BugResolverTests(TarmacTestCase):
                                  milestone=self.milestone_with_bug,
                                  bug=Thing(id="1"),
                                  bug_target_name=self.targets[2].name)])}
-        self.now = datetime.utcnow()
         # Insert out of order to make sure they sort correctly.
         self.milestones = [
                 self.milestone_far_future, self.milestone_with_bug,
@@ -111,7 +111,12 @@ class BugResolverTests(TarmacTestCase):
         self.assertEqual(self.bugs['1'].bug_tasks[0].status, u'Confirmed')
 
     def test_run_with_set_milestone(self):
-        """Test plug-in with the set_milestone setting runs correctly."""
+        """
+        Test plug-in with the set_milestone config setting = true.  Will
+        auto-resolve milestone using algorithm in find_target_milestone
+        and set.  Test that bug0/task0  and bug1/task0 get the correct
+        milestone set.  bug0/task1 is incomplete so should not be touched.
+        """
         target = Thing(fixed_bugs=self.bugs.keys(),
                        lp_branch=Thing(project=self.projects[0],
                                        bzr_identity='lp:target'),
@@ -122,9 +127,9 @@ class BugResolverTests(TarmacTestCase):
                             proposal=self.proposal)
         self.assertEqual(self.bugs['0'].bug_tasks[0].milestone,
                          self.milestone_future)
-        self.assertEqual(self.bugs['0'].bug_tasks[1].milestone, None)
         self.assertEqual(self.bugs['1'].bug_tasks[0].milestone,
                          self.milestone_with_bug)
+        self.assertIsNone(self.bugs['0'].bug_tasks[1].milestone)
 
     def test_run_with_no_bugs(self):
         """Test that bug resolution for no bugs does nothing."""
@@ -177,6 +182,8 @@ class BugResolverTests(TarmacTestCase):
         milestone = self.plugin._find_target_milestone(
             self.projects[1],
             self.milestone_past.date_targeted + timedelta(weeks=1))
+        self.assertTrue(self.now < self.milestone_future.date_targeted)
+        self.assertTrue(self.now > self.milestone_past.date_targeted)
         self.assertEqual(milestone, self.milestone_future)
 
     def test__find_target_milestone_newer(self):
