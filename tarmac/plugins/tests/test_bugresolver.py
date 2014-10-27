@@ -18,6 +18,8 @@
 from tarmac.plugins.bugresolver import BugResolver
 from tarmac.tests import TarmacTestCase
 from tarmac.tests import Thing
+from datetime import datetime, timedelta
+from mock import MagicMock
 
 
 class BugResolverTests(TarmacTestCase):
@@ -26,8 +28,28 @@ class BugResolverTests(TarmacTestCase):
     def setUp(self):
         """Set up data for the tests."""
         super(BugResolverTests, self).setUp()
+        self.now = datetime.utcnow()
         self.proposal = Thing()
         self.plugin = BugResolver()
+        self.plugin.config = {
+            "set_milestone": "False",
+            "default_milestone": None}
+        self.milestone_untargeted_a = Thing(name="a", date_targeted=None)
+        self.milestone_past = Thing(
+            name="past",
+            date_targeted=self.now - timedelta(weeks=2))
+        self.milestone_future = Thing(
+            name="future",
+            date_targeted=self.now + timedelta(weeks=2))
+        self.milestone_far_future = Thing(
+            name="far_future",
+            date_targeted=self.now + timedelta(weeks=6))
+        self.milestone_untargeted_b = Thing(name="b", date_targeted=None)
+        self.milestone_untargeted_c = Thing(name="c", date_targeted=None)
+        self.milestone_with_bug = Thing(
+            name="with_bug",
+            date_targeted=self.now - timedelta(weeks=3),
+            bug=Thing(id=12345), bug_target_name="foo_project")
         self.series = [Thing(name='trunk'),
                        Thing(name='stable')]
         self.projects = [Thing(name='target',
@@ -40,12 +62,29 @@ class BugResolverTests(TarmacTestCase):
         self.targets[0] = self.projects[0]
         self.bugs = {'0': Thing(
                 bug_tasks=[Thing(target=self.targets[0], status=u'In Progress',
-                                 lp_save=self.lp_save),
+                                 lp_save=self.lp_save, milestone=None,
+                                 bug=Thing(id="0"),
+                                 bug_target_name=self.targets[0].name),
                            Thing(target=self.targets[2], status=u'Incomplete',
-                                 lp_save=self.lp_save)]),
+                                 lp_save=self.lp_save, milestone=None,
+                                 bug=Thing(id="0"),
+                                 bug_target_name=self.targets[2].name)]),
                      '1': Thing(
                 bug_tasks=[Thing(target=self.targets[1], status=u'Confirmed',
-                                 lp_save=self.lp_save)])}
+                                 lp_save=self.lp_save,
+                                 milestone=self.milestone_with_bug,
+                                 bug=Thing(id="1"),
+                                 bug_target_name=self.targets[2].name)])}
+        # Insert out of order to make sure they sort correctly.
+        self.milestones = [
+                self.milestone_far_future, self.milestone_with_bug,
+                self.milestone_past, self.milestone_future]
+        self.milestones_extended = [
+                self.milestone_untargeted_c, self.milestone_untargeted_b,
+                self.milestone_untargeted_a]
+        self.milestones_extended.extend(self.milestones)
+        self.projects[0].active_milestones = self.milestones
+        self.projects[1].active_milestones = self.milestones_extended
 
     def getSeries(self, name=None):
         """Faux getSeries for testing."""
@@ -70,6 +109,27 @@ class BugResolverTests(TarmacTestCase):
         self.assertEqual(self.bugs['0'].bug_tasks[0].status, u'Fix Committed')
         self.assertEqual(self.bugs['0'].bug_tasks[1].status, u'Incomplete')
         self.assertEqual(self.bugs['1'].bug_tasks[0].status, u'Confirmed')
+
+    def test_run_with_set_milestone(self):
+        """
+        Test plug-in with the set_milestone config setting = true.  Will
+        auto-resolve milestone using algorithm in find_target_milestone
+        and set.  Test that bug0/task0  and bug1/task0 get the correct
+        milestone set.  bug0/task1 is incomplete so should not be touched.
+        """
+        target = Thing(fixed_bugs=self.bugs.keys(),
+                       lp_branch=Thing(project=self.projects[0],
+                                       bzr_identity='lp:target'),
+                       config=Thing(set_milestone="true"))
+        launchpad = Thing(bugs=self.bugs)
+        command = Thing(launchpad=launchpad)
+        self.plugin.run(command=command, target=target, source=None,
+                            proposal=self.proposal)
+        self.assertEqual(self.bugs['0'].bug_tasks[0].milestone,
+                         self.milestone_future)
+        self.assertEqual(self.bugs['1'].bug_tasks[0].milestone,
+                         self.milestone_with_bug)
+        self.assertIsNone(self.bugs['0'].bug_tasks[1].milestone)
 
     def test_run_with_no_bugs(self):
         """Test that bug resolution for no bugs does nothing."""
@@ -109,3 +169,136 @@ class BugResolverTests(TarmacTestCase):
         self.assertEqual(self.bugs['0'].bug_tasks[0].status, u'In Progress')
         self.assertEqual(self.bugs['0'].bug_tasks[1].status, u'Incomplete')
         self.assertEqual(self.bugs['1'].bug_tasks[0].status, u'Confirmed')
+
+    def test__find_target_milestone_older(self):
+        """Dates before all milestones return the oldest milestone."""
+        milestone = self.plugin._find_target_milestone(
+            self.projects[0],
+            self.milestone_past.date_targeted - timedelta(weeks=1))
+        self.assertEqual(milestone, self.milestone_past)
+
+    def test__find_target_milestone_between(self):
+        """Test that dates between milestones return the closest newest."""
+        milestone = self.plugin._find_target_milestone(
+            self.projects[1],
+            self.milestone_past.date_targeted + timedelta(weeks=1))
+        self.assertTrue(self.now < self.milestone_future.date_targeted)
+        self.assertTrue(self.now > self.milestone_past.date_targeted)
+        self.assertEqual(milestone, self.milestone_future)
+
+    def test__find_target_milestone_newer(self):
+        """Test that dates after all milestones return the newest."""
+        milestone = self.plugin._find_target_milestone(
+            self.projects[0],
+            self.milestone_far_future.date_targeted + timedelta(weeks=1))
+        self.assertEqual(milestone, self.milestone_far_future)
+
+    def test__find_target_milestone_lexical_sort_past_dates(self):
+        """Dates after milestones return the least sorted no-expected-date."""
+        milestone = self.plugin._find_target_milestone(
+            self.projects[1],
+            self.milestone_far_future.date_targeted + timedelta(weeks=1))
+        self.assertEqual(milestone, self.milestone_untargeted_a)
+
+    def test__find_target_milestone_with_default(self):
+        """Test that specifying a default gets a specific milestone."""
+        self.plugin.config["default_milestone"] = "c"
+        milestone = self.plugin._find_target_milestone(
+            self.projects[1],
+            self.milestone_far_future.date_targeted + timedelta(weeks=1))
+        self.assertEqual(milestone, self.milestone_untargeted_c)
+
+    def test__find_milestone_positive(self):
+        """Given a project, the list of milestones is returned."""
+        milestones = self.plugin._find_milestones(self.projects[1])
+        self.assertEqual(len(milestones), 7)
+
+    def test__find_milestone_negative(self):
+        """Given a project with no milestones, _find_milestone handles it"""
+        milestones = self.plugin._find_milestones(Thing(active_milestones=[]))
+        self.assertEqual(len(milestones), 0)
+
+    def test__find_milestone_specific_negative(self):
+        """Find a secific milestone that isn't there, check for log"""
+        self.plugin.logger.warning = MagicMock()
+        self.plugin.config["default_milestone"] = "FOO"
+        milestones = self.plugin._find_milestones(self.projects[0])
+        self.assertEqual(len(milestones), 0)
+        self.assertEqual(self.plugin.logger.warning.call_count, 1)
+
+    def test__find_milestone_no_dates(self):
+        """Find a specific milestones without a targeted date"""
+        self.plugin.config["default_milestone"] = "b"
+        milestones = self.plugin._find_milestones(self.projects[1])
+        self.assertEqual(len(milestones), 1)
+        self.assertEqual(milestones[0], self.milestone_untargeted_b)
+
+    def test__get_and_parse_config_set_milestone_true_upper(self):
+        """Test config parsing - set_milestone: True."""
+        config = self.plugin._get_and_parse_config(
+                Thing(config=Thing(set_milestone="True")))
+        self.assertEqual(config["set_milestone"], True)
+
+    def test__get_and_parse_config_set_milestone_one(self):
+        """Test config parsing - set_milestone: 1."""
+        config = self.plugin._get_and_parse_config(
+                Thing(config=Thing(set_milestone="1")))
+        self.assertEqual(config["set_milestone"], True)
+
+    def test__get_and_parse_config_set_milestone_true_lower(self):
+        """Test config parsing - set_milestone: true."""
+        config = self.plugin._get_and_parse_config(
+                Thing(config=Thing(set_milestone="true")))
+        self.assertEqual(config["set_milestone"], True)
+
+    def test__get_and_parse_config_default_milestone_A(self):
+        """Test config parsing - default_milestone: A."""
+        config = self.plugin._get_and_parse_config(
+                Thing(config=Thing(default_milestone="A")))
+        self.assertEqual(config["default_milestone"], "A")
+
+    def test__get_and_parse_config_default_milestone_none(self):
+        """Test config parsing - default_milestone: ."""
+        config = self.plugin._get_and_parse_config(
+                Thing(config=Thing(default_milestone="")))
+        self.assertEqual(config["default_milestone"], None)
+
+    def test__get_and_parse_config_default_milestone_default(self):
+        """Test config parsing - defaults."""
+        config = self.plugin._get_and_parse_config(
+                Thing(config=Thing()))
+        self.assertEqual(config["set_milestone"], False)
+        self.assertEqual(config["default_milestone"], None)
+
+    def test__set_milestone_on_task_config_not_set(self):
+        """config option not set, no-op"""
+        self.plugin.logger.info = MagicMock()
+        self.plugin.logger.warning = MagicMock()
+        self.plugin.config = {
+            "set_milestone": False, "default_milestone": None}
+        self.plugin._set_milestone_on_task(
+            self.projects[0], self.bugs['0'].bug_tasks[0])
+        self.assertEqual(self.bugs['0'].bug_tasks[0].milestone, None)
+        self.assertEqual(self.plugin.logger.info.call_count, 0)
+        self.assertEqual(self.plugin.logger.warning.call_count, 0)
+
+    def test__set_milestone_on_task_milestone_already_set(self):
+        """milestone is already set, should leave task untouched"""
+        self.plugin.logger.info = MagicMock()
+        self.plugin.config = {"set_milestone": True, "default_milestone": "past"}
+        self.plugin._set_milestone_on_task(
+            self.projects[0], self.bugs['1'].bug_tasks[0])
+        self.assertEqual(
+            self.bugs['1'].bug_tasks[0].milestone, self.milestone_with_bug)
+        self.assertIn("already has milestone",
+                      self.plugin.logger.info.call_args[0][0])
+
+    def test__set_milestone_on_task_config_set(self):
+        """config option set, milestone is being set, action logged"""
+        self.plugin.logger.info = MagicMock()
+        self.plugin.config = {"set_milestone": True, "default_milestone": None}
+        self.plugin._set_milestone_on_task(
+            self.projects[0], self.bugs['0'].bug_tasks[0])
+        self.assertEqual(
+            self.bugs['0'].bug_tasks[0].milestone, self.milestone_future)
+        self.assertEqual(self.plugin.logger.info.call_count, 1)

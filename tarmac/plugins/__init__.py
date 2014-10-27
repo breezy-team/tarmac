@@ -29,3 +29,21 @@ class TarmacPlugin(object):
 
     def run(self, *args, **kwargs):
         '''Run the hook.'''
+
+    @staticmethod
+    def get_config(attribute, default, *args):
+        '''
+        Lookup configuration and return to caller.
+        Return value of `default` if not found.  Typically you would call
+        in the following manner:
+
+          value = get_config("my_config_setting", None, command, target)
+
+        @param attribute: The attribute to lookup.
+        @param default: The default value to use if nothing found.
+        @param *args: objects to probe looking for the requested attribute.
+        '''
+        for obj in args:
+            if hasattr(obj, "config") and hasattr(obj.config, attribute):
+                return getattr(obj.config, attribute)
+        return default
