@@ -35,6 +35,17 @@ from tarmac.tests import (
 class TestBranch(BranchTestCase):
     '''Test for Tarmac.branch.Branch.'''
 
+    def test_use_unique_name_fallback(self):
+        """Test that unique_name is used if bzr_identity isn't."""
+        tree_dir = os.path.join(self.TEST_ROOT, 'test_unique_name')
+        mock = MockLPBranch(tree_dir)
+        mock.unique_name = 'lp:~owner/project/name'
+        self.config.add_section(mock.unique_name)
+        self.config.set(mock.unique_name, 'tree_dir', tree_dir)
+        a_branch = branch.Branch.create(mock, self.config)
+        self.assertEqual(tree_dir, a_branch.config.tree_dir)
+        self.config.remove_section(mock.unique_name)
+
     def test_create(self):
         '''Test the creation of a TarmacBranch instance.'''
         tree_dir = os.path.join(self.TEST_ROOT, 'test_create')
