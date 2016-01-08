@@ -1,5 +1,5 @@
 # Copyright 2009 Paul Hummer
-# Copyright 2009-2013 Canonical Ltd.
+# Copyright 2009-2013,2015 Canonical Ltd.
 #
 # Tarmac is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License version 3 as
@@ -38,7 +38,11 @@ class Branch(object):
         self.lp_branch = lp_branch
         self.bzr_branch = bzr_branch.Branch.open(self.lp_branch.bzr_identity)
         if config:
-            self.config = BranchConfig(lp_branch.bzr_identity, config)
+            if lp_branch.bzr_identity in config.branches:
+                self.config = BranchConfig(lp_branch.bzr_identity, config)
+            else:
+                self.config = BranchConfig('lp:' + lp_branch.unique_name,
+                                           config)
         else:
             self.config = None
 

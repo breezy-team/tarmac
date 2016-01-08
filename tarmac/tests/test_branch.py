@@ -1,5 +1,5 @@
 # Copyright 2009 Paul Hummer
-# Copyright 2009-2013 Canonical Ltd.
+# Copyright 2009-2013,2015 Canonical Ltd.
 #
 # Tarmac is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License version 3 as
@@ -34,6 +34,18 @@ from tarmac.tests import (
 
 class TestBranch(BranchTestCase):
     '''Test for Tarmac.branch.Branch.'''
+
+    def test_use_unique_name_fallback(self):
+        """Test that unique_name is used if bzr_identity isn't."""
+        tree_dir = os.path.join(self.TEST_ROOT, 'test_unique_name')
+        mock = MockLPBranch(tree_dir)
+        mock.unique_name = '~owner/project/name'
+        lp_branch_url = 'lp:' + mock.unique_name
+        self.config.add_section(lp_branch_url)
+        self.config.set(lp_branch_url, 'tree_dir', tree_dir)
+        a_branch = branch.Branch.create(mock, self.config)
+        self.assertEqual(tree_dir, a_branch.config.tree_dir)
+        self.config.remove_section(lp_branch_url)
 
     def test_create(self):
         '''Test the creation of a TarmacBranch instance.'''
