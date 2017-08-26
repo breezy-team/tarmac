@@ -414,7 +414,7 @@ class TestMergeCommand(BranchTestCase):
                          u'lp:branch3 into lp:branch1, '
                          u'which is not Superseded.')
 
-    @patch('bzrlib.workingtree.WorkingTree.open')
+    @patch('breezy.workingtree.WorkingTree.open')
     def test_run_merge_with_invalid_workingtree(self, mocked):
         """Test that InvalidWorkingTree is handled correctly."""
         invalid_tree_comment = 'This tree is invalid.'

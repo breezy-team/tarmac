@@ -9,7 +9,7 @@ def main():
     '''Main script handler.'''
     import sys
 
-    from bzrlib import ui
+    from breezy import ui
 
     from tarmac.bin import commands
     from tarmac.bin.registry import CommandRegistry

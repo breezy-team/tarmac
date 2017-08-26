@@ -18,7 +18,7 @@
 
 import logging
 
-from bzrlib import hooks
+from breezy import hooks
 
 
 class TarmacHookRegistry(hooks.Hooks):
@@ -51,14 +51,14 @@ class TarmacHookRegistry(hooks.Hooks):
                 self.add_hook(name, doc, added, deprecated=deprecated)
             except AttributeError:
                 self.logger.warn(
-                    'Using deprecated bzrlib API. You should upgrade to '
+                    'Using deprecated breezy API. You should upgrade to '
                     'a newer release of bzr.')
                 self.create_hook(hooks.HookPoint(name, doc, added, deprecated))
 
     def fire(self, hook_name, *args, **kwargs):
         """Fire all registered hooks for hook_name.
 
-        This implements a way to fire the hook, which bzrlib.hooks.Hooks
+        This implements a way to fire the hook, which breezy.hooks.Hooks
         doesn't have. If this turns out to be helpful, than a patch to Bazaar
         should be made to implement it in Bazaar.
         """

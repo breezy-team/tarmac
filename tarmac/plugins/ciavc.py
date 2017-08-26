@@ -25,7 +25,7 @@ of Tarmac.
 saxutils = None
 xmlrpclib = None
 
-from bzrlib.lazy_import import lazy_import
+from breezy.lazy_import import lazy_import
 lazy_import(globals(), '''
     import xmlrpclib
     from xml.sax import saxutils

@@ -25,7 +25,7 @@ import os
 import sys
 
 
-# XXX This function should be merged into bzrlib.win32utils
+# XXX This function should be merged into breezy.win32utils
 def get_temp_location():
     '''Return temporary (cache) directory'''
     if sys.platform == 'win32':
@@ -49,7 +49,7 @@ try:
     import xdg.BaseDirectory
 except ImportError:
     if sys.platform == 'win32':
-        from bzrlib import win32utils as win
+        from breezy import win32utils as win
         xdg_config_home = win.get_appdata_location_unicode()
         xdg_cache_home = get_temp_location()
     else:

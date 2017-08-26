@@ -19,9 +19,9 @@ import logging
 import os
 import re
 
-from bzrlib.commands import Command
-from bzrlib.errors import PointlessMerge, LockContention
-from bzrlib.help import help_commands
+from breezy.commands import Command
+from breezy.errors import PointlessMerge, LockContention
+from breezy.help import help_commands
 from launchpadlib.launchpad import Launchpad
 from launchpadlib.uris import (LPNET_SERVICE_ROOT,
     STAGING_SERVICE_ROOT)

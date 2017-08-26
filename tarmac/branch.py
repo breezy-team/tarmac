@@ -20,9 +20,9 @@ import os
 import shutil
 import tempfile
 
-from bzrlib import branch as bzr_branch
-from bzrlib.errors import NoSuchRevision
-from bzrlib.workingtree import WorkingTree
+from breezy import branch as bzr_branch
+from breezy.errors import NoSuchRevision
+from breezy.workingtree import WorkingTree
 
 from tarmac.config import BranchConfig
 from tarmac.exceptions import (

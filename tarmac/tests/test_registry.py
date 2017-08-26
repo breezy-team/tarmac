@@ -1,5 +1,5 @@
 '''Tests for tarmac.bin.registry.'''
-from bzrlib.errors import BzrCommandError
+from breezy.errors import BzrCommandError
 
 from tarmac.bin.commands import cmd_authenticate, TarmacCommand
 from tarmac.bin.registry import CommandRegistry

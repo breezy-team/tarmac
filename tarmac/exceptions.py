@@ -16,7 +16,7 @@
 
 '''Tarmac specific exceptions.'''
 
-from bzrlib.errors import BzrCommandError
+from breezy.errors import BzrCommandError
 
 
 class TarmacMergeError(Exception):

@@ -1,8 +1,8 @@
 '''A command registry for Tarmac commands.'''
 import sys
 
-from bzrlib.commands import Command, run_bzr
-from bzrlib.errors import BzrCommandError
+from breezy.commands import Command, run_bzr
+from breezy.errors import BzrCommandError
 
 from tarmac.config import TarmacConfig
 from tarmac.exceptions import CommandNotFound
@@ -48,7 +48,7 @@ class CommandRegistry(object):
         run_bzr(args)
 
     def install_hooks(self):
-        '''Use the bzrlib Command support for running commands.'''
+        '''Use the breezy Command support for running commands.'''
         Command.hooks.install_named_hook(
             'get_command', self._get_command, 'Tarmac commands')
         Command.hooks.install_named_hook(

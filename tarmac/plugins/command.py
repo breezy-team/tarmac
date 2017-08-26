@@ -34,8 +34,8 @@ time = None
 # This will set the timeout to 15 minutes.
 TIMEOUT = 60 * 15
 
-from bzrlib.export import export
-from bzrlib.lazy_import import lazy_import
+from breezy.export import export
+from breezy.lazy_import import lazy_import
 lazy_import(globals(), '''
     import errno
     import os

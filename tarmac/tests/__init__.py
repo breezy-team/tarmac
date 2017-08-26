@@ -20,10 +20,10 @@ import shutil
 import tempfile
 
 from base64 import b64encode
-from bzrlib.bzrdir import BzrDir
-from bzrlib.directory_service import directories
-from bzrlib.tests import TestCaseInTempDir
-from bzrlib.transport import register_urlparse_netloc_protocol
+from breezy.bzrdir import BzrDir
+from breezy.directory_service import directories
+from breezy.tests import TestCaseInTempDir
+from breezy.transport import register_urlparse_netloc_protocol
 
 from tarmac import branch
 from tarmac.bin.commands import TarmacCommand
