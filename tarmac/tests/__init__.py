@@ -20,7 +20,7 @@ import shutil
 import tempfile
 
 from base64 import b64encode
-from breezy.bzrdir import BzrDir
+from breezy.controldir import ControlDir
 from breezy.directory_service import directories
 from breezy.tests import TestCaseInTempDir
 from breezy.transport import register_urlparse_netloc_protocol
@@ -45,13 +45,13 @@ class MockLPBranch(object):
         self.tree_dir = tree_dir
         os.makedirs(tree_dir)
         if source_branch:
-            source_dir = source_branch._internal_bzr_branch.bzrdir
-            bzrdir = source_dir.sprout(tree_dir)
+            source_dir = source_branch._internal_bzr_branch.controldir
+            controldir = source_dir.sprout(tree_dir)
             self._internal_tree, self._internal_bzr_branch = \
-                    bzrdir.open_tree_or_branch(tree_dir)
+                    controldir.open_tree_or_branch(tree_dir)
             self.revision_count = source_branch.revision_count
         else:
-            self._internal_bzr_branch = BzrDir.create_branch_convenience(
+            self._internal_bzr_branch = ControlDir.create_branch_convenience(
                 tree_dir)
             self.revision_count = 0
         self.bzr_identity = 'lp:%s' % os.path.basename(self.tree_dir)
