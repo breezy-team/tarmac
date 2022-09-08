@@ -34,7 +34,7 @@ time = None
 # This will set the timeout to 15 minutes.
 TIMEOUT = 60 * 15
 
-from tempfile import SpooledTemporaryFile
+from tempfile import SpooledTemporaryFile, TemporaryDirectory
 
 from breezy.export import export
 from breezy.lazy_import import lazy_import
@@ -90,32 +90,32 @@ class Command(TarmacPlugin):
         temp_path = '/tmp/tarmac'
         if not os.path.exists(temp_path):
             os.makedirs(temp_path)
-        export_dest = tempfile.mkdtemp(prefix=temp_path + '/branch.')
-        export(target.tree, export_dest, None, None, None, filtered=False,
-               per_file_timestamps=False)
-        os.chdir(export_dest)
+        with TemporaryDirectory(prefix=temp_path + '/branch.') as export_dest:
+            export(target.tree, export_dest, per_file_timestamps=False,
+                   recurse_nested=True)
 
-        with SpooledTemporaryFile() as stdout, SpooledTemporaryFile() as stderr:
-            try:
-                return_code = subprocess.call(
-                    self.verify_command, shell=True, stdin=subprocess.DEVNULL,
-                    stdout=stdout, stderr=stderr, timeout=TIMEOUT)
-            except subprocess.TimeoutExpired:
-                self.logger.debug(
-                    "Command appears to be hung. There has been no output for"
-                    " %d seconds. Sending SIGTERM." % TIMEOUT)
-                stdout.seek(0)
-                stderr.seek(0)
-                self.do_failed(stdout.read(), stderr.read())
+            with SpooledTemporaryFile() as stdout, SpooledTemporaryFile() as stderr:
+                try:
+                    return_code = subprocess.call(
+                        self.verify_command, shell=True, stdin=subprocess.DEVNULL,
+                        stdout=stdout, stderr=stderr, timeout=TIMEOUT,
+                        cwd=export_dest)
+                except subprocess.TimeoutExpired:
+                    self.logger.debug(
+                        "Command appears to be hung. There has been no output for"
+                        " %d seconds. Sending SIGTERM." % TIMEOUT)
+                    stdout.seek(0)
+                    stderr.seek(0)
+                    self.do_failed(stdout.read(), stderr.read())
 
-            os.chdir(cwd)
-            shutil.rmtree(export_dest)
-            self.logger.debug('Completed test command: %s' % self.verify_command)
+                os.chdir(cwd)
+                shutil.rmtree(export_dest)
+                self.logger.debug('Completed test command: %s' % self.verify_command)
 
-            if return_code != 0:
-                stdout.seek(0)
-                stderr.seek(0)
-                self.do_failed(stdout.read(), stderr.read())
+                if return_code != 0:
+                    stdout.seek(0)
+                    stderr.seek(0)
+                    self.do_failed(stdout.read(), stderr.read())
 
     def do_failed(self, stdout_value, stderr_value):
         '''Perform failure tests.

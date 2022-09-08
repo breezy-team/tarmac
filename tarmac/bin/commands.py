@@ -278,7 +278,7 @@ class cmd_merge(TarmacCommand):
                         proposal.source_branch, self.config, target=target)
 
                     approved = source.bzr_branch.revision_id_to_revno(
-                        bytes(proposal.reviewed_revid))
+                        proposal.reviewed_revid.encode('utf-8'))
                     tip = source.bzr_branch.revno()
 
                     if tip > approved:
@@ -294,7 +294,7 @@ class cmd_merge(TarmacCommand):
                             'source': proposal.source_branch.web_link,
                             'revision': proposal.reviewed_revid})
 
-                    target.merge(source, bytes(proposal.reviewed_revid))
+                    target.merge(source, proposal.reviewed_revid.encode('utf-8'))
 
                     self.logger.debug('Firing tarmac_pre_commit hook')
                     tarmac_hooks.fire('tarmac_pre_commit',
