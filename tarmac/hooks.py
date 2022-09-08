@@ -47,13 +47,7 @@ class TarmacHookRegistry(hooks.Hooks):
             ]
         for hook in self._hooks:
             name, doc, added, deprecated = hook
-            try:
-                self.add_hook(name, doc, added, deprecated=deprecated)
-            except AttributeError:
-                self.logger.warn(
-                    'Using deprecated breezy API. You should upgrade to '
-                    'a newer release of bzr.')
-                self.create_hook(hooks.HookPoint(name, doc, added, deprecated))
+            self.add_hook(name, doc, added, deprecated=deprecated)
 
     def fire(self, hook_name, *args, **kwargs):
         """Fire all registered hooks for hook_name.

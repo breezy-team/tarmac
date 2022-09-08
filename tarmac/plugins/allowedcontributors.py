@@ -77,13 +77,13 @@ class AllowedContributors(TarmacPlugin):
                             'Received Unauthorized error while trying to '
                             'list members of team: %s' % team)
                     except KeyError:
-                        message = (u'Could not find person or team "%s" on '
-                                   u'Launchpad.' % team)
-                        comment = (u'Merging into %(target) requires that '
-                                   u'contributing authors be a member of an '
-                                   u'acceptable team, or a specified person. '
-                                   u'However, the person or team "%(team)s" '
-                                   u'was not found on Launchpad.' % {
+                        message = ('Could not find person or team "%s" on '
+                                   'Launchpad.' % team)
+                        comment = ('Merging into %(target) requires that '
+                                   'contributing authors be a member of an '
+                                   'acceptable team, or a specified person. '
+                                   'However, the person or team "%(team)s" '
+                                   'was not found on Launchpad.' % {
                                 'target': proposal.target_branch.display_name,
                                 'team': team})
                         raise InvalidPersonOrTeam(message, comment)
@@ -92,13 +92,13 @@ class AllowedContributors(TarmacPlugin):
                     invalid_contributors.append(name)
 
         if len(invalid_contributors) > 0:
-            message = u'Some contributors are not acceptable.'
-            comment = (u'There was a problem validating some authors of the '
-                       u'branch. Authors must be either one of the listed '
-                       u'Launchpad users, or a member of one of the listed '
-                       u'teams on Launchpad.\n\n'
-                       u'Persons or Teams:\n\n    %(teams)s\n\n'
-                       u'Unaccepted Authors:\n\n    %(authors)s' % {
+            message = 'Some contributors are not acceptable.'
+            comment = ('There was a problem validating some authors of the '
+                       'branch. Authors must be either one of the listed '
+                       'Launchpad users, or a member of one of the listed '
+                       'teams on Launchpad.\n\n'
+                       'Persons or Teams:\n\n    %(teams)s\n\n'
+                       'Unaccepted Authors:\n\n    %(authors)s' % {
                     'teams': '\n    '.join(sorted(self.allowed_contributors)),
                     'authors': '\n    '.join(sorted(invalid_contributors))})
             raise InvalidContributor(message, comment)

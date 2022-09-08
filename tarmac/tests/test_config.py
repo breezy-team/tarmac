@@ -1,7 +1,7 @@
 '''Tests for tarmac.config'''
 import os
 
-from ConfigParser import NoOptionError
+from configparser import NoOptionError
 from tarmac.config import BranchConfig
 from tarmac.tests import TarmacTestCase
 

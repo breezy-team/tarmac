@@ -15,7 +15,7 @@
 
 import os
 
-from mock import ANY, patch
+from unittest.mock import ANY, patch
 from operator import setitem
 from tarmac import plugin
 from tarmac import plugins as _mod_plugins
@@ -47,7 +47,7 @@ class PluginTestCase(TarmacTestCase):
         plugins = plugin.find_plugins()
         self.assertIn((plugin_name, plugin_file), plugins)
 
-    @patch('tarmac.plugin.execfile', create=True)
+    @patch('tarmac.plugin.exec', create=True)
     def test_load_plugins_once_only(self, mocked):
         """Test that external plug-ins load."""
         plugin_path = os.path.join(os.path.dirname(__file__), 'plugins')
@@ -57,7 +57,7 @@ class PluginTestCase(TarmacTestCase):
         self.addCleanup(delattr, _mod_plugins, plugin_name)
         plugin_file = os.path.join(plugin_path, plugin_name + '.py')
         plugin.load_plugins(load_only=plugin_name)
-        mocked.assert_called_once_with(plugin_file, ANY)
+        mocked.assert_called_once_with(ANY, ANY)
 
     def test_find_plugins_package(self):
         """Test that package plug-ins are found."""
@@ -69,7 +69,7 @@ class PluginTestCase(TarmacTestCase):
         plugins = plugin.find_plugins()
         self.assertIn((plugin_name, plugin_file), plugins)
 
-    @patch('tarmac.plugin.execfile', create=True)
+    @patch('tarmac.plugin.exec', create=True)
     def test_load_plugins(self, mocked):
         """Test that plug-ins load."""
         plugin_path = os.path.join(os.path.dirname(__file__), 'plugins')

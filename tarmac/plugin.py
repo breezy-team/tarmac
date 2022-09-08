@@ -50,6 +50,8 @@ def find_plugins(load_only=None):
     for path in TARMAC_PLUGIN_PATHS:
         try:
             for _file in os.listdir(path):
+                if _file == '__pycache__':
+                    continue
                 full_path = os.path.join(path, _file)
                 if os.path.isdir(full_path):
                     _file = os.path.basename(full_path)
@@ -99,7 +101,8 @@ def load_plugins(load_only=None):
 
             logger.debug('Loading plug-in: %s' % plugin_info[1])
             _module = types.ModuleType(plugin_info[0])
-            execfile(plugin_info[1], _module.__dict__)
+            with open(plugin_info[1], "rb") as f:
+                exec(compile(f.read(), plugin_info[1], 'exec'), _module.__dict__)
             setattr(_mod_plugins, plugin_info[0], _module)
         except KeyboardInterrupt:
             raise

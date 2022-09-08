@@ -19,7 +19,7 @@ import os
 import shutil
 
 from breezy.errors import PointlessMerge
-from mock import patch
+from unittest.mock import patch
 from tarmac import branch
 from tarmac.exceptions import (
     InvalidWorkingTree,
@@ -185,10 +185,10 @@ class TestBranch(BranchTestCase):
         self.branch1.commit('Reviewers test', reviews=reviews)
 
         last_rev = self.branch1.lp_branch._internal_bzr_branch.last_revision()
-        self.assertNotEquals(last_rev, 'null:')
+        self.assertNotEqual(last_rev, 'null:')
         repo = self.branch1.lp_branch._internal_bzr_branch.repository
         rev = repo.get_revision(last_rev)
-        self.assertEquals('\n'.join(reviews),
+        self.assertEqual('\n'.join(reviews),
                           rev.properties.get('reviews', None))
 
     def test_cleanup(self):
@@ -208,7 +208,7 @@ class TestBranch(BranchTestCase):
         """Test that the unmanaged_files property returns correct lists."""
         self.branch1.merge(self.branch2)
         self.assertEqual(self.branch1.unmanaged_files, [])
-        expected = sorted([u'README~', u'newfile'])
+        expected = sorted(['README~', 'newfile'])
         with open(os.path.join(self.branch1.config.tree_dir, 'README~'),
                   'w') as f:
             f.close()

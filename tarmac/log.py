@@ -13,7 +13,7 @@ def ensure_log_dir(log_file):
     log_dir = os.path.dirname(log_file)
     try:
         os.makedirs(log_dir)
-    except OSError, e:
+    except OSError as e:
         # If the directory already exists, just pass. Otherwise, log to stderr
         # because we probably can't write to the actual log file.
         if getattr(e, 'errno', None) != errno.EEXIST:

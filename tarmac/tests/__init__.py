@@ -35,7 +35,7 @@ class MockLPProject(object):
 
     def __init__(self):
         self.name = b64encode(
-            os.urandom(int(math.ceil(0.75 * 10))), '-_')[:10]
+            os.urandom(int(math.ceil(0.75 * 10))), b'-_')[:10]
 
 
 class MockLPBranch(object):
@@ -82,7 +82,7 @@ class Thing(dict):
         self.__dict__.update(names)
 
     def __iter__(self):
-        for item in self.values():
+        for item in list(self.values()):
             if not callable(item):
                 yield item
 
@@ -133,7 +133,7 @@ access_secret = secret
 
     def write_credentials_file(self):
         """Write out the temporary credentials file for testing."""
-        credentials = open(self.config.CREDENTIALS, 'ab')
+        credentials = open(self.config.CREDENTIALS, 'a')
         credentials.write(self.CREDS_TEMPLATE)
         credentials.close()
 

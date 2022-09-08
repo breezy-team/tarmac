@@ -47,16 +47,16 @@ class PackageRecipe(TarmacPlugin):
                 lp_recipe = command.launchpad.people[owner].getRecipe(
                     name=recipe)
                 archive = lp_recipe.daily_build_archive
-                distro = command.launchpad.distributions[u'Ubuntu']
+                distro = command.launchpad.distributions['Ubuntu']
                 lp_series = [x for x in distro.series if x.name == series][0]
                 lp_recipe.requestBuild(archive=archive,
                                        distroseries=lp_series,
-                                       pocket=u'Release')
+                                       pocket='Release')
         except (KeyError, ValueError, AttributeError):
             self.logger.error('Recipe not found: %s' % self.package_recipe)
-        except ResponseError, error:
+        except ResponseError as error:
             if str(error.response.status).startswith('50'):
-                reason = u'{0} - OOPS: {1}'.format(
+                reason = '{0} - OOPS: {1}'.format(
                     error.response.reason,
                     error.response.get('x-lazr-oopsid', None))
             else:

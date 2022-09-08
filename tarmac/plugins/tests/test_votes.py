@@ -29,39 +29,39 @@ class TestVotes(TarmacTestCase):
         self.proposal = Thing(
             target_branch=Thing(isPersonTrustedReviewer=self.isReviewer),
             votes=[
-                Thing(comment=Thing(vote=u"Approve"),
+                Thing(comment=Thing(vote="Approve"),
                       is_pending=False,
-                      reviewer=Thing(display_name=u'Reviewer')),
-                Thing(comment=Thing(vote=u"Approve"),
+                      reviewer=Thing(display_name='Reviewer')),
+                Thing(comment=Thing(vote="Approve"),
                       is_pending=False,
-                      reviewer=Thing(display_name=u'Reviewer')),
-                Thing(comment=Thing(vote=u"Abstain"),
+                      reviewer=Thing(display_name='Reviewer')),
+                Thing(comment=Thing(vote="Abstain"),
                       is_pending=False,
-                      reviewer=Thing(display_name=u'Reviewer')),
-                Thing(comment=Thing(vote=u"Needs Information"),
+                      reviewer=Thing(display_name='Reviewer')),
+                Thing(comment=Thing(vote="Needs Information"),
                       is_pending=False,
-                      reviewer=Thing(display_name=u'Reviewer')),
-                Thing(comment=Thing(vote=u'Disapprove'),
+                      reviewer=Thing(display_name='Reviewer')),
+                Thing(comment=Thing(vote='Disapprove'),
                       is_pending=False,
-                      reviewer=Thing(display_name=u'Community')),
+                      reviewer=Thing(display_name='Community')),
                 ])
         self.plugin = Votes()
 
     def isReviewer(self, reviewer=None):
         """Is the reviewer a trusted reviewer?"""
-        if reviewer.display_name == u'Reviewer':
+        if reviewer.display_name == 'Reviewer':
             return True
         return False
 
     def test_count_votes(self):
-        expected = {u"Approve": 2, u"Needs Information": 1}
+        expected = {"Approve": 2, "Needs Information": 1}
         observed = self.plugin.count_votes(self.proposal)
         self.assertEqual(expected, observed)
 
     def test_parse_criteria(self):
         expected = [
-            (u"Approve", operator.ge, 2),
-            (u"Disapprove", operator.eq, 0),
+            ("Approve", operator.ge, 2),
+            ("Disapprove", operator.eq, 0),
             ]
         observed = self.plugin.parse_criteria(
             "  Approve >= 2, Disapprove == 0; ")
@@ -77,15 +77,15 @@ class TestVotes(TarmacTestCase):
     def test_evaluate_criteria(self):
         self.assertTrue(
             self.plugin.evaluate_criteria(
-                {"Approve": 3}, [(u"Approve", operator.ge, 2)]))
+                {"Approve": 3}, [("Approve", operator.ge, 2)]))
         self.assertFalse(
             self.plugin.evaluate_criteria(
-                {"Approve": 3}, [(u"Approve", operator.lt, 3)]))
+                {"Approve": 3}, [("Approve", operator.lt, 3)]))
         self.assertFalse(
             self.plugin.evaluate_criteria(
                 {"Approve": 2, "Disapprove": 1},
-                [(u"Approve", operator.ge, 3),
-                 (u"Disapprove", operator.eq, 0)]))
+                [("Approve", operator.ge, 3),
+                 ("Disapprove", operator.eq, 0)]))
 
     def test_run(self):
         target = Thing(
@@ -98,16 +98,16 @@ class TestVotes(TarmacTestCase):
         """Test that all community reviews fails."""
         target = Thing(config=Thing(voting_criteria='Approve == 2'))
         self.proposal.votes = [
-            Thing(comment=Thing(vote=u'Approve'),
-                  reviewer=Thing(display_name=u'Community1')),
-            Thing(comment=Thing(vote=u'Approve'),
-                  reviewer=Thing(display_name=u'Community2'))]
+            Thing(comment=Thing(vote='Approve'),
+                  reviewer=Thing(display_name='Community1')),
+            Thing(comment=Thing(vote='Approve'),
+                  reviewer=Thing(display_name='Community2'))]
         self.assertEqual({}, self.plugin.count_votes(self.proposal))
         try:
             self.plugin.run(
                 command=None, target=target, source=None,
                 proposal=self.proposal)
-        except VotingViolation, error:
+        except VotingViolation as error:
             self.assertEqual(
                 ('Voting does not meet specified criteria. '
                  'Required: Approve == 2. '
@@ -124,7 +124,7 @@ class TestVotes(TarmacTestCase):
             self.plugin.run(
                 command=None, target=target, source=None,
                 proposal=self.proposal)
-        except VotingViolation, error:
+        except VotingViolation as error:
             self.assertEqual(
                 ("Voting does not meet specified criteria. "
                  "Required: Approve >= 2, Needs Information == 0. "
@@ -161,7 +161,7 @@ class TestVotes(TarmacTestCase):
             self.plugin.run(
                 command=command, target=target, source=None,
                 proposal=self.proposal)
-        except VotingViolation, error:
+        except VotingViolation as error:
             self.assertEqual(
                 ("Voting does not meet specified criteria. "
                  "Required: Approve >= 2, Needs Information == 0. "
@@ -172,12 +172,12 @@ class TestVotes(TarmacTestCase):
 
     def test_count_pending(self):
         """Test that is_pending gets counted as Pending."""
-        expected = {u"Approve": 1, u"Pending": 1}
+        expected = {"Approve": 1, "Pending": 1}
         self.proposal.votes = [
-            Thing(comment=Thing(vote=u''),
+            Thing(comment=Thing(vote=''),
                   is_pending=True,
-                  reviewer=Thing(display_name=u'Reviewer')),
-            Thing(comment=Thing(vote=u'Approve'),
+                  reviewer=Thing(display_name='Reviewer')),
+            Thing(comment=Thing(vote='Approve'),
                   is_pending=False,
-                  reviewer=Thing(display_name=u'Reviewer'))]
+                  reviewer=Thing(display_name='Reviewer'))]
         self.assertEqual(expected, self.plugin.count_votes(self.proposal))

@@ -21,7 +21,7 @@
 __metaclass__ = type
 
 import os
-from ConfigParser import SafeConfigParser as ConfigParser
+from configparser import ConfigParser, NoOptionError
 
 from tarmac.xdgdirs import xdg_config_home, xdg_cache_home
 

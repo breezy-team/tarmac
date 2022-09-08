@@ -22,6 +22,7 @@ import tempfile
 
 from breezy import branch as bzr_branch
 from breezy.errors import NoSuchRevision
+from breezy.revision import NULL_REVISION
 from breezy.workingtree import WorkingTree
 
 from tarmac.config import BranchConfig
@@ -121,10 +122,10 @@ class Branch(object):
         conflict_list = self.tree.merge_from_branch(
             branch.bzr_branch, to_revision=revid)
         if conflict_list:
-            message = u'Conflicts merging branch.'
+            message = 'Conflicts merging branch.'
             lp_comment = (
-                u'Attempt to merge into %(target)s failed due to conflicts: '
-                u'\n\n%(output)s' % {
+                'Attempt to merge into %(target)s failed due to conflicts: '
+                '\n\n%(output)s' % {
                     'target': self.lp_branch.display_name,
                     "output": self.conflicts})
             raise BranchHasConflicts(message, lp_comment)
@@ -152,7 +153,7 @@ class Branch(object):
         conflicts = []
         for conflict in self.tree.conflicts():
             conflicts.append(
-                u'%s in %s' % (conflict.typestring, conflict.path))
+                '%s in %s' % (conflict.typestring, conflict.path))
         return '\n'.join(conflicts)
 
     def commit(self, commit_message, revprops=None, **kwargs):
@@ -218,7 +219,7 @@ class Branch(object):
                 self.bzr_branch.unlock()
         else:
             last_rev = self.bzr_branch.last_revision()
-            if last_rev != 'null:':
+            if last_rev != NULL_REVISION:
                 rev = self.bzr_branch.repository.get_revision(last_rev)
                 apparent_authors = rev.get_apparent_authors()
                 author_list.extend(

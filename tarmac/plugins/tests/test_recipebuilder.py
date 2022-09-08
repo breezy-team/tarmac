@@ -31,23 +31,23 @@ class RecipeBuilderTests(TarmacTestCase):
 
     def getRecipe(self, name=None):
         """Fake getRecipe call for testing."""
-        self.assertEqual(name, u'recipe')
+        self.assertEqual(name, 'recipe')
         recipe = Thing(requestBuild=self.requestBuild,
-                       daily_build_archive=u'ppa')
+                       daily_build_archive='ppa')
         return recipe
 
     def requestBuild(self, archive=None, distroseries=None, pocket=None):
         """Fake requestBuild call for testing."""
-        self.assertTrue(distroseries.name in [u'current', u'previous'])
-        self.assertEqual(archive, u'ppa')
+        self.assertTrue(distroseries.name in ['current', 'previous'])
+        self.assertEqual(archive, 'ppa')
 
     def test_run(self):
         """Test that the plug-in runs correctly."""
         launchpad = Thing(
-            people={u'owner': Thing(getRecipe=self.getRecipe)},
-            distributions={u'Ubuntu': Thing(series=[Thing(name=u'current'),
-                                                    Thing(name=u'previous')])})
+            people={'owner': Thing(getRecipe=self.getRecipe)},
+            distributions={'Ubuntu': Thing(series=[Thing(name='current'),
+                                                    Thing(name='previous')])})
         command = Thing(launchpad=launchpad)
-        target = Thing(config=Thing(package_recipe=u'owner/recipe',
-                                    recipe_series=u'current,previous'))
+        target = Thing(config=Thing(package_recipe='owner/recipe',
+                                    recipe_series='current,previous'))
         self.plugin.run(command=command, target=target)

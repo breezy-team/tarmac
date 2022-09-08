@@ -15,7 +15,7 @@
 
 import os
 
-from mock import patch
+from unittest.mock import patch
 from tarmac.bin.registry import CommandRegistry
 from tarmac.plugins import command
 from tarmac.tests import TarmacTestCase
@@ -82,15 +82,15 @@ class TestCommand(TarmacTestCase):
         self.config.debug = False
         target = Thing(config=Thing(
                 verify_command="python -c 'import sys;"
-                           " sys.stdout.write(\"f\\xc3\\xa5\\xc3\\xafl\");"
+                           " sys.stdout.write(\"f\xe5\xefl\");"
                            " sys.exit(1)'"),
             tree=Thing(abspath=os.path.abspath))
         e = self.assertRaises(command.VerifyCommandFailed,
                               self.plugin.run,
                               command=self.command, target=target, source=None,
                               proposal=self.proposal)
-        self.assertEqual(u'The attempt to merge lp:project/source'
-                         u' into lp:project failed.'
-                         u' Below is the output from the failed tests.'
-                         u'\n\nf\xe5\xefl\n',
+        self.assertEqual('The attempt to merge lp:project/source'
+                         ' into lp:project failed.'
+                         ' Below is the output from the failed tests.'
+                         '\n\nf\xe5\xefl\n',
                          e.comment)

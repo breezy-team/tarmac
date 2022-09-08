@@ -28,7 +28,7 @@ class CommandRegistry(object):
         try:
             _command = self._registry[name]
         except KeyError:
-            for cmd in self._registry.itervalues():
+            for cmd in self._registry.values():
                 if name in cmd.aliases:
                     _command = cmd
                     break
@@ -40,7 +40,7 @@ class CommandRegistry(object):
     # XXX: rockstar - This is entirely untested right now, since I don't know
     # how it works.
     def _list_commands(self, names):
-        names.update(self._registry.iterkeys())
+        names.update(iter(self._registry.keys()))
         return names
 
     def _run(self, args):
@@ -58,7 +58,7 @@ class CommandRegistry(object):
         '''Execute the command.'''
         try:
             self._run(args)
-        except BzrCommandError, e:
+        except BzrCommandError as e:
             sys.exit('tarmac: ERROR: ' + str(e))
 
     def register_command(self, name, command_class):

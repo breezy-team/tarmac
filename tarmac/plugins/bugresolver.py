@@ -56,7 +56,7 @@ class BugResolver(TarmacPlugin):
                 task = find_task_for_target(bug, project)
 
             if task:
-                task.status = u'Fix Committed'
+                task.status = 'Fix Committed'
                 self._set_milestone_on_task(project, task)
                 task.lp_save()
             else:

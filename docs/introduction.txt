@@ -206,19 +206,6 @@ global configuration:
   rejected_branch_status = Work in progress
 
 
-CIA.vc Notifier
-===============
-
-The CIA.vc Notifier (see ``http://cia.vc``) can be configured to
-notify the CIA.vc service of successful merges.  Tarmac has already
-been configured to work with the CIA.vc service and is set up to
-notify those in the #tarmac IRC channel on Freenode.  This
-configuration looks like this::
-
-  [lp:tarmac]
-  cia_project = tarmac
-  cia_server = http://cia.vc
-
 Voting Policy
 =============
 

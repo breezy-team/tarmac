@@ -19,7 +19,7 @@ from tarmac.plugins.bugresolver import BugResolver
 from tarmac.tests import TarmacTestCase
 from tarmac.tests import Thing
 from datetime import datetime, timedelta
-from mock import MagicMock
+from unittest.mock import MagicMock
 
 
 class BugResolverTests(TarmacTestCase):
@@ -56,21 +56,21 @@ class BugResolverTests(TarmacTestCase):
                                development_focus=self.series[0],
                                getSeries=self.getSeries),
                          Thing(name='ubuntu',
-                               development_focus=Thing(name=u'coelecanth'),
+                               development_focus=Thing(name='coelecanth'),
                                getSeries=self.getSeries)]
-        self.targets = self.series + [Thing(name=u'target (Ubuntu Badger)')]
+        self.targets = self.series + [Thing(name='target (Ubuntu Badger)')]
         self.targets[0] = self.projects[0]
         self.bugs = {'0': Thing(
-                bug_tasks=[Thing(target=self.targets[0], status=u'In Progress',
+                bug_tasks=[Thing(target=self.targets[0], status='In Progress',
                                  lp_save=self.lp_save, milestone=None,
                                  bug=Thing(id="0"),
                                  bug_target_name=self.targets[0].name),
-                           Thing(target=self.targets[2], status=u'Incomplete',
+                           Thing(target=self.targets[2], status='Incomplete',
                                  lp_save=self.lp_save, milestone=None,
                                  bug=Thing(id="0"),
                                  bug_target_name=self.targets[2].name)]),
                      '1': Thing(
-                bug_tasks=[Thing(target=self.targets[1], status=u'Confirmed',
+                bug_tasks=[Thing(target=self.targets[1], status='Confirmed',
                                  lp_save=self.lp_save,
                                  milestone=self.milestone_with_bug,
                                  bug=Thing(id="1"),
@@ -99,16 +99,16 @@ class BugResolverTests(TarmacTestCase):
 
     def test_run(self):
         """Test that the plug-in runs correctly."""
-        target = Thing(fixed_bugs=self.bugs.keys(),
+        target = Thing(fixed_bugs=list(self.bugs.keys()),
                        lp_branch=Thing(project=self.projects[0],
                                        bzr_identity='lp:target'))
         launchpad = Thing(bugs=self.bugs)
         command = Thing(launchpad=launchpad)
         self.plugin.run(command=command, target=target, source=None,
                         proposal=self.proposal)
-        self.assertEqual(self.bugs['0'].bug_tasks[0].status, u'Fix Committed')
-        self.assertEqual(self.bugs['0'].bug_tasks[1].status, u'Incomplete')
-        self.assertEqual(self.bugs['1'].bug_tasks[0].status, u'Confirmed')
+        self.assertEqual(self.bugs['0'].bug_tasks[0].status, 'Fix Committed')
+        self.assertEqual(self.bugs['0'].bug_tasks[1].status, 'Incomplete')
+        self.assertEqual(self.bugs['1'].bug_tasks[0].status, 'Confirmed')
 
     def test_run_with_set_milestone(self):
         """
@@ -117,7 +117,7 @@ class BugResolverTests(TarmacTestCase):
         and set.  Test that bug0/task0  and bug1/task0 get the correct
         milestone set.  bug0/task1 is incomplete so should not be touched.
         """
-        target = Thing(fixed_bugs=self.bugs.keys(),
+        target = Thing(fixed_bugs=list(self.bugs.keys()),
                        lp_branch=Thing(project=self.projects[0],
                                        bzr_identity='lp:target'),
                        config=Thing(set_milestone="true"))
@@ -140,35 +140,35 @@ class BugResolverTests(TarmacTestCase):
         command = Thing(launchpad=launchpad)
         self.plugin.run(command=command, target=target, source=None,
                         proposal=self.proposal)
-        self.assertEqual(self.bugs['0'].bug_tasks[0].status, u'In Progress')
-        self.assertEqual(self.bugs['0'].bug_tasks[1].status, u'Incomplete')
-        self.assertEqual(self.bugs['1'].bug_tasks[0].status, u'Confirmed')
+        self.assertEqual(self.bugs['0'].bug_tasks[0].status, 'In Progress')
+        self.assertEqual(self.bugs['0'].bug_tasks[1].status, 'Incomplete')
+        self.assertEqual(self.bugs['1'].bug_tasks[0].status, 'Confirmed')
 
     def test_run_with_series(self):
         """Test that bug resolution for series on bugs works."""
-        target = Thing(fixed_bugs=self.bugs.keys(),
+        target = Thing(fixed_bugs=list(self.bugs.keys()),
                        lp_branch=Thing(project=self.projects[0],
                                        bzr_identity='lp:target/stable'))
         launchpad = Thing(bugs=self.bugs)
         command = Thing(launchpad=launchpad)
         self.plugin.run(command=command, target=target, source=None,
                         proposal=self.proposal)
-        self.assertEqual(self.bugs['0'].bug_tasks[0].status, u'In Progress')
-        self.assertEqual(self.bugs['0'].bug_tasks[1].status, u'Incomplete')
-        self.assertEqual(self.bugs['1'].bug_tasks[0].status, u'Fix Committed')
+        self.assertEqual(self.bugs['0'].bug_tasks[0].status, 'In Progress')
+        self.assertEqual(self.bugs['0'].bug_tasks[1].status, 'Incomplete')
+        self.assertEqual(self.bugs['1'].bug_tasks[0].status, 'Fix Committed')
 
     def test_run_with_series_invalid(self):
         """Test that bug resolution for series on bugs works."""
-        target = Thing(fixed_bugs=self.bugs.keys(),
+        target = Thing(fixed_bugs=list(self.bugs.keys()),
                        lp_branch=Thing(project=self.projects[0],
                                        bzr_identity='lp:target/invalid'))
         launchpad = Thing(bugs=self.bugs)
         command = Thing(launchpad=launchpad)
         self.plugin.run(command=command, target=target, source=None,
                         proposal=self.proposal)
-        self.assertEqual(self.bugs['0'].bug_tasks[0].status, u'In Progress')
-        self.assertEqual(self.bugs['0'].bug_tasks[1].status, u'Incomplete')
-        self.assertEqual(self.bugs['1'].bug_tasks[0].status, u'Confirmed')
+        self.assertEqual(self.bugs['0'].bug_tasks[0].status, 'In Progress')
+        self.assertEqual(self.bugs['0'].bug_tasks[1].status, 'Incomplete')
+        self.assertEqual(self.bugs['1'].bug_tasks[0].status, 'Confirmed')
 
     def test__find_target_milestone_older(self):
         """Dates before all milestones return the oldest milestone."""

@@ -16,7 +16,7 @@
 """Tests for the Allowed Contributors plug-in."""
 
 from lazr.restfulclient.errors import Unauthorized
-from mock import Mock
+from unittest.mock import Mock
 from tarmac.plugins.allowedcontributors import (
     InvalidContributor,
     InvalidPersonOrTeam,
@@ -34,28 +34,28 @@ class AllowedContributorTests(TarmacTestCase):
     def setUp(self):
         """Set up data for the tests."""
         super(AllowedContributorTests, self).setUp()
-        self.proposal = Thing(source_branch=Thing(display_name=u'lp:source'),
-                              target_branch=Thing(display_name=u'lp:target'))
+        self.proposal = Thing(source_branch=Thing(display_name='lp:source'),
+                              target_branch=Thing(display_name='lp:target'))
         self.plugin = AllowedContributors()
         people = Thing(
-            person1=Thing(name=u'person1',
+            person1=Thing(name='person1',
                           is_team=False,
-                          preferred_email_address=Thing(email=u'person1'),
+                          preferred_email_address=Thing(email='person1'),
                           confirmed_email_addresses=Thing()),
-            person2=Thing(name=u'person2',
+            person2=Thing(name='person2',
                           is_team=False,
-                          preferred_email_address=Thing(email=u'person2'),
+                          preferred_email_address=Thing(email='person2'),
                           confirmed_email_addresses=Thing()),
-            person3=Thing(name=u'person3',
+            person3=Thing(name='person3',
                           is_team=False,
-                          preferred_email_address=Thing(email=u'person3'),
+                          preferred_email_address=Thing(email='person3'),
                           confirmed_email_addresses=Thing()),
-            team1=Thing(name=u'team1',
+            team1=Thing(name='team1',
                         is_team=True,
                         preferred_email_address=Thing(email=None),
                         confirmed_email_addresses=Thing(),
                         members=None),
-            team2=Thing(name=u'team2',
+            team2=Thing(name='team2',
                         is_team=True,
                         preferred_email_address=Thing(email=None),
                         confirmed_email_address=Thing(),
@@ -77,8 +77,8 @@ class AllowedContributorTests(TarmacTestCase):
 
     def test_run(self):
         """Test that the plug-in runs correctly."""
-        config = Thing(allowed_contributors=u'person2,team1')
-        source = Thing(authors=[u'person1', u'person2', u'person3'])
+        config = Thing(allowed_contributors='person2,team1')
+        source = Thing(authors=['person1', 'person2', 'person3'])
         target = Thing(config=config)
         launchpad = Thing(people=self.people)
         command = Thing(launchpad=launchpad)
@@ -87,8 +87,8 @@ class AllowedContributorTests(TarmacTestCase):
 
     def test_run_failure(self):
         """Test that the plug-in fails correctly."""
-        config = Thing(allowed_contributors=u'team1')
-        source = Thing(authors=[u'person1', u'person2', u'person3'])
+        config = Thing(allowed_contributors='team1')
+        source = Thing(authors=['person1', 'person2', 'person3'])
         target = Thing(config=config)
         launchpad = Thing(people=self.people)
         command = Thing(launchpad=launchpad)
@@ -99,8 +99,8 @@ class AllowedContributorTests(TarmacTestCase):
 
     def test_run_private_team(self):
         """Test that the plug-in runs correctly."""
-        config = Thing(allowed_contributors=u'private_team')
-        source = Thing(authors=[u'person1', u'person2', u'person3'])
+        config = Thing(allowed_contributors='private_team')
+        source = Thing(authors=['person1', 'person2', 'person3'])
         target = Thing(config=config)
         launchpad = Thing(people=self.people)
         command = Thing(launchpad=launchpad)
@@ -111,8 +111,8 @@ class AllowedContributorTests(TarmacTestCase):
 
     def test_run_unauthorized_for_private_team(self):
         """Test that is_in_team returns True for person in a subteam."""
-        config = Thing(allowed_contributors=u'private_team')
-        source = Thing(authors=[u'person1', u'person2', u'person3'])
+        config = Thing(allowed_contributors='private_team')
+        source = Thing(authors=['person1', 'person2', 'person3'])
         target = Thing(config=config)
         people = Mock(spec=dict)
         people.getByEmail = self.getByEmail
@@ -140,8 +140,8 @@ class AllowedContributorTests(TarmacTestCase):
 
     def test_email_not_registered(self):
         """Test that unregistered e-mail address doesn't crash."""
-        config = Thing(allowed_contributors=u'private_team')
-        source = Thing(authors=[u'un@register.ed'])
+        config = Thing(allowed_contributors='private_team')
+        source = Thing(authors=['un@register.ed'])
         target = Thing(config=config)
         launchpad = Thing(people=self.people)
         command = Thing(launchpad=launchpad)

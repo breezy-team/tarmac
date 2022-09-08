@@ -87,7 +87,7 @@ class CommitMessageTemplateInfo(object):
     def _get_approvers(self):
         for vote in self._proposal.votes:
             comment = vote.comment
-            if comment is not None and comment.vote == u'Approve':
+            if comment is not None and comment.vote == 'Approve':
                 yield vote.reviewer
 
     @property

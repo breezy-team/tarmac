@@ -22,7 +22,7 @@ class TestCommandRegistry(TarmacTestCase):
     def test_register_command(self):
         registry = CommandRegistry(config=self.config)
         command = TarmacCommand(registry)
-        registry.register_command(u'test', command)
+        registry.register_command('test', command)
         self.assertEqual(registry._registry,
             {'test': command})
 
@@ -38,7 +38,7 @@ class TestCommandRegistry(TarmacTestCase):
         registry = CommandRegistry(config=self.config)
         self.assertRaises(
             CommandNotFound,
-            registry._get_command, TarmacCommand(registry), u'test2')
+            registry._get_command, TarmacCommand(registry), 'test2')
 
     def test_register_from_module(self):
         registry = CommandRegistry(config=self.config)
@@ -51,4 +51,4 @@ class TestCommandRegistry(TarmacTestCase):
         registry.register_command('authenticate', cmd_authenticate)
         names = {}
         names = registry._list_commands(names)
-        self.assertEqual(names.iterkeys(), registry._commands.iterkeys())
+        self.assertEqual(iter(names.keys()), iter(registry._commands.keys()))

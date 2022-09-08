@@ -14,12 +14,12 @@
 # You should have received a copy of the GNU General Public License
 # along with Tarmac.  If not, see <http://www.gnu.org/licenses/>.
 '''Tests for tarmac.bin.commands.py.'''
-from cStringIO import StringIO
+from io import StringIO
 import os
 import shutil
 import sys
 
-from mock import patch, MagicMock
+from unittest.mock import patch, MagicMock
 from tarmac.bin import commands
 from tarmac.bin.registry import CommandRegistry
 from tarmac.branch import Branch
@@ -51,7 +51,7 @@ class TestCommand(TarmacTestCase):
 
     def test__init__(self):
         registry = CommandRegistry(config=self.config)
-        command_name = u'test'
+        command_name = 'test'
         command = commands.TarmacCommand(registry)
         command.NAME = command_name
         self.assertEqual(command.NAME, command_name)
@@ -141,10 +141,10 @@ class TestMergeCommand(BranchTestCase):
                 revision_count=self.branch1.lp_branch.revision_count,
                 landing_candidates=None)]
         self.proposals = [Thing(
-                self_link=u'http://api.edge.launchpad.net/devel/proposal0',
-                web_link=u'http://api.edge.launchpad.net/devel/proposal0',
-                queue_status=u'Needs Review',
-                commit_message=u'Commitable.',
+                self_link='http://api.edge.launchpad.net/devel/proposal0',
+                web_link='http://api.edge.launchpad.net/devel/proposal0',
+                queue_status='Needs Review',
+                commit_message='Commitable.',
                 source_branch=self.branches[0],
                 target_branch=self.branches[1],
                 prerequisite_branch=None,
@@ -153,13 +153,13 @@ class TestMergeCommand(BranchTestCase):
                 lp_save=self.lp_save,
                 reviewed_revid=None,
                 votes=[Thing(
-                        comment=Thing(vote=u'Needs Fixing'),
-                        reviewer=Thing(display_name=u'Reviewer'))]),
+                        comment=Thing(vote='Needs Fixing'),
+                        reviewer=Thing(display_name='Reviewer'))]),
                           Thing(
-                self_link=u'https://api.launchpad.net/1.0/proposal1',
-                web_link=u'https://code.launchpad.net/proposal1',
-                queue_status=u'Approved',
-                commit_message=u'Commit this.',
+                self_link='https://api.launchpad.net/1.0/proposal1',
+                web_link='https://code.launchpad.net/proposal1',
+                queue_status='Approved',
+                commit_message='Commit this.',
                 source_branch=self.branches[0],
                 target_branch=self.branches[1],
                 prerequisite_branch=None,
@@ -168,11 +168,11 @@ class TestMergeCommand(BranchTestCase):
                 lp_save=self.lp_save,
                 reviewed_revid=None,
                 votes=[Thing(
-                        comment=Thing(vote=u'Approve'),
-                        reviewer=Thing(display_name=u'Reviewer')),
+                        comment=Thing(vote='Approve'),
+                        reviewer=Thing(display_name='Reviewer')),
                                        Thing(
-                        comment=Thing(vote=u'Abstain'),
-                        reviewer=Thing(display_name=u'Reviewer2'))])]
+                        comment=Thing(vote='Abstain'),
+                        reviewer=Thing(display_name='Reviewer2'))])]
         self.branches[1].landing_candidates = self.proposals
         self.branches[0].landing_targets = [
                 self.proposals[0], self.proposals[1]]
@@ -201,10 +201,10 @@ class TestMergeCommand(BranchTestCase):
         branch3.lp_branch.unique_name = '~user/branch/' + name
         branch3.lp_branch.landing_candidates = []
         b3_proposal = Thing(
-            self_link=u'https://api.launchpad.net/1.0/proposal3',
-            web_link=u'https://code.launchpad.net/proposal3',
-            queue_status=u'Approved',
-            commit_message=u'Commitable.',
+            self_link='https://api.launchpad.net/1.0/proposal3',
+            web_link='https://code.launchpad.net/proposal3',
+            queue_status='Approved',
+            commit_message='Commitable.',
             source_branch=branch3.lp_branch,
             target_branch=self.branches[1],
             prerequisite_branch=prerequisite_branch,
@@ -213,8 +213,8 @@ class TestMergeCommand(BranchTestCase):
             lp_save=self.lp_save,
             reviewed_revid=None,
             votes=[Thing(
-                    comment=Thing(vote=u'Approve'),
-                    reviewer=Thing(display_name=u'Reviewer'))])
+                    comment=Thing(vote='Approve'),
+                    reviewer=Thing(display_name='Reviewer'))])
 
         branch3.lp_branch.landing_targets = [b3_proposal]
         self.proposals.append(b3_proposal)
@@ -256,14 +256,14 @@ class TestMergeCommand(BranchTestCase):
         self.command.run(launchpad=self.launchpad)
         self.assertTrue(isinstance(self.error, UnapprovedChanges))
         self.assertEqual(self.error.comment,
-                         u'No approved revision specified.')
+                         'No approved revision specified.')
 
     def test_get_reviews(self):
         """Test that the _get_reviews method gives the right lists."""
         self.assertEqual(self.command._get_reviews(self.proposals[0]),
-                         [u'Reviewer;Needs Fixing'])
+                         ['Reviewer;Needs Fixing'])
         self.assertEqual(self.command._get_reviews(self.proposals[1]),
-                         [u'Reviewer;Approve', u'Reviewer2;Abstain'])
+                         ['Reviewer;Approve', 'Reviewer2;Abstain'])
 
     def test_run_merge_with_unmerged_prerequisite_skips(self):
         """Test that mereging a branch with an unmerged prerequisite skips."""
@@ -287,10 +287,10 @@ class TestMergeCommand(BranchTestCase):
         branch3.unique_name = 'branch3'
         branch3.lp_branch.landing_candidates = []
         b3_proposal = Thing(
-            self_link=u'http://api.edge.launchpad.net/devel/proposal3',
-            web_link=u'http://api.edge.launchpad.net/devel/proposal3',
-            queue_status=u'Work in Progress',
-            commit_message=u'Commitable.',
+            self_link='http://api.edge.launchpad.net/devel/proposal3',
+            web_link='http://api.edge.launchpad.net/devel/proposal3',
+            queue_status='Work in Progress',
+            commit_message='Commitable.',
             source_branch=branch3.lp_branch,
             target_branch=self.branches[1],
             prerequisite_branch=None,
@@ -299,8 +299,8 @@ class TestMergeCommand(BranchTestCase):
             lp_save=self.lp_save,
             reviewed_revid=None,
             votes=[Thing(
-                    comment=Thing(vote=u'Needs Fixing'),
-                    reviewer=Thing(display_name=u'Reviewer'))])
+                    comment=Thing(vote='Needs Fixing'),
+                    reviewer=Thing(display_name='Reviewer'))])
 
         branch3.lp_branch.landing_targets = [b3_proposal]
 
@@ -333,10 +333,10 @@ class TestMergeCommand(BranchTestCase):
         branch3.lp_branch.unique_name = 'branch3'
         branch3.lp_branch.landing_candidates = []
         b3_proposal = Thing(
-            self_link=u'http://api.edge.launchpad.net/devel/proposal3',
-            web_link=u'http://api.edge.launchpad.net/devel/proposal3',
-            queue_status=u'Work in Progress',
-            commit_message=u'Commitable.',
+            self_link='http://api.edge.launchpad.net/devel/proposal3',
+            web_link='http://api.edge.launchpad.net/devel/proposal3',
+            queue_status='Work in Progress',
+            commit_message='Commitable.',
             source_branch=branch3.lp_branch,
             target_branch=self.branches[1],
             prerequisite_branch=None,
@@ -345,8 +345,8 @@ class TestMergeCommand(BranchTestCase):
             lp_save=self.lp_save,
             reviewed_revid=None,
             votes=[Thing(
-                    comment=Thing(vote=u'Needs Fixing'),
-                    reviewer=Thing(display_name=u'Reviewer'))])
+                    comment=Thing(vote='Needs Fixing'),
+                    reviewer=Thing(display_name='Reviewer'))])
 
         branch3.lp_branch.landing_targets = []
 
@@ -357,8 +357,8 @@ class TestMergeCommand(BranchTestCase):
         self.command.run(launchpad=self.launchpad)
         shutil.rmtree(branch3_dir)
         self.assertEqual(self.error.comment,
-                         u'No proposals found for merge of lp:branch3 '
-                         u'into lp:branch1.')
+                         'No proposals found for merge of lp:branch3 '
+                         'into lp:branch1.')
 
     def test_run_merge_with_prerequisite_with_multiple_proposals_fails(self):
         """Test that mereging a branch with an unmerged prerequisite fails."""
@@ -382,10 +382,10 @@ class TestMergeCommand(BranchTestCase):
         branch3.lp_branch.unique_name = 'branch3'
         branch3.lp_branch.landing_candidates = []
         b3_proposal = Thing(
-            self_link=u'http://api.edge.launchpad.net/devel/proposal3',
-            web_link=u'http://api.edge.launchpad.net/devel/proposal3',
-            queue_status=u'Work in Progress',
-            commit_message=u'Commitable.',
+            self_link='http://api.edge.launchpad.net/devel/proposal3',
+            web_link='http://api.edge.launchpad.net/devel/proposal3',
+            queue_status='Work in Progress',
+            commit_message='Commitable.',
             source_branch=branch3.lp_branch,
             target_branch=self.branches[1],
             prerequisite_branch=None,
@@ -394,8 +394,8 @@ class TestMergeCommand(BranchTestCase):
             lp_save=self.lp_save,
             reviewed_revid=None,
             votes=[Thing(
-                    comment=Thing(vote=u'Needs Fixing'),
-                    reviewer=Thing(display_name=u'Reviewer'))])
+                    comment=Thing(vote='Needs Fixing'),
+                    reviewer=Thing(display_name='Reviewer'))])
 
         branch3.lp_branch.landing_targets = [
             b3_proposal,
@@ -410,9 +410,9 @@ class TestMergeCommand(BranchTestCase):
         self.command.run(launchpad=self.launchpad)
         shutil.rmtree(branch3_dir)
         self.assertEqual(self.error.comment,
-                         u'More than one proposal found for merge of '
-                         u'lp:branch3 into lp:branch1, '
-                         u'which is not Superseded.')
+                         'More than one proposal found for merge of '
+                         'lp:branch3 into lp:branch1, '
+                         'which is not Superseded.')
 
     @patch('breezy.workingtree.WorkingTree.open')
     def test_run_merge_with_invalid_workingtree(self, mocked):
@@ -440,20 +440,15 @@ class TestMergeCommand(BranchTestCase):
 
         sys.stdout = old_stdout
 
-    def test__compare_proposals(self):
+    def test_sort_proposals(self):
         """
-        _compare_proposals is meant to be a sort routine comparison function
+        sort_landing_candidates is meant to be a sort routine comparison function
         """
         self.addProposal("compare_proposals", self.branches[0])
         self.assertEqual(
-            commands._compare_proposals(self.proposals[0], self.proposals[1]),
-            0)
-        self.assertEqual(
-            commands._compare_proposals(self.proposals[0], self.proposals[2]),
-            -1)
-        self.assertEqual(
-            commands._compare_proposals(self.proposals[2], self.proposals[0]),
-            1)
+            [self.proposals[0].self_link, self.proposals[1].self_link,
+             self.proposals[2].self_link], 
+            [p.self_link for p in commands.sort_landing_candidates(self.proposals)])
 
     def test__get_mergable_proposals_for_branch_are_sorted(self):
         """

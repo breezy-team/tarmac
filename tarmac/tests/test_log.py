@@ -16,7 +16,7 @@
 # along with Tarmac.  If not, see <http://www.gnu.org/licenses/>.
 
 '''Tests for tarmac.log'''
-import cStringIO
+from io import StringIO
 import os
 import sys
 
@@ -40,14 +40,14 @@ class TestSetupLogging(TarmacTestCase):
         self.assertTrue(os.path.isdir('foo'))
 
     def test_ensure_log_dir_cannot_create(self):
-        stderr = cStringIO.StringIO()
+        stderr = StringIO()
         self.patch(sys, 'stderr', stderr)
         os.mkdir('foo')
-        os.chmod('foo', 0500)
+        os.chmod('foo', 0o500)
         log_file = 'foo/baz/bar.log'
         log.ensure_log_dir(log_file)
         self.assertFalse(os.path.exists('foo/baz'))
-        os.chmod('foo', 0700)
+        os.chmod('foo', 0o700)
         self.assertContainsRe(stderr.getvalue(),
             'Failed to create logging directory: .*foo/baz')
 

@@ -32,7 +32,7 @@ operator_map = {
     }
 
 operator_map_inverse = dict(
-    (op, name) for (name, op) in operator_map.iteritems())
+    (op, name) for (name, op) in list(operator_map.items()))
 
 criteria_split = re.compile(
     "\s* [,;] \s*", re.VERBOSE | re.MULTILINE)
@@ -77,14 +77,14 @@ class Votes(TarmacPlugin):
         if not self.evaluate_criteria(votes, criteria):
             votes_desc = ", ".join(
                 "%d %s" % (value, vote)
-                for (vote, value) in sorted(votes.iteritems()))
+                for (vote, value) in sorted(votes.items()))
             criteria_desc = ", ".join(
                 "%s %s %d" % (vote, operator_map_inverse[op], value)
                 for (vote, op, value) in criteria)
             lp_comment = (
-                u"Voting does not meet specified criteria. "
-                u"Required: %s. Got: %s." % (criteria_desc, votes_desc))
-            raise VotingViolation(u'Voting criteria not met.', lp_comment)
+                "Voting does not meet specified criteria. "
+                "Required: %s. Got: %s." % (criteria_desc, votes_desc))
+            raise VotingViolation('Voting criteria not met.', lp_comment)
 
     def count_votes(self, proposal):
         """Count and collate the votes.
@@ -97,10 +97,10 @@ class Votes(TarmacPlugin):
             if not target.isPersonTrustedReviewer(reviewer=vote.reviewer):
                 continue
             if vote.is_pending:
-                counter[u'Pending'] += 1
+                counter['Pending'] += 1
             else:
                 comment = vote.comment
-                if comment is not None and comment.vote != u'Abstain':
+                if comment is not None and comment.vote != 'Abstain':
                     counter[comment.vote] += 1
         return counter
 
