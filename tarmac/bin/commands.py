@@ -209,8 +209,7 @@ class cmd_merge(TarmacCommand):
         if not dry_run:
             proposal.createComment(subject=subject, content=comment)
             if self.config.rejected_branch_status is not None:
-                proposal.setStatus(
-                    status=self.config.rejected_branch_status)
+                proposal.setStatus(status=self.config.rejected_branch_status)
             else:
                 proposal.setStatus(status='Needs review')
             proposal.lp_save()
@@ -239,8 +238,9 @@ class cmd_merge(TarmacCommand):
             return
 
         try:
-            target = Branch.create(lp_branch, self.config, create_tree=True,
-                                   launchpad=self.launchpad)
+            target = Branch.create(
+                lp_branch, config=self.config, create_tree=True,
+                launchpad=self.launchpad)
         except TarmacMergeError as failure:
             self._handle_merge_error(proposals[0], failure, dry_run)
             return
@@ -280,7 +280,8 @@ class cmd_merge(TarmacCommand):
                             'No approved revision specified.')
 
                     source = Branch.create(
-                        proposal.source_branch, self.config, target=target)
+                        proposal.source_branch, config=self.config,
+                        target=target, launchpad=self.launchpad)
 
                     approved = source.bzr_branch.revision_id_to_revno(
                         proposal.reviewed_revid.encode('utf-8'))

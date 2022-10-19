@@ -20,6 +20,7 @@
 # pylint: disable-msg=C0103
 __metaclass__ = type
 
+import logging
 import os
 from configparser import ConfigParser
 
@@ -30,6 +31,7 @@ class TarmacConfig(ConfigParser):
     '''A class for handling configuration.'''
 
     def __init__(self):
+        self.logger = logging.getLogger('tarmac')
         DEFAULTS = {
             'log_file': os.path.join(self.CONFIG_HOME, 'tarmac.log'),
             }
@@ -37,6 +39,7 @@ class TarmacConfig(ConfigParser):
         ConfigParser.__init__(self)
 
         self._check_config_dirs()
+        self.logger.info('Reading configuration from %s', self.CONFIG_FILE)
         self.read(self.CONFIG_FILE)
 
         if not self.has_section('Tarmac'):

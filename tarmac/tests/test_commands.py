@@ -177,8 +177,18 @@ class TestMergeCommand(BranchTestCase):
         self.branches[0].landing_targets = [
                 self.proposals[0], self.proposals[1]]
 
+        @staticmethod
+        def resolve_lp_url(unique_name, lp):
+            for branch in self.branches:
+                if branch.unique_name == unique_name:
+                    return 'file://%s/%s' % (
+                        self.TEST_ROOT, branch.bzr_identity[3:])
+            raise AssertionError('unknown branch %s' % unique_name)
+
+        Branch.resolve_lp_url = resolve_lp_url
+
         self.launchpad = Thing(branches=Thing(getByUrl=self.getBranchByUrl),
-                               me=Thing(display_name='Tarmac'))
+                               me=Thing(display_name='Tarmac', name='tarmac'))
         self.error = None
         registry = CommandRegistry(config=self.config)
         registry.register_command('merge', commands.cmd_merge)

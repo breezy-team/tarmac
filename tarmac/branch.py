@@ -25,7 +25,6 @@ from breezy import branch as bzr_branch
 from breezy.errors import NoSuchRevision
 from breezy.revision import NULL_REVISION
 from breezy.workingtree import WorkingTree
-from breezy.plugins.launchpad.lp_directory import LaunchpadDirectory
 
 from tarmac.config import BranchConfig
 from tarmac.exceptions import (
@@ -35,16 +34,14 @@ from tarmac.exceptions import (
 )
 
 
-def resolve_lp_url(lp_url, launchpad):
-    return LaunchpadDirectory()._resolve(lp_url, _lp_login=launchpad.me.name)
-
-
 class Branch(object):
 
-    def __init__(self, lp_branch, config=False, target=None, launchpad=None):
+    def __init__(self, lp_branch, *, config=None, target=None, launchpad=None):
         self.lp_branch = lp_branch
         self.bzr_branch = bzr_branch.Branch.open(
-            resolve_lp_url(self.lp_branch.bzr_identity, self.launchpad))
+            self.lp_branch.bzr_identity
+            if launchpad is None else
+            self.resolve_lp_url(self.lp_branch.unique_name, launchpad))
         if config:
             if lp_branch.bzr_identity in config.branches:
                 self.config = BranchConfig(lp_branch.bzr_identity, config)
@@ -60,12 +57,20 @@ class Branch(object):
         self.exit_stack = ExitStack()
         self.exit_stack.__enter__()
 
+    @staticmethod
+    def resolve_lp_url(unique_name, launchpad):
+        return 'bzr+ssh://%s@bazaar.launchpad.net/%s' % (
+            launchpad.me.name, unique_name)
+
     def __del__(self):
         """Do some potentially necessary cleanup during deletion."""
-        self.exit_stack.__exit__(None, None, None)
+        try:
+            self.exit_stack.__exit__(None, None, None)
+        except AttributeError:
+            pass
 
     @classmethod
-    def create(cls, lp_branch, config, create_tree=False, target=None,
+    def create(cls, lp_branch, config, *, create_tree=False, target=None,
                launchpad=None):
         clazz = cls(lp_branch, config=config, target=target,
                     launchpad=launchpad)

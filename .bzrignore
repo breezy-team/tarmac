@@ -5,3 +5,4 @@ dist
 TODO
 debug*
 tarmac.egg-info
+.mypy_cache

@@ -19,7 +19,6 @@ from tempfile import SpooledTemporaryFile, TemporaryDirectory
 
 from breezy.export import export
 import os
-import shutil
 import subprocess
 
 from tarmac.exceptions import TarmacMergeError

@@ -35,6 +35,15 @@ from tarmac.tests import (
 class TestBranch(BranchTestCase):
     '''Test for Tarmac.branch.Branch.'''
 
+    def setUp(self):
+        super(TestBranch, self).setUp()
+
+        @staticmethod
+        def resolve_lp_url(unique_name, lp):
+            return 'file://%s/%s' % (self.TEST_ROOT, unique_name[3:])
+
+        branch.Branch.resolve_lp_url = resolve_lp_url
+
     def test_use_unique_name_fallback(self):
         """Test that unique_name is used if bzr_identity isn't."""
         tree_dir = os.path.join(self.TEST_ROOT, 'test_unique_name')
@@ -232,10 +241,9 @@ class TestBranch(BranchTestCase):
         tree_dir = os.path.join(self.TEST_ROOT, 'test_invalid_workingtree')
         self.add_branch_config(tree_dir)
         self.addCleanup(self.remove_branch_config, tree_dir)
-        a_branch = branch.Branch(MockLPBranch(tree_dir), self.config)
+        a_branch = branch.Branch(MockLPBranch(tree_dir), config=self.config)
         a_branch.bzr_branch.user_url = 'lp:invalid'
-        self.assertRaises(InvalidWorkingTree,
-                          a_branch.create_tree)
+        self.assertRaises(InvalidWorkingTree, a_branch.create_tree)
 
     def test_committer_is_launchpad_user(self):
         """Test that the committer when committing, is the LP user's name."""
@@ -245,8 +253,10 @@ class TestBranch(BranchTestCase):
         self.addCleanup(shutil.rmtree, tree_dir)
 
         committer = 'LP User'
-        a_branch = branch.Branch.create(MockLPBranch(tree_dir), self.config,
-                                        create_tree=True, launchpad=Thing(
-                                            me=Thing(display_name=committer)))
+        lp_name = 'lpuser'
+        a_branch = branch.Branch.create(
+            MockLPBranch(tree_dir), self.config,
+            create_tree=True, launchpad=Thing(
+                me=Thing(display_name=committer, name=lp_name)))
         a_branch.commit('Test LP User.')
         self.assertEqual(committer, a_branch.authors[0])

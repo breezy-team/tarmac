@@ -43,7 +43,7 @@ class MockLPBranch(object):
 
     def __init__(self, tree_dir, source_branch=None):
         self.tree_dir = tree_dir
-        os.makedirs(tree_dir)
+        os.makedirs(tree_dir, exist_ok=True)
         if source_branch:
             source_dir = source_branch._internal_bzr_branch.controldir
             controldir = source_dir.sprout(tree_dir)
@@ -215,7 +215,6 @@ class BranchTestCase(TarmacTestCase):
         added_file = os.path.join(branch2.lp_branch.tree_dir, 'README')
         with open(added_file, 'w+') as f:
             f.write('This is a test file.')
-            f.close()
         branch2.tree.add(['README'])
         branch2.commit('Added a README for testing')
         branch2.lp_branch.revision_count += 2
