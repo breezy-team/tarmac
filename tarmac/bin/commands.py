@@ -20,8 +20,9 @@ import os
 import re
 
 from breezy.commands import Command
-from breezy.errors import PointlessMerge, LockContention
+from breezy.errors import LockContention
 from breezy.help import help_commands
+from breezy.workingtree import PointlessMerge
 from launchpadlib.launchpad import Launchpad
 from launchpadlib.uris import (LPNET_SERVICE_ROOT,
     STAGING_SERVICE_ROOT)
@@ -182,9 +183,10 @@ class cmd_merge(TarmacCommand):
         options.one_option,
         options.list_approved_option,
         options.proposal_option,
+        options.dry_run_option,
     ]
 
-    def _handle_merge_error(self, proposal, failure):
+    def _handle_merge_error(self, proposal, failure, dry_run):
         """Handle TarmacMergeError cases from _do_merges."""
         self.logger.warning(
             'Merging %(source)s into %(target)s failed: %(msg)s' %
@@ -201,15 +203,16 @@ class cmd_merge(TarmacCommand):
         else:
             comment = str(failure)
 
-        proposal.createComment(subject=subject, content=comment)
-        try:
-            proposal.setStatus(
-                status=self.config.rejected_branch_status)
-        except AttributeError:
-            proposal.setStatus(status='Needs review')
-        proposal.lp_save()
+        if not dry_run:
+            proposal.createComment(subject=subject, content=comment)
+            try:
+                proposal.setStatus(
+                    status=self.config.rejected_branch_status)
+            except AttributeError:
+                proposal.setStatus(status='Needs review')
+            proposal.lp_save()
 
-    def _do_merges(self, branch_url, source_mp=None):
+    def _do_merges(self, branch_url, source_mp=None, dry_run=False):
         """Merge the approved proposals for %branch_url."""
         lp_branch = self.launchpad.branches.getByUrl(url=branch_url)
         if lp_branch is None:
@@ -236,7 +239,7 @@ class cmd_merge(TarmacCommand):
             target = Branch.create(lp_branch, self.config, create_tree=True,
                                    launchpad=self.launchpad)
         except TarmacMergeError as failure:
-            self._handle_merge_error(proposals[0], failure)
+            self._handle_merge_error(proposals[0], failure, dry_run)
             return
 
         self.logger.debug('Firing tarmac_pre_merge hook')
@@ -301,7 +304,7 @@ class cmd_merge(TarmacCommand):
                                       self, target, source, proposal)
 
                 except TarmacMergeError as failure:
-                    self._handle_merge_error(proposal, failure)
+                    self._handle_merge_error(proposal, failure, dry_run)
 
                     # If we've been asked to only merge one branch, then exit.
                     if self.config.one:
@@ -334,6 +337,7 @@ class cmd_merge(TarmacCommand):
                 target.commit(commit_message,
                              revprops=revprops,
                              authors=source.authors,
+                             dry_run=dry_run,
                              reviews=self._get_reviews(proposal))
                 target.merge_tags(source)
 
@@ -425,7 +429,7 @@ class cmd_merge(TarmacCommand):
         api_url = urlp.sub('https://api.launchpad.net/1.0/', mp_url)
         return self.launchpad.load(api_url)
 
-    def run(self, branch_url=None, launchpad=None, **kwargs):
+    def run(self, branch_url=None, launchpad=None, dry_run=False, **kwargs):
         for key, value in list(kwargs.items()):
             self.config.set('Tarmac', key, value)
 
@@ -456,7 +460,7 @@ class cmd_merge(TarmacCommand):
                 'branch_url': branch_url})
             if not branch_url.startswith('lp:'):
                 raise TarmacCommandError('Branch urls must start with lp:')
-            self._do_merges(branch_url, source_mp=proposal)
+            self._do_merges(branch_url, source_mp=proposal, dry_run=dry_run)
 
         else:
             for branch in self.config.branches:
@@ -464,7 +468,7 @@ class cmd_merge(TarmacCommand):
                     'Merging approved branches against %(branch)s' % {
                         'branch': branch})
                 try:
-                    merged = self._do_merges(branch)
+                    merged = self._do_merges(branch, dry_run=dry_run)
 
                     # If we've been asked to only merge one branch, then exit.
                     if merged and self.config.one:
