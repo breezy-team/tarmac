@@ -55,7 +55,6 @@ class PluginTestCase(TarmacTestCase):
                         '%s:%s' % (plugin_path, plugin_path))
         plugin_name = 'testplugin'
         self.addCleanup(delattr, _mod_plugins, plugin_name)
-        plugin_file = os.path.join(plugin_path, plugin_name + '.py')
         plugin.load_plugins(load_only=plugin_name)
         mocked.assert_called_once_with(ANY, ANY)
 

@@ -76,7 +76,7 @@ def find_plugins(load_only=None):
                         logger.debug('Skipping file `%s` for plug-in.' % _file)
                         continue
 
-                if  load_only and _file != load_only:
+                if load_only and _file != load_only:
                     continue
 
                 if _file == '__init__' or (_file, full_path) in plugin_names:
@@ -102,7 +102,8 @@ def load_plugins(load_only=None):
             logger.debug('Loading plug-in: %s' % plugin_info[1])
             _module = types.ModuleType(plugin_info[0])
             with open(plugin_info[1], "rb") as f:
-                exec(compile(f.read(), plugin_info[1], 'exec'), _module.__dict__)
+                exec(compile(f.read(), plugin_info[1], 'exec'),
+                        _module.__dict__)
             setattr(_mod_plugins, plugin_info[0], _module)
         except KeyboardInterrupt:
             raise

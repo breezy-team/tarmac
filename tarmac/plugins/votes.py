@@ -35,7 +35,7 @@ operator_map_inverse = dict(
     (op, name) for (name, op) in list(operator_map.items()))
 
 criteria_split = re.compile(
-    "\s* [,;] \s*", re.VERBOSE | re.MULTILINE)
+    r"\s* [,;] \s*", re.VERBOSE | re.MULTILINE)
 
 criteria_expr = re.compile(
     r"^ \s* ([a-zA-Z ]+?) \s* (%s) \s* ([0-9]+) \s* $" % (

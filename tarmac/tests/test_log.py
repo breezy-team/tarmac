@@ -48,7 +48,8 @@ class TestSetupLogging(TarmacTestCase):
         log.ensure_log_dir(log_file)
         self.assertFalse(os.path.exists('foo/baz'))
         os.chmod('foo', 0o700)
-        self.assertContainsRe(stderr.getvalue(),
+        self.assertContainsRe(
+            stderr.getvalue(),
             'Failed to create logging directory: .*foo/baz')
 
     def test_ensure_log_dir_handles_no_file(self):
@@ -58,6 +59,7 @@ class TestSetupLogging(TarmacTestCase):
     def test_set_up_logging_ensures_directory(self):
         class WasCalled(Exception):
             pass
+
         def was_called(log_file):
             raise WasCalled()
         self.patch(log, 'ensure_log_dir', was_called)

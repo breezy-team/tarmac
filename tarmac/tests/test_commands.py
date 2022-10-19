@@ -170,7 +170,7 @@ class TestMergeCommand(BranchTestCase):
                 votes=[Thing(
                         comment=Thing(vote='Approve'),
                         reviewer=Thing(display_name='Reviewer')),
-                                       Thing(
+                       Thing(
                         comment=Thing(vote='Abstain'),
                         reviewer=Thing(display_name='Reviewer2'))])]
         self.branches[1].landing_candidates = self.proposals
@@ -239,14 +239,14 @@ class TestMergeCommand(BranchTestCase):
     def test_run(self):
         """Test that the merge command merges a branch successfully."""
         self.proposals[1].reviewed_revid = \
-            self.branch2.bzr_branch.last_revision()
+            self.branch2.bzr_branch.last_revision().decode('utf-8')
         self.command.run(launchpad=self.launchpad)
 
     def test_run_unapprovedchanges(self):
         """Test that a mismatch between approved and tip raises an error."""
         self.proposals[1].reviewed_revid = \
             self.branch2.bzr_branch.dotted_revno_to_revision_id(
-            (self.branch2.bzr_branch.revno() - 1,))
+            (self.branch2.bzr_branch.revno() - 1,)).decode('utf-8')
         self.command.run(launchpad=self.launchpad)
         self.assertTrue(isinstance(self.error, UnapprovedChanges))
 
@@ -307,7 +307,7 @@ class TestMergeCommand(BranchTestCase):
         self.proposals.append(b3_proposal)
         self.proposals[1].prerequisite_branch = branch3.lp_branch
         self.proposals[1].reviewed_revid = \
-            self.branch2.bzr_branch.last_revision()
+            self.branch2.bzr_branch.last_revision().decode('utf-8')
         self.assertEqual(self.command.run(launchpad=self.launchpad), None)
         shutil.rmtree(branch3_dir)
 
@@ -353,7 +353,7 @@ class TestMergeCommand(BranchTestCase):
         self.proposals.append(b3_proposal)
         self.proposals[1].prerequisite_branch = branch3.lp_branch
         self.proposals[1].reviewed_revid = \
-            self.branch2.bzr_branch.last_revision()
+            self.branch2.bzr_branch.last_revision().decode('utf-8')
         self.command.run(launchpad=self.launchpad)
         shutil.rmtree(branch3_dir)
         self.assertEqual(self.error.comment,
@@ -406,7 +406,7 @@ class TestMergeCommand(BranchTestCase):
         self.proposals.append(b3_proposal)
         self.proposals[1].prerequisite_branch = branch3.lp_branch
         self.proposals[1].reviewed_revid = \
-            self.branch2.bzr_branch.last_revision()
+            self.branch2.bzr_branch.last_revision().decode('utf-8')
         self.command.run(launchpad=self.launchpad)
         shutil.rmtree(branch3_dir)
         self.assertEqual(self.error.comment,
@@ -420,7 +420,7 @@ class TestMergeCommand(BranchTestCase):
         invalid_tree_comment = 'This tree is invalid.'
         mocked.side_effect = InvalidWorkingTree(invalid_tree_comment)
         self.proposals[1].reviewed_revid = \
-            self.branch2.bzr_branch.last_revision()
+            self.branch2.bzr_branch.last_revision().decode('utf-8')
         self.command.run(launchpad=self.launchpad)
         self.assertEqual(self.error.comment,
                          invalid_tree_comment)
@@ -442,13 +442,14 @@ class TestMergeCommand(BranchTestCase):
 
     def test_sort_proposals(self):
         """
-        sort_landing_candidates is meant to be a sort routine comparison function
+        sort_landing_candidates is meant to be a sort routine comparison fn
         """
         self.addProposal("compare_proposals", self.branches[0])
         self.assertEqual(
             [self.proposals[0].self_link, self.proposals[1].self_link,
-             self.proposals[2].self_link], 
-            [p.self_link for p in commands.sort_landing_candidates(self.proposals)])
+             self.proposals[2].self_link],
+            [p.self_link
+             for p in commands.sort_landing_candidates(self.proposals)])
 
     def test__get_mergable_proposals_for_branch_are_sorted(self):
         """
@@ -510,19 +511,20 @@ class TestMergeCommand(BranchTestCase):
     def test_run_merge_with_specific_proposal_without_branch_url(self):
         """Test that a specific proposal is merged, with the others ignored."""
         self.proposals[1].reviewed_revid = \
-            self.branch2.bzr_branch.last_revision()
+            self.branch2.bzr_branch.last_revision().decode('utf-8')
         self.addProposal('specific_merge_without_branch_url')
         self.launchpad.load = MagicMock(return_value=self.proposals[1])
         self.command._get_reviews = MagicMock()
         self.config.proposal = self.proposals[1].web_link
         self.command.run(launchpad=self.launchpad)
-        self.launchpad.load.assert_called_once_with(self.proposals[1].self_link)
+        self.launchpad.load.assert_called_once_with(
+            self.proposals[1].self_link)
         self.command._get_reviews.assert_called_once_with(self.proposals[1])
 
     def test_run_merge_with_specific_proposal_with_branch_url(self):
         """Test that a specific proposal is merged, with the others ignored."""
         self.proposals[1].reviewed_revid = \
-            self.branch2.bzr_branch.last_revision()
+            self.branch2.bzr_branch.last_revision().decode('utf-8')
         self.addProposal('specific_merge_with_branch_url')
         self.launchpad.load = MagicMock(return_value=self.proposals[1])
         self.command._get_reviews = MagicMock()

@@ -16,8 +16,7 @@
 set -e -x
 
 # Run the tests
-python ./setup.py build test clean
+python3 -m unittest discover tarmac.tests
 
 # Run the style checks
-pyflakes bin tarmac setup.py
-
+flake8 bin tarmac setup.py

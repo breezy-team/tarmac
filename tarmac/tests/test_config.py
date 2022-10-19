@@ -36,7 +36,7 @@ class TestTarmacConfig(TarmacTestCase):
     def test_section_tree_dir_NOT_SET(self):
         '''Ensure that the branch's tree cache can be read.'''
         config = BranchConfig('lp:test_no_tree_dir', self.config)
-        self.assertFalse(hasattr(config, 'tree_dir'))
+        self.assertIs(None, config.tree_dir)
 
     def test_set(self):
         """Test that the set override method works properly."""
@@ -73,8 +73,7 @@ class BranchConfigTestCase(TarmacTestCase):
 
         config = BranchConfig('lp:test_get_value', self.config)
 
-        self.assertTrue(hasattr(config, 'test_key'))
-        self.assertEqual(config.test_key, expected_value)
+        self.assertTrue(config.get('test_key'))
         self.assertEqual(config.get('test_key'), expected_value)
 
     def test_get_unset_value_returns_none(self):

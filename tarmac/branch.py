@@ -51,15 +51,12 @@ class Branch(object):
         self.launchpad = launchpad
         self.target = target
         self.logger = logging.getLogger('tarmac')
+        self.exit_stack = ExitStack()
+        self.exit_stack.__enter__()
 
     def __del__(self):
-        """Do some potenetially necessary cleanup during deletion."""
-        try:
-            # If we were using a temp directory, then remove it
-            shutil.rmtree(self.temp_tree_dir)
-        except AttributeError:
-            # Not using a tempdir
-            pass
+        """Do some potentially necessary cleanup during deletion."""
+        self.exit_stack.__exit__(None, None, None)
 
     @classmethod
     def create(cls, lp_branch, config, create_tree=False, target=None,
@@ -72,10 +69,26 @@ class Branch(object):
 
     def create_tree(self):
         '''Create the dir and working tree.'''
-        self.logger.debug(
-            'Using tree in %(tree_dir)s' % {
-                'tree_dir': self.config.tree_dir})
-        if os.path.exists(self.config.tree_dir):
+        self.logger.debug('Using tree in %s', self.config.tree_dir)
+        if self.config.tree_dir is None:
+            # Store this so we can rmtree later
+            self.temp_tree_dir = tempfile.mkdtemp()
+            self.exit_stack.callback(
+                shutil.rmtree, self.temp_tree_dir,
+                ignore_errors=True)
+            self.logger.debug(
+                'Using temp dir at %(tree_dir)s' % {
+                    'tree_dir': self.temp_tree_dir})
+            self.tree = self.bzr_branch.create_checkout(
+                self.temp_tree_dir, lightweight=True)
+            if self.tree.branch.user_url != self.bzr_branch.user_url:
+                self.logger.debug('Tree URLs do not match: %s - %s' % (
+                    self.bzr_branch.user_url, self.tree.branch.user_url))
+                raise InvalidWorkingTree(
+                    'The `tree_dir` option for the target branch is not a '
+                    'lightweight checkout. Please ask a project '
+                    'administrator to resolve the issue, and try again.')
+        elif os.path.exists(self.config.tree_dir):
             self.tree = WorkingTree.open(self.config.tree_dir)
 
             if self.tree.branch.user_url != self.bzr_branch.user_url:
@@ -170,8 +183,11 @@ class Branch(object):
             committer = 'Tarmac'
 
         if not dry_run:
-            self.tree.commit(commit_message, committer=committer,
-                             revprops=revprops, authors=authors)
+            try:
+                self.tree.commit(commit_message, committer=committer,
+                                 revprops=revprops, authors=authors)
+            except Exception as e:
+                raise TarmacMergeError(str(e)) from e
 
     @property
     def landing_candidates(self):
@@ -218,9 +234,10 @@ class Branch(object):
         bugs_list = []
 
         with self.bzr_branch.lock_read():
-            oldrevid = self.bzr_branch.get_rev_id(self.lp_branch.revision_count)
+            oldrevid = self.bzr_branch.get_rev_id(
+                self.lp_branch.revision_count)
             for rev_info in self.bzr_branch.iter_merge_sorted_revisions(
-                stop_revision_id=oldrevid):
+                    stop_revision_id=oldrevid):
                 try:
                     rev = self.bzr_branch.repository.get_revision(rev_info[0])
                     for bug in rev.iter_bugs():

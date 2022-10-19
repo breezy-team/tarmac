@@ -21,7 +21,7 @@
 __metaclass__ = type
 
 import os
-from configparser import ConfigParser, NoOptionError
+from configparser import ConfigParser
 
 from tarmac.xdgdirs import xdg_config_home, xdg_cache_home
 
@@ -123,12 +123,17 @@ class BranchConfig:
 
     def __init__(self, branch_name, config):
         if config.has_section(branch_name):
-            for key, val in config.items(branch_name):
-                setattr(self, key, val)
+            self._items = dict(config.items(branch_name))
+        else:
+            self._items = {}
 
     def get(self, attr, default=None):
         '''A convenient method for getting a config key that may be missing.
 
         Defaults to None if the key is not set.
         '''
-        return getattr(self, attr, default)
+        return self._items.get(attr, default)
+
+    @property
+    def tree_dir(self):
+        return self.get('tree_dir')
