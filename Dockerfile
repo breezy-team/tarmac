@@ -1,6 +1,6 @@
 FROM debian:sid-slim
 
-RUN apt -y update && apt -y upgrade && apt -y install --no-install-recommends brz python3-setuptools ca-certificates python3-httplib2 python3-launchpadlib
+RUN apt -y update && apt -y upgrade && apt -y install --no-install-recommends brz python3-setuptools ca-certificates python3-httplib2 python3-launchpadlib python3-paramiko openssh-client
 
 COPY . /tmp/tarmac
 
