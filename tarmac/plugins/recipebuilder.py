@@ -30,11 +30,10 @@ class PackageRecipe(TarmacPlugin):
         '''Trigger a package recipe build.'''
         success_count = kwargs.get('success_count', 0)
 
-        try:
-            self.package_recipe = target.config.package_recipe
-            self.series_list = target.config.recipe_series.split(',')
-        except AttributeError:
+        self.package_recipe = target.config.get('package_recipe')
+        if self.package_recipe is None:
             return
+        self.series_list = target.config.recipe_series.split(',')
 
         if success_count == 0:
             return

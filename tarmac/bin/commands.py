@@ -208,10 +208,10 @@ class cmd_merge(TarmacCommand):
 
         if not dry_run:
             proposal.createComment(subject=subject, content=comment)
-            try:
+            if self.config.rejected_branch_status is not None:
                 proposal.setStatus(
                     status=self.config.rejected_branch_status)
-            except AttributeError:
+            else:
                 proposal.setStatus(status='Needs review')
             proposal.lp_save()
 

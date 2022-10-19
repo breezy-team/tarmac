@@ -59,22 +59,14 @@ class Command(TarmacPlugin):
     '''
 
     def run(self, command, target, source, proposal):
-        try:
-            self.verify_command = target.config.verify_command
-        except AttributeError:
-            # This can be killed two versions after 0.4, whatever version that
-            # is.
-            try:
-                self.verify_command = target.config.test_command
-                self.logger.warning(
-                    'test_command config setting is deprecated. '
-                    'Please use verify_command instead.')
-            except AttributeError:
-                return
+        self.verify_command = target.config.get('verify_command')
+
+        if not self.verify_command:
+            return
 
         self.proposal = proposal
 
-        self.logger.debug('Running test command: %s' % self.verify_command)
+        self.logger.debug('Running test command: %s', self.verify_command)
         cwd = os.getcwd()
         # Export the changes to a temporary directory, and run the command
         # there, to prevent possible abuse of running commands in the tree.

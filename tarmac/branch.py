@@ -188,6 +188,10 @@ class Branch(object):
                                  revprops=revprops, authors=authors)
             except Exception as e:
                 raise TarmacMergeError(str(e)) from e
+        else:
+            self.logger.info(
+                'Not actually committing to %s because of dry-run mode',
+                self.lp_branch.display_name)
 
     @property
     def landing_candidates(self):

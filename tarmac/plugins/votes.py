@@ -63,12 +63,10 @@ class Votes(TarmacPlugin):
 
     def run(self, command, target, source, proposal):
         """See L{TarmacPlugin.run}."""
-        try:
-            criteria = target.config.voting_criteria
-        except AttributeError:
-            try:
-                criteria = command.config.voting_criteria
-            except AttributeError:
+        criteria = target.config.get('voting_criteria')
+        if criteria is None:
+            criteria = command.config['Tarmac'].get('voting_criteria')
+            if criteria is None:
                 return
 
         votes = self.count_votes(proposal)

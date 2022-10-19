@@ -40,11 +40,11 @@ class AllowedContributors(TarmacPlugin):
 
     def run(self, command, target, source, proposal):
         """Check the allowed contributors list."""
-        try:
-            self.allowed_contributors = target.config.allowed_contributors
-            self.allowed_contributors = self.allowed_contributors.split(',')
-        except AttributeError:
+        allowed_contributors = target.config.get('allowed_contributors')
+        if allowed_contributors is None:
             return
+
+        self.allowed_contributors = allowed_contributors.split(',')
 
         self.logger.debug(
             'Checking that authors of %s are allowed to '

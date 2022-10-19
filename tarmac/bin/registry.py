@@ -63,11 +63,7 @@ class CommandRegistry(object):
 
     def register_command(self, name, command_class):
         '''Register a command in the registry.'''
-        try:
-            self._registry[name] = command_class
-        except AttributeError:
-            # The NAME attribute isn't set, so is invalid
-            return
+        self._registry[name] = command_class
 
     def register_from_module(self, module):
 

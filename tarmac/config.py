@@ -113,6 +113,10 @@ class TarmacConfig(ConfigParser):
         if not os.path.exists(pid_dir):
             os.makedirs(pid_dir)
 
+    @property
+    def rejected_branch_status(self):
+        return self['Tarmac'].get('rejected_branch_status')
+
 
 class BranchConfig:
     '''A Branch specific config.
@@ -137,3 +141,7 @@ class BranchConfig:
     @property
     def tree_dir(self):
         return self.get('tree_dir')
+
+    @property
+    def commit_message_template(self):
+        return self.get('commit_message_template')

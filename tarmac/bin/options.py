@@ -42,5 +42,4 @@ proposal_option = Option(
     help='Pass the URL for a specific proposal to merge to the target branch.')
 dry_run_option = Option(
     'dry-run',
-    type=bool,
     help='Do not make any actual changes.')
