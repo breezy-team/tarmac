@@ -24,8 +24,10 @@ from breezy.errors import LockContention
 from breezy.help import help_commands
 from breezy.workingtree import PointlessMerge
 from launchpadlib.launchpad import Launchpad
-from launchpadlib.uris import (LPNET_SERVICE_ROOT,
-    STAGING_SERVICE_ROOT)
+from launchpadlib.uris import (
+    LPNET_SERVICE_ROOT,
+    STAGING_SERVICE_ROOT,
+)
 
 from tarmac.bin import options
 from tarmac.branch import Branch
@@ -43,7 +45,8 @@ from tarmac.plugin import load_plugins
 def sort_landing_candidates(proposals):
     unique_names = {
         p.source_branch.unique_name: (
-            p.prerequisite_branch.unique_name if p.prerequisite_branch else None)
+            p.prerequisite_branch.unique_name
+            if p.prerequisite_branch else None)
         for p in proposals}
 
     def key(p):
@@ -276,7 +279,6 @@ class cmd_merge(TarmacCommand):
                         raise TarmacMergeError(
                             'No approved revision specified.')
 
-
                     source = Branch.create(
                         proposal.source_branch, self.config, target=target)
 
@@ -297,7 +299,8 @@ class cmd_merge(TarmacCommand):
                             'source': proposal.source_branch.web_link,
                             'revision': proposal.reviewed_revid})
 
-                    target.merge(source, proposal.reviewed_revid.encode('utf-8'))
+                    target.merge(
+                        source, proposal.reviewed_revid.encode('utf-8'))
 
                     self.logger.debug('Firing tarmac_pre_commit hook')
                     tarmac_hooks.fire('tarmac_pre_commit',
@@ -335,10 +338,10 @@ class cmd_merge(TarmacCommand):
                 if commit_message is None and self.config.imply_commit_message:
                     commit_message = proposal.description
                 target.commit(commit_message,
-                             revprops=revprops,
-                             authors=source.authors,
-                             dry_run=dry_run,
-                             reviews=self._get_reviews(proposal))
+                              revprops=revprops,
+                              authors=source.authors,
+                              dry_run=dry_run,
+                              reviews=self._get_reviews(proposal))
                 target.merge_tags(source)
 
                 self.logger.debug('Firing tarmac_post_commit hook')
@@ -351,7 +354,7 @@ class cmd_merge(TarmacCommand):
 
         # This except is here because we need the else and can't have it
         # without an except as well.
-        except:
+        except BaseException:
             raise
         else:
             self.logger.debug('Firing tarmac_post_merge hook')
@@ -366,9 +369,11 @@ class cmd_merge(TarmacCommand):
         list returned will be in the order that they should be processed.
         """
         proposals = []
-        sorted_proposals = sort_landing_candidates(lp_branch.landing_candidates)
+        sorted_proposals = sort_landing_candidates(
+            lp_branch.landing_candidates)
         for entry in sorted_proposals:
-            self.logger.debug("Considering merge proposal: {0}".format(entry.web_link))
+            self.logger.debug(
+                "Considering merge proposal: {0}".format(entry.web_link))
             prereqs = self._get_prerequisite_proposals(entry)
 
             if entry.queue_status != 'Approved':
@@ -378,7 +383,7 @@ class cmd_merge(TarmacCommand):
                 continue
 
             if (not self.config.imply_commit_message and
-                not entry.commit_message):
+                    not entry.commit_message):
                 self.logger.debug(
                     "  Skipping proposal: proposal has no commit message")
                 continue
@@ -404,9 +409,10 @@ class cmd_merge(TarmacCommand):
         target_branch = proposal.target_branch
         if not prerequisite or not prerequisite.landing_targets:
             return []
-        return [x for x in prerequisite.landing_targets
-            if x.target_branch.unique_name == target_branch.unique_name and
-            x.queue_status != 'Superseded']
+        return [
+            x for x in prerequisite.landing_targets
+            if x.target_branch.unique_name == target_branch.unique_name
+            and x.queue_status != 'Superseded']
 
     def _get_reviews(self, proposal):
         """Get the set of reviews from the proposal."""
@@ -425,7 +431,7 @@ class cmd_merge(TarmacCommand):
 
     def _get_proposal_from_mp_url(self, mp_url):
         """Return a branch_merge_proposal object from its web URL."""
-        urlp = re.compile('http[s]?://code.launchpad\.net/')
+        urlp = re.compile(r'http[s]?://code.launchpad\.net/')
         api_url = urlp.sub('https://api.launchpad.net/1.0/', mp_url)
         return self.launchpad.load(api_url)
 
@@ -480,4 +486,3 @@ class cmd_merge(TarmacCommand):
                         'An error occurred trying to merge %s: %s',
                         branch, error)
                     raise
-

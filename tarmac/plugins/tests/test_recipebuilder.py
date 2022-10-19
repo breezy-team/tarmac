@@ -46,7 +46,7 @@ class RecipeBuilderTests(TarmacTestCase):
         launchpad = Thing(
             people={'owner': Thing(getRecipe=self.getRecipe)},
             distributions={'Ubuntu': Thing(series=[Thing(name='current'),
-                                                    Thing(name='previous')])})
+                                                   Thing(name='previous')])})
         command = Thing(launchpad=launchpad)
         target = Thing(config=Thing(package_recipe='owner/recipe',
                                     recipe_series='current,previous'))

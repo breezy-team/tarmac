@@ -15,16 +15,16 @@
 # along with Tarmac.  If not, see <http://www.gnu.org/licenses/>.
 '''Tarmac plugin for running tests pre-commit.'''
 
-# Head off lint warnings.
-errno = None
-os = None
-select = None
-shutil = None
-signal = None
-subprocess = None
-sys = None
-tempfile = None
-time = None
+from tempfile import SpooledTemporaryFile, TemporaryDirectory
+
+from breezy.export import export
+import os
+import shutil
+import subprocess
+
+from tarmac.exceptions import TarmacMergeError
+from tarmac.hooks import tarmac_hooks
+from tarmac.plugins import TarmacPlugin
 
 # The TIMEOUT setting (expressed in seconds) affects how long a test will run
 # before it is deemed to be hung, and then appropriately terminated.
@@ -33,26 +33,6 @@ time = None
 # e.g. Usage: TIMEOUT = 60 * 15
 # This will set the timeout to 15 minutes.
 TIMEOUT = 60 * 15
-
-from tempfile import SpooledTemporaryFile, TemporaryDirectory
-
-from breezy.export import export
-from breezy.lazy_import import lazy_import
-lazy_import(globals(), '''
-    import errno
-    import os
-    import select
-    import shutil
-    import signal
-    import subprocess
-    import sys
-    import tempfile
-    import time
-    ''')
-
-from tarmac.exceptions import TarmacMergeError
-from tarmac.hooks import tarmac_hooks
-from tarmac.plugins import TarmacPlugin
 
 
 class VerifyCommandFailed(TarmacMergeError):
@@ -108,19 +88,23 @@ class Command(TarmacPlugin):
             with SpooledTemporaryFile() as output:
                 try:
                     return_code = subprocess.call(
-                        self.verify_command, shell=True, stdin=subprocess.DEVNULL,
+                        self.verify_command, shell=True,
+                        stdin=subprocess.DEVNULL,
                         stdout=output, stderr=output, timeout=TIMEOUT,
                         cwd=export_dest)
                 except subprocess.TimeoutExpired:
                     self.logger.debug(
-                        "Command appears to be hung. There has been no output for"
+                        "Command appears to be hung. "
+                        "There has been no output for"
                         " %d seconds. Sending SIGTERM." % TIMEOUT)
                     output.seek(0)
                     self.do_failed(output.read())
 
                 os.chdir(cwd)
                 shutil.rmtree(export_dest)
-                self.logger.debug('Completed test command: %s' % self.verify_command)
+                self.logger.debug(
+                    'Completed test command: %s',
+                    self.verify_command)
 
                 if return_code != 0:
                     output.seek(0)

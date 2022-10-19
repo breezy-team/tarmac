@@ -81,9 +81,10 @@ class TestCommand(TarmacTestCase):
         """
         self.config.debug = False
         target = Thing(config=Thing(
-                verify_command="python -c 'import sys;"
-                           " sys.stdout.write(\"f\xe5\xefl\");"
-                           " sys.exit(1)'"),
+            verify_command=(
+                "python -c 'import sys;"
+                " sys.stdout.write(\"f\xe5\xefl\");"
+                " sys.exit(1)'")),
             tree=Thing(abspath=os.path.abspath))
         e = self.assertRaises(command.VerifyCommandFailed,
                               self.plugin.run,

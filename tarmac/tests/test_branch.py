@@ -189,7 +189,7 @@ class TestBranch(BranchTestCase):
         repo = self.branch1.lp_branch._internal_bzr_branch.repository
         rev = repo.get_revision(last_rev)
         self.assertEqual('\n'.join(reviews),
-                          rev.properties.get('reviews', None))
+                         rev.properties.get('reviews', None))
 
     def test_cleanup(self):
         '''The branch object should clean up after itself.'''

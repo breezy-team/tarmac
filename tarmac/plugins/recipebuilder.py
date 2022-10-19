@@ -29,7 +29,7 @@ class PackageRecipe(TarmacPlugin):
     def run(self, command, target, *args, **kwargs):
         '''Trigger a package recipe build.'''
         success_count = kwargs.get('success_count', 0)
-        
+
         try:
             self.package_recipe = target.config.package_recipe
             self.series_list = target.config.recipe_series.split(',')
@@ -64,6 +64,7 @@ class PackageRecipe(TarmacPlugin):
             self.logger.error('Failed to request build of recipe: %s: (%s) %s',
                               self.package_recipe,
                               error.response.status, reason)
+
 
 tarmac_hooks['tarmac_post_merge'].hook(PackageRecipe(),
                                        'Package recipe builder plug-in.')

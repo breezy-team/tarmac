@@ -28,7 +28,7 @@ class CommitMessageTemplate(TarmacPlugin):
     '''
 
     def run(self, command, target, source, proposal):
-    # pylint: disable-msg=W0613
+        # pylint: disable-msg=W0613
 
         try:
             template = target.config.commit_message_template
@@ -112,5 +112,6 @@ class CommitMessageTemplateInfo(object):
         return self._proposal.web_link
 
 
-tarmac_hooks['tarmac_pre_commit'].hook(CommitMessageTemplate(),
+tarmac_hooks['tarmac_pre_commit'].hook(
+    CommitMessageTemplate(),
     'Commit messsage template editor.')

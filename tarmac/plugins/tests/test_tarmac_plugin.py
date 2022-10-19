@@ -18,6 +18,7 @@
 from tarmac.plugins import TarmacPlugin
 from tarmac.tests import Thing, TarmacTestCase
 
+
 class TestTarmacPlugin(TarmacTestCase):
     """Test the tarmacplugin abstract class."""
 
@@ -42,4 +43,3 @@ class TestTarmacPlugin(TarmacTestCase):
             Thing(config=Thing(foo="first")),
             Thing(config=Thing(foo="second")))
         self.assertEqual(value, "first")
-

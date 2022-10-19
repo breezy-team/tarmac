@@ -48,7 +48,7 @@ class MockLPBranch(object):
             source_dir = source_branch._internal_bzr_branch.controldir
             controldir = source_dir.sprout(tree_dir)
             self._internal_tree, self._internal_bzr_branch = \
-                    controldir.open_tree_or_branch(tree_dir)
+                controldir.open_tree_or_branch(tree_dir)
             self.revision_count = source_branch.revision_count
         else:
             self._internal_bzr_branch = ControlDir.create_branch_convenience(
@@ -122,7 +122,7 @@ access_secret = secret
         # Clean up environment.
         shutil.rmtree(self.tempdir)
         keys = ['TARMAC_CONFIG_HOME', 'TARMAC_CACHE_HOME', 'TARMAC_PID_FILE',
-            'TARMAC_CREDENTIALS']
+                'TARMAC_CREDENTIALS']
         for key in keys:
             try:
                 del os.environ[key]
@@ -143,7 +143,7 @@ access_secret = secret
             branch_url = 'lp:%s' % os.path.dirname(branch_path)[-2]
         else:
             branch_url = 'lp:%s' % os.path.basename(branch_path)
-        if not branch_url in self.config.sections():
+        if branch_url not in self.config.sections():
             self.config.add_section(branch_url)
         self.config.set(branch_url, 'tree_dir', branch_path)
         self.config.set(branch_url, 'log_file',

@@ -26,8 +26,12 @@ class TestCommitMessageTemplateInfo(TarmacTestCase):
                     reviewer=Thing(
                         display_name="Virginia Voter", name="virginia")),
                 ],
-            self_link="http://api.launchpad.net/1.0/~rockstar/tarmac/tarmac/+merge/1",
-            web_link='https://code.launchpad.net/~rockstar/tarmac/tarmac/+merge/1',
+            self_link=(
+                "http://api.launchpad.net/1.0/~rockstar/tarmac/tarmac/"
+                "+merge/1"),
+            web_link=(
+                'https://code.launchpad.net/~rockstar/tarmac/tarmac/'
+                '+merge/1'),
         )
         self.info = CommitMessageTemplateInfo(self.proposal)
 

@@ -68,7 +68,7 @@ class TestAuthCommand(TarmacTestCase):
 
     # XXX: rockstar - 10 Jan 2010 - How do I test this with the OAuth request,
     # etc?
-    #def test_run(self):
+    # def test_run(self):
     #    '''Test that calling the auth command gets a Lanuchpad token.'''
 
     #    tmp_stdout = StringIO()
@@ -531,5 +531,6 @@ class TestMergeCommand(BranchTestCase):
         self.config.proposal = self.proposals[1].web_link
         self.command.run(launchpad=self.launchpad,
                          branch_url=self.branches[1].bzr_identity)
-        self.launchpad.load.assert_called_once_with(self.proposals[1].self_link)
+        self.launchpad.load.assert_called_once_with(
+            self.proposals[1].self_link)
         self.command._get_reviews.assert_called_once_with(self.proposals[1])

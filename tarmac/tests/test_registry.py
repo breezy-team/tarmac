@@ -23,8 +23,7 @@ class TestCommandRegistry(TarmacTestCase):
         registry = CommandRegistry(config=self.config)
         command = TarmacCommand(registry)
         registry.register_command('test', command)
-        self.assertEqual(registry._registry,
-            {'test': command})
+        self.assertEqual(registry._registry, {'test': command})
 
     def test__get_command(self):
         registry = CommandRegistry(config=self.config)

@@ -98,14 +98,15 @@ class BugResolver(TarmacPlugin):
             return
         now = datetime.utcnow()
         target_milestone = self._find_target_milestone(project, now)
-        self.logger.info("%s/%s: Setting Milestone: %s",
-                task.bug.id, task.bug_target_name, target_milestone)
+        self.logger.info(
+            "%s/%s: Setting Milestone: %s",
+            task.bug.id, task.bug_target_name, target_milestone)
         task.milestone = target_milestone
 
     def _find_milestones(self, project):
         """
         Return list of active milestones in a project.  If the config
-        `default_milestone` is set filter by that.  If not found, an 
+        `default_milestone` is set filter by that.  If not found, a
         empty list will be returned.
         """
         default = self.config["default_milestone"]

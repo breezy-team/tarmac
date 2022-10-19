@@ -124,7 +124,7 @@ class BugResolverTests(TarmacTestCase):
         launchpad = Thing(bugs=self.bugs)
         command = Thing(launchpad=launchpad)
         self.plugin.run(command=command, target=target, source=None,
-                            proposal=self.proposal)
+                        proposal=self.proposal)
         self.assertEqual(self.bugs['0'].bug_tasks[0].milestone,
                          self.milestone_future)
         self.assertEqual(self.bugs['1'].bug_tasks[0].milestone,
@@ -285,7 +285,8 @@ class BugResolverTests(TarmacTestCase):
     def test__set_milestone_on_task_milestone_already_set(self):
         """milestone is already set, should leave task untouched"""
         self.plugin.logger.info = MagicMock()
-        self.plugin.config = {"set_milestone": True, "default_milestone": "past"}
+        self.plugin.config = {
+            "set_milestone": True, "default_milestone": "past"}
         self.plugin._set_milestone_on_task(
             self.projects[0], self.bugs['1'].bug_tasks[0])
         self.assertEqual(

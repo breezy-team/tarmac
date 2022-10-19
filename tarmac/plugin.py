@@ -103,7 +103,7 @@ def load_plugins(load_only=None):
             _module = types.ModuleType(plugin_info[0])
             with open(plugin_info[1], "rb") as f:
                 exec(compile(f.read(), plugin_info[1], 'exec'),
-                        _module.__dict__)
+                     _module.__dict__)
             setattr(_mod_plugins, plugin_info[0], _module)
         except KeyboardInterrupt:
             raise
