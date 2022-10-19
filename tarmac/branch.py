@@ -15,6 +15,7 @@
 # along with Tarmac.  If not, see <http://www.gnu.org/licenses/>.
 
 '''Tarmac branch tools.'''
+from contextlib import ExitStack
 import logging
 import os
 import shutil
@@ -71,36 +72,28 @@ class Branch(object):
 
     def create_tree(self):
         '''Create the dir and working tree.'''
-        try:
-            self.logger.debug(
-                'Using tree in %(tree_dir)s' % {
-                    'tree_dir': self.config.tree_dir})
-            if os.path.exists(self.config.tree_dir):
-                self.tree = WorkingTree.open(self.config.tree_dir)
+        self.logger.debug(
+            'Using tree in %(tree_dir)s' % {
+                'tree_dir': self.config.tree_dir})
+        if os.path.exists(self.config.tree_dir):
+            self.tree = WorkingTree.open(self.config.tree_dir)
 
-                if self.tree.branch.user_url != self.bzr_branch.user_url:
-                    self.logger.debug('Tree URLs do not match: %s - %s' % (
-                        self.bzr_branch.user_url, self.tree.branch.user_url))
-                    raise InvalidWorkingTree(
-                        'The `tree_dir` option for the target branch is not a '
-                        'lightweight checkout. Please ask a project '
-                        'administrator to resolve the issue, and try again.')
-            else:
-                self.logger.debug('Tree does not exist.  Creating dir')
-                # Create the path up to but not including tree_dir if it does
-                # not exist.
-                parent_dir = os.path.dirname(self.config.tree_dir)
-                if not os.path.exists(parent_dir):
-                    os.makedirs(parent_dir)
-                self.tree = self.bzr_branch.create_checkout(
-                    self.config.tree_dir, lightweight=True)
-        except AttributeError:
-            # Store this so we can rmtree later
-            self.temp_tree_dir = tempfile.mkdtemp()
-            self.logger.debug(
-                'Using temp dir at %(tree_dir)s' % {
-                    'tree_dir': self.temp_tree_dir})
-            self.tree = self.bzr_branch.create_checkout(self.temp_tree_dir)
+            if self.tree.branch.user_url != self.bzr_branch.user_url:
+                self.logger.debug('Tree URLs do not match: %s - %s' % (
+                    self.bzr_branch.user_url, self.tree.branch.user_url))
+                raise InvalidWorkingTree(
+                    'The `tree_dir` option for the target branch is not a '
+                    'lightweight checkout. Please ask a project '
+                    'administrator to resolve the issue, and try again.')
+        else:
+            self.logger.debug('Tree does not exist.  Creating dir')
+            # Create the path up to but not including tree_dir if it does
+            # not exist.
+            parent_dir = os.path.dirname(self.config.tree_dir)
+            if not os.path.exists(parent_dir):
+                os.makedirs(parent_dir)
+            self.tree = self.bzr_branch.create_checkout(
+                self.config.tree_dir, lightweight=True)
 
         self.cleanup()
 
@@ -138,12 +131,9 @@ class Branch(object):
     def unmanaged_files(self):
         """Get the list of ignored and unknown files in the tree."""
         unmanaged = []
-        try:
-            self.tree.lock_read()
+        with self.tree.lock_read():
             unmanaged = [x for x in self.tree.unknowns()]
             unmanaged.extend([x[0] for x in self.tree.ignored_files()])
-        finally:
-            self.tree.unlock()
         return unmanaged
 
     @property
@@ -156,7 +146,7 @@ class Branch(object):
                 '%s in %s' % (conflict.typestring, conflict.path))
         return '\n'.join(conflicts)
 
-    def commit(self, commit_message, revprops=None, **kwargs):
+    def commit(self, commit_message, revprops=None, dry_run=False, **kwargs):
         '''Commit changes.'''
         if not revprops:
             revprops = {}
@@ -179,11 +169,9 @@ class Branch(object):
         else:
             committer = 'Tarmac'
 
-        try:
+        if not dry_run:
             self.tree.commit(commit_message, committer=committer,
                              revprops=revprops, authors=authors)
-        except AssertionError as error:
-            raise TarmacMergeError(str(error))
 
     @property
     def landing_candidates(self):
@@ -195,9 +183,9 @@ class Branch(object):
         author_list = []
 
         if self.target:
-            try:
-                self.bzr_branch.lock_read()
-                self.target.bzr_branch.lock_read()
+            with ExitStack() as es:
+                es.enter_context(self.bzr_branch.lock_read())
+                es.enter_context(self.target.bzr_branch.lock_read())
 
                 graph = self.bzr_branch.repository.get_graph(
                     self.target.bzr_branch.repository)
@@ -214,9 +202,6 @@ class Branch(object):
                         if author not in author_list:
                             author_list.append(author)
 
-            finally:
-                self.target.bzr_branch.unlock()
-                self.bzr_branch.unlock()
         else:
             last_rev = self.bzr_branch.last_revision()
             if last_rev != NULL_REVISION:
@@ -232,8 +217,7 @@ class Branch(object):
         """Return the list of bugs fixed by the branch."""
         bugs_list = []
 
-        try:
-            self.bzr_branch.lock_read()
+        with self.bzr_branch.lock_read():
             oldrevid = self.bzr_branch.get_rev_id(self.lp_branch.revision_count)
             for rev_info in self.bzr_branch.iter_merge_sorted_revisions(
                 stop_revision_id=oldrevid):
@@ -246,8 +230,6 @@ class Branch(object):
                 except NoSuchRevision:
                     continue
 
-        finally:
-            self.bzr_branch.unlock()
         return bugs_list
 
     @property
