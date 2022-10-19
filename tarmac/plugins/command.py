@@ -93,7 +93,6 @@ class Command(TarmacPlugin):
                     self.do_failed(output.read())
 
                 os.chdir(cwd)
-                shutil.rmtree(export_dest)
                 self.logger.debug(
                     'Completed test command: %s',
                     self.verify_command)
@@ -111,7 +110,8 @@ class Command(TarmacPlugin):
         exception is then raised to prevent the commit from happening.
         '''
         message = 'Test command "%s" failed.' % self.verify_command
-        output_value = trim_output(output_value.decode('UTF-8', 'replace'))
+        full_output_value = output_value.decode('UTF-8', 'replace')
+        output_value = trim_output(full_output_value)
         comment = ('The attempt to merge %(source)s into %(target)s failed. '
                    'Below is the output from the failed tests.\n\n'
                    '%(output)s') % {
@@ -119,6 +119,9 @@ class Command(TarmacPlugin):
             'target': self.proposal.target_branch.display_name,
             'output': output_value,
             }
+        self.logger.info(
+            'Output of failed command %s: %s', self.verify_command,
+            output_value)
         raise VerifyCommandFailed(message, comment)
 
 
