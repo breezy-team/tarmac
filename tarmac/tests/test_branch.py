@@ -18,7 +18,7 @@
 import os
 import shutil
 
-from breezy.errors import PointlessMerge
+from breezy.workingtree import PointlessMerge
 from unittest.mock import patch
 from tarmac import branch
 from tarmac.exceptions import (
