@@ -59,6 +59,17 @@ class VerifyCommandFailed(TarmacMergeError):
     """Running the verify_command failed."""
 
 
+def trim_output(output):
+    """Trim output so it doesn't exceed launchpad's limits."""
+    lines = output.splitlines(True)
+    if len(lines) > 3000:
+        return ''.join(
+            lines[:100]
+            + ["\n\n\n... OUTPUT TRIMMED ... \n\n\n"]
+            + lines[:-100])
+    return output
+
+
 class Command(TarmacPlugin):
     '''Tarmac plugin for running a test command.
 
@@ -94,30 +105,28 @@ class Command(TarmacPlugin):
             export(target.tree, export_dest, per_file_timestamps=False,
                    recurse_nested=True)
 
-            with SpooledTemporaryFile() as stdout, SpooledTemporaryFile() as stderr:
+            with SpooledTemporaryFile() as output:
                 try:
                     return_code = subprocess.call(
                         self.verify_command, shell=True, stdin=subprocess.DEVNULL,
-                        stdout=stdout, stderr=stderr, timeout=TIMEOUT,
+                        stdout=output, stderr=output, timeout=TIMEOUT,
                         cwd=export_dest)
                 except subprocess.TimeoutExpired:
                     self.logger.debug(
                         "Command appears to be hung. There has been no output for"
                         " %d seconds. Sending SIGTERM." % TIMEOUT)
-                    stdout.seek(0)
-                    stderr.seek(0)
-                    self.do_failed(stdout.read(), stderr.read())
+                    output.seek(0)
+                    self.do_failed(output.read())
 
                 os.chdir(cwd)
                 shutil.rmtree(export_dest)
                 self.logger.debug('Completed test command: %s' % self.verify_command)
 
                 if return_code != 0:
-                    stdout.seek(0)
-                    stderr.seek(0)
-                    self.do_failed(stdout.read(), stderr.read())
+                    output.seek(0)
+                    self.do_failed(output.read())
 
-    def do_failed(self, stdout_value, stderr_value):
+    def do_failed(self, output_value):
         '''Perform failure tests.
 
         In this case, the output of the test command is posted as a comment,
@@ -126,14 +135,13 @@ class Command(TarmacPlugin):
         exception is then raised to prevent the commit from happening.
         '''
         message = 'Test command "%s" failed.' % self.verify_command
-        stdout_value = stdout_value.decode('UTF-8', 'replace')
-        stderr_value = stderr_value.decode('UTF-8', 'replace')
+        output_value = trim_output(output_value.decode('UTF-8', 'replace'))
         comment = ('The attempt to merge %(source)s into %(target)s failed. '
                    'Below is the output from the failed tests.\n\n'
                    '%(output)s') % {
             'source': self.proposal.source_branch.display_name,
             'target': self.proposal.target_branch.display_name,
-            'output': '\n'.join([stdout_value, stderr_value]),
+            'output': output_value,
             }
         raise VerifyCommandFailed(message, comment)
 
