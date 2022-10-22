@@ -53,7 +53,7 @@ class TestBranch(BranchTestCase):
         self.config.add_section(lp_branch_url)
         self.config.set(lp_branch_url, 'tree_dir', tree_dir)
         a_branch = branch.Branch.create(mock, self.config)
-        self.assertEqual(tree_dir, a_branch.config.tree_dir)
+        self.assertEqual(tree_dir, a_branch.config.get('tree_dir'))
         self.config.remove_section(lp_branch_url)
 
     def test_create(self):
@@ -205,8 +205,9 @@ class TestBranch(BranchTestCase):
         self.branch1.merge(self.branch2)
         self.assertTrue(self.branch1.tree.changes_from(
                 self.branch1.tree.basis_tree()).has_changed())
-        with open(os.path.join(self.branch1.config.tree_dir, 'README.bak~'),
-                  'w') as f:
+        with open(
+                os.path.join(self.branch1.config.get('tree_dir'),
+                             'README.bak~'), 'w') as f:
             f.close()
 
         self.branch1.cleanup()
@@ -218,10 +219,10 @@ class TestBranch(BranchTestCase):
         self.branch1.merge(self.branch2)
         self.assertEqual(self.branch1.unmanaged_files, [])
         expected = sorted(['README~', 'newfile'])
-        with open(os.path.join(self.branch1.config.tree_dir, 'README~'),
+        with open(os.path.join(self.branch1.config.get('tree_dir'), 'README~'),
                   'w') as f:
             f.close()
-        with open(os.path.join(self.branch1.config.tree_dir, 'newfile'),
+        with open(os.path.join(self.branch1.config.get('tree_dir'), 'newfile'),
                   'w') as f:
             f.close()
         self.assertEqual(sorted(self.branch1.unmanaged_files), expected)

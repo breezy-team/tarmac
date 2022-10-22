@@ -26,7 +26,7 @@ from breezy.errors import NoSuchRevision
 from breezy.revision import NULL_REVISION
 from breezy.workingtree import WorkingTree
 
-from tarmac.config import BranchConfig
+from tarmac.config import BranchConfig, TreeConfig, StackedConfig
 from tarmac.exceptions import (
     BranchHasConflicts,
     InvalidWorkingTree,
@@ -80,8 +80,9 @@ class Branch(object):
 
     def create_tree(self):
         '''Create the dir and working tree.'''
-        self.logger.debug('Using tree in %s', self.config.tree_dir)
-        if self.config.tree_dir is None:
+        tree_dir = self.config.get('tree_dir')
+        self.logger.debug('Using tree in %s', tree_dir)
+        if tree_dir is None:
             # Store this so we can rmtree later
             self.temp_tree_dir = tempfile.mkdtemp()
             self.exit_stack.callback(
@@ -99,8 +100,8 @@ class Branch(object):
                     'The `tree_dir` option for the target branch is not a '
                     'lightweight checkout. Please ask a project '
                     'administrator to resolve the issue, and try again.')
-        elif os.path.exists(self.config.tree_dir):
-            self.tree = WorkingTree.open(self.config.tree_dir)
+        elif os.path.exists(tree_dir):
+            self.tree = WorkingTree.open(tree_dir)
 
             if self.tree.branch.user_url != self.bzr_branch.user_url:
                 self.logger.debug('Tree URLs do not match: %s - %s' % (
@@ -113,11 +114,17 @@ class Branch(object):
             self.logger.debug('Tree does not exist.  Creating dir')
             # Create the path up to but not including tree_dir if it does
             # not exist.
-            parent_dir = os.path.dirname(self.config.tree_dir)
+            parent_dir = os.path.dirname(tree_dir)
             if not os.path.exists(parent_dir):
                 os.makedirs(parent_dir)
             self.tree = self.bzr_branch.create_checkout(
-                self.config.tree_dir, lightweight=True)
+                tree_dir, lightweight=True)
+
+        tree_config = TreeConfig.from_tree(self.tree)
+        if tree_config:
+            self.logger.debug(
+                'Reading additional configuration from %r', self.tree)
+            self.config = StackedConfig([self.config, tree_config])
 
         self.cleanup()
 

@@ -22,7 +22,10 @@ __metaclass__ = type
 
 import logging
 import os
-from configparser import ConfigParser
+from configparser import ConfigParser, NoSectionError
+
+from breezy.tree import Tree
+from breezy.transport import NoSuchFile
 
 from tarmac.xdgdirs import xdg_config_home, xdg_cache_home
 
@@ -121,30 +124,82 @@ class TarmacConfig(ConfigParser):
         return self['Tarmac'].get('rejected_branch_status')
 
 
-class BranchConfig:
-    '''A Branch specific config.
+class TreeConfig:
+    """A Tarmac config that lives in a tree."""
 
-    Instead of providing the whole config for branches, it is better to provide
-    it with only its specific config vars.
-    '''
+    def __init__(self, text):
+        self._config = ConfigParser()
+        self._config.read_string(text)
 
-    def __init__(self, branch_name, config):
-        if config.has_section(branch_name):
-            self._items = dict(config.items(branch_name))
-        else:
-            self._items = {}
+    def __getitem__(self, attr):
+        return self._config['Tarmac'][attr]
 
     def get(self, attr, default=None):
         '''A convenient method for getting a config key that may be missing.
 
         Defaults to None if the key is not set.
         '''
-        return self._items.get(attr, default)
+        try:
+            return self[attr]
+        except KeyError:
+            return default
 
-    @property
-    def tree_dir(self):
-        return self.get('tree_dir')
+    @classmethod
+    def from_tree(cls, tree: Tree):
+        try:
+            text = tree.get_file_text('tarmac.conf')
+            return cls(text.decode('utf-8'))
+        except NoSuchFile:
+            return None
 
-    @property
-    def commit_message_template(self):
-        return self.get('commit_message_template')
+
+class BranchConfig:
+    """A Branch specific config.
+
+    Instead of providing the whole config for branches, it is better to provide
+    it with only its specific config vars.
+    """
+
+    def __init__(self, branch_name, config):
+        self._branch_name = branch_name
+        self._config = config
+
+    def __getitem__(self, attr):
+        try:
+            return self._config[self._branch_name][attr]
+        except NoSectionError as e:
+            raise KeyError(attr) from e
+
+    def get(self, attr, default=None):
+        '''A convenient method for getting a config key that may be missing.
+
+        Defaults to None if the key is not set.
+        '''
+        try:
+            section = self._config[self._branch_name]
+        except (NoSectionError, KeyError):
+            return default
+        return section.get(attr, default)
+
+
+class StackedConfig:
+    """A Config that queries other configs.
+    """
+
+    def __init__(self, others):
+        self._others = others
+
+    def __getitem__(self, attr):
+        for other in self._others:
+            try:
+                return other[attr]
+            except KeyError:
+                pass
+        else:
+            raise KeyError(attr)
+
+    def get(self, attr, default=None):
+        try:
+            return self[attr]
+        except KeyError:
+            return default
