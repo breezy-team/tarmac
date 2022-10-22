@@ -88,17 +88,13 @@ def find_plugins(load_only=None):
     return plugin_names
 
 
-def load_plugins(load_only=None):
-    """Find the plugins for Tarmac.
-
-    %load_only is a string containing the name of a single plug-in to find.
-    """
-    plugin_names = []
+def find_bundled_plugins():
+    from importlib.resources import contents
     valid_suffixes = [suffix for suffix, mod_type, flags in imp.get_suffixes()
                       if flags == imp.PY_SOURCE]
 
-    for name in _mod_plugins.__loader__.get_resource_reader().contents():
-        if name == '__pycache__':
+    for name in contents("tarmac.plugins"):
+        if name in ('__pycache__', 'tests'):
             continue
         if '.' in name:
             if name == '__init__.py':
@@ -111,17 +107,35 @@ def load_plugins(load_only=None):
                     break
             else:
                 continue
-            importlib.import_module('tarmac.plugins.%s' % name)
+        yield name
+
+
+def load_plugins(load_only=None):
+    """Find the plugins for Tarmac.
+
+    %load_only is a string containing the name of a single plug-in to find.
+    """
+    plugin_names = []
+
+    for plugin_name in find_bundled_plugins():
+        try:
+            if getattr(_mod_plugins, plugin_name, None) is not None:
+                continue
+
+            logger.debug('Loading plug-in: %s', plugin_name)
+            importlib.import_module("tarmac.plugins.%s" % plugin_name)
+        except KeyboardInterrupt:
+            raise
         else:
-            importlib.import_module('tarmac.plugins.%s' % name)
-        plugin_names.append(name)
+            plugin_names.append(plugin_name)
 
     for plugin_name, plugin_path in find_plugins(load_only=load_only):
         try:
             if getattr(_mod_plugins, plugin_name, None) is not None:
                 continue
 
-            logger.debug('Loading plug-in: %s' % plugin_path)
+            logger.debug('Loading plug-in: %s from %s', plugin_name,
+                         plugin_path)
             _module = types.ModuleType(plugin_name)
             with open(plugin_path, "rb") as f:
                 exec(compile(f.read(), plugin_path, 'exec'),
