@@ -16,6 +16,7 @@
 '''Plugin utilities for Tarmac.'''
 
 import imp
+import importlib
 import logging
 import os
 import types
@@ -31,15 +32,13 @@ def find_plugins(load_only=None):
     %load_only is a string containing the name of a single plug-in to find.
     """
 
-    TARMAC_PLUGIN_PATHS = [
-        os.path.expanduser('~/.config/tarmac/plugins'),
-        os.path.join(os.path.dirname(__file__), 'plugins'),
-    ]
+    TARMAC_PLUGIN_PATHS = []
     try:
         TARMAC_PLUGIN_PATHS.extend(
             os.environ['TARMAC_PLUGIN_PATH'].split(':'))
     except KeyError:
         pass
+    TARMAC_PLUGIN_PATHS.append(os.path.expanduser('~/.config/tarmac/plugins'))
 
     logger.debug('Using plug-in paths: %s' % TARMAC_PLUGIN_PATHS)
     valid_suffixes = [suffix for suffix, mod_type, flags in imp.get_suffixes()
@@ -95,19 +94,41 @@ def load_plugins(load_only=None):
     %load_only is a string containing the name of a single plug-in to find.
     """
     plugin_names = []
-    for plugin_info in find_plugins(load_only=load_only):
+    valid_suffixes = [suffix for suffix, mod_type, flags in imp.get_suffixes()
+                      if flags == imp.PY_SOURCE]
+
+    for name in _mod_plugins.__loader__.get_resource_reader().contents():
+        if name == '__pycache__':
+            continue
+        if '.' in name:
+            if name == '__init__.py':
+                continue
+            if name.startswith('.'):
+                continue  # Hidden file, should be ignored.
+            for suffix in valid_suffixes:
+                if name.endswith(suffix):
+                    name = name[:-len(suffix)]
+                    break
+            else:
+                continue
+            importlib.import_module('tarmac.plugins.%s' % name)
+        else:
+            importlib.import_module('tarmac.plugins.%s' % name)
+        plugin_names.append(name)
+
+    for plugin_name, plugin_path in find_plugins(load_only=load_only):
         try:
-            if getattr(_mod_plugins, plugin_info[0], None) is not None:
+            if getattr(_mod_plugins, plugin_name, None) is not None:
                 continue
 
-            logger.debug('Loading plug-in: %s' % plugin_info[1])
-            _module = types.ModuleType(plugin_info[0])
-            with open(plugin_info[1], "rb") as f:
-                exec(compile(f.read(), plugin_info[1], 'exec'),
+            logger.debug('Loading plug-in: %s' % plugin_path)
+            _module = types.ModuleType(plugin_name)
+            with open(plugin_path, "rb") as f:
+                exec(compile(f.read(), plugin_path, 'exec'),
                      _module.__dict__)
-            setattr(_mod_plugins, plugin_info[0], _module)
+            setattr(_mod_plugins, plugin_name, _module)
         except KeyboardInterrupt:
             raise
         else:
-            plugin_names.append(plugin_info)
+            plugin_names.append(plugin_name)
     return plugin_names

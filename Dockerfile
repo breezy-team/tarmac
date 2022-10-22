@@ -12,4 +12,7 @@ VOLUME /config
 ENV TARMAC_CACHE_HOME=/cache
 VOLUME /cache
 
+ENV TARMAC_PLUGIN_PATH=/plugins
+VOLUME /plugins
+
 ENTRYPOINT ["tarmac"]
