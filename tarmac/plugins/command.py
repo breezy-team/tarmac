@@ -70,7 +70,6 @@ class Command(TarmacPlugin):
         self.proposal = proposal
         self.setup_command = target.config.get('setup_command')
 
-        self.logger.debug('Running test command: %s', self.verify_command)
         cwd = os.getcwd()
         # Export the changes to a temporary directory, and run the command
         # there, to prevent possible abuse of running commands in the tree.
@@ -82,6 +81,8 @@ class Command(TarmacPlugin):
                    recurse_nested=True)
 
             if self.setup_command:
+                self.logger.debug('Running setup command: %s',
+                                  self.setup_command)
                 with SpooledTemporaryFile() as output:
                     try:
                         return_code = subprocess.check_call(
@@ -103,6 +104,7 @@ class Command(TarmacPlugin):
                         output.seek(0)
                         self.do_setup_failed(output.read())
 
+            self.logger.debug('Running test command: %s', self.verify_command)
             with SpooledTemporaryFile() as output:
                 try:
                     return_code = subprocess.call(
