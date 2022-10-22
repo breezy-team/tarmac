@@ -21,7 +21,7 @@ from breezy.export import export
 import os
 import subprocess
 
-from tarmac.exceptions import TarmacMergeError
+from tarmac.exceptions import TarmacMergeError, TarmacMergeSkipError
 from tarmac.hooks import tarmac_hooks
 from tarmac.plugins import TarmacPlugin
 
@@ -36,6 +36,10 @@ TIMEOUT = 60 * 15
 
 class VerifyCommandFailed(TarmacMergeError):
     """Running the verify_command failed."""
+
+
+class SetupCommandFailed(TarmacMergeSkipError):
+    """Running the setup_command failed."""
 
 
 def trim_output(output):
@@ -64,6 +68,7 @@ class Command(TarmacPlugin):
             return
 
         self.proposal = proposal
+        self.setup_command = target.config.get('setup_command')
 
         self.logger.debug('Running test command: %s', self.verify_command)
         cwd = os.getcwd()
@@ -75,6 +80,28 @@ class Command(TarmacPlugin):
         with TemporaryDirectory(prefix=temp_path + '/branch.') as export_dest:
             export(target.tree, export_dest, per_file_timestamps=False,
                    recurse_nested=True)
+
+            if self.setup_command:
+                with SpooledTemporaryFile() as output:
+                    try:
+                        return_code = subprocess.check_call(
+                            self.setup_command, shell=True,
+                            stdin=subprocess.DEVNULL,
+                            stdout=output, stderr=output, timeout=TIMEOUT,
+                            cwd=export_dest)
+                    except subprocess.TimeoutExpired:
+                        self.logger.debug(
+                            "Setup command appears to be hung. "
+                            "There has been no output for"
+                            " %d seconds. Sending SIGTERM." % TIMEOUT)
+                        output.seek(0)
+                        self.do_setup_failed(output.read())
+                    except subprocess.CalledProcessError as e:
+                        self.logger.debug(
+                            "Setup command failed with code %d. ",
+                            e.returncode)
+                        output.seek(0)
+                        self.do_setup_failed(output.read())
 
             with SpooledTemporaryFile() as output:
                 try:
@@ -122,6 +149,17 @@ class Command(TarmacPlugin):
             'Output of failed command %s: %s', self.verify_command,
             output_value)
         raise VerifyCommandFailed(message, comment)
+
+    def do_setup_failed(self, output_value):
+        '''Perform setup failure tests.
+        '''
+        message = 'Setup command "%s" failed.' % self.setup_command
+        full_output_value = output_value.decode('UTF-8', 'replace')
+        output_value = trim_output(full_output_value)
+        self.logger.info(
+            'Output of failed setup command %s: %s', self.setup_command,
+            output_value)
+        raise SetupCommandFailed(message, output_value)
 
 
 tarmac_hooks['tarmac_pre_commit'].hook(Command(), 'Command plugin')
