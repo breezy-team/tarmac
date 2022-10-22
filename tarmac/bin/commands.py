@@ -487,3 +487,12 @@ class cmd_merge(TarmacCommand):
                         'An error occurred trying to merge %s: %s',
                         branch, error)
                     raise
+
+
+class cmd_plugins(TarmacCommand):
+
+    def run(self):
+        self.logger.debug('Loading plugins')
+        for name, path in load_plugins():
+            print(name)
+        self.logger.debug('Plugins loaded')

@@ -94,6 +94,7 @@ def load_plugins(load_only=None):
 
     %load_only is a string containing the name of a single plug-in to find.
     """
+    plugin_names = []
     for plugin_info in find_plugins(load_only=load_only):
         try:
             if getattr(_mod_plugins, plugin_info[0], None) is not None:
@@ -107,3 +108,6 @@ def load_plugins(load_only=None):
             setattr(_mod_plugins, plugin_info[0], _module)
         except KeyboardInterrupt:
             raise
+        else:
+            plugin_names.append(plugin_info)
+    return plugin_names
