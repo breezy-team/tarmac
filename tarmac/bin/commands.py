@@ -99,11 +99,6 @@ class TarmacCommand(Command):
 
     def get_launchpad_object(self, filename=None, staging=False):
         '''Return a Launchpad object for making API requests.'''
-        # XXX: rockstar - 2009 Dec 13 - Ideally, we should be using
-        # Launchpad.login_with, but currently, it doesn't support the option of
-        # putting the credentials file somewhere other than where the cache
-        # goes, and that's kinda nasty (and a security issue according to
-        # Kees).
         if not filename:
             filename = self.config.CREDENTIALS
 
@@ -123,6 +118,7 @@ class TarmacCommand(Command):
 
         launchpad = Launchpad.login_with(
             'Tarmac', service_root=SERVICE_ROOT,
+            version='devel',
             credentials_file=filename,
             launchpadlib_dir=self.config.CACHE_HOME)
 
