@@ -88,7 +88,7 @@ class Command(TarmacPlugin):
                         return_code = subprocess.check_call(
                             self.setup_command, shell=True,
                             stdin=subprocess.DEVNULL,
-                            stdout=output, stderr=output, timeout=TIMEOUT,
+                            stdout=output, stderr=subprocess.STDOUT, timeout=TIMEOUT,
                             cwd=export_dest)
                     except subprocess.TimeoutExpired:
                         self.logger.debug(
@@ -110,7 +110,7 @@ class Command(TarmacPlugin):
                     return_code = subprocess.call(
                         self.verify_command, shell=True,
                         stdin=subprocess.DEVNULL,
-                        stdout=output, stderr=output, timeout=TIMEOUT,
+                        stdout=output, stderr=subprocess.STDOUT, timeout=TIMEOUT,
                         cwd=export_dest)
                 except subprocess.TimeoutExpired:
                     self.logger.debug(
