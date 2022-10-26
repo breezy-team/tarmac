@@ -52,7 +52,7 @@ def trim_output(output):
         return ''.join(
             lines[:100]
             + ["\n\n\n... OUTPUT TRIMMED ... \n\n\n"]
-            + lines[:-100])
+            + lines[-100:])
     return output
 
 
@@ -146,8 +146,8 @@ def run_command_with_output_timeout(
                 else:
                     stdout.write(chunk)
 
-        stdout.seek(0)
         returncode = proc.wait()
+        stdout.seek(0)
         if returncode != 0:
             raise subprocess.CalledProcessError(
                 returncode, command, output=stdout.read())
