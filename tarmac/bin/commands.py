@@ -334,12 +334,31 @@ class cmd_merge(TarmacCommand):
                 commit_message = proposal.commit_message
                 if commit_message is None and self.config.imply_commit_message:
                     commit_message = proposal.description
-                target.commit(commit_message,
-                              revprops=revprops,
-                              authors=source.authors,
-                              dry_run=dry_run,
-                              reviews=self._get_reviews(proposal))
-                target.merge_tags(source)
+                try:
+                    target.commit(commit_message,
+                                  revprops=revprops,
+                                  authors=source.authors,
+                                  dry_run=dry_run,
+                                  reviews=self._get_reviews(proposal))
+                    target.merge_tags(source)
+                except TarmacMergeError as failure:
+                    self._handle_merge_error(proposal, failure, dry_run)
+
+                    # If we've been asked to only merge one branch, then exit.
+                    if self.config.one:
+                        return True
+
+                    continue
+                except TarmacMergeSkipError as failure:
+                    self.logger.warning(
+                        'Skipping merge of %(source)s into %(target)s:'
+                        ' %(msg)s' % {
+                            'source': proposal.source_branch.web_link,
+                            'target': proposal.target_branch.web_link,
+                            'msg': str(failure),
+                        })
+                    target.cleanup()
+                    continue
 
                 self.logger.debug('Firing tarmac_post_commit hook')
                 tarmac_hooks.fire('tarmac_post_commit',
