@@ -22,7 +22,7 @@ import shutil
 import tempfile
 
 from breezy import branch as bzr_branch
-from breezy.errors import NoSuchRevision
+from breezy.errors import NoSuchRevision, OutOfDateTree
 from breezy.revision import NULL_REVISION
 from breezy.workingtree import WorkingTree
 
@@ -31,6 +31,7 @@ from tarmac.exceptions import (
     BranchHasConflicts,
     InvalidWorkingTree,
     TarmacMergeError,
+    TarmacMergeSkipError,
 )
 
 
@@ -204,8 +205,11 @@ class Branch(object):
             try:
                 self.tree.commit(commit_message, committer=committer,
                                  revprops=revprops, authors=authors)
-            except Exception as e:
-                raise TarmacMergeError(str(e)) from e
+            except OutOfDateTree as exc:
+                raise TarmacMergeSkipError(
+                    "Another revision was created on the branch") from exc
+            except Exception as exc:
+                raise TarmacMergeError(str(exc)) from exc
         else:
             self.logger.info(
                 'Not actually committing to %s because of dry-run mode',
