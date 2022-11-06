@@ -4,7 +4,7 @@ RUN apt -y update && apt -y upgrade && apt -y install --no-install-recommends br
 
 COPY . /tmp/tarmac
 
-RUN cd /tmp/tarmac && python3 setup.py install && rm -rf /tmp/tarmac
+RUN cd /tmp/tarmac && pip3 install . && rm -rf /tmp/tarmac
 
 ENV TARMAC_CONFIG_HOME=/config
 VOLUME /config
