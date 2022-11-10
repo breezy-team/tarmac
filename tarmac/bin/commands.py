@@ -174,7 +174,7 @@ class cmd_merge(TarmacCommand):
     '''Automatically merge approved merge proposal branches.'''
 
     aliases = ['land']
-    takes_args = ['branch_url?']
+    takes_args = ['branch_urls*']
     takes_options = [
         options.http_debug_option,
         options.debug_option,
@@ -451,7 +451,7 @@ class cmd_merge(TarmacCommand):
         api_url = urlp.sub('https://api.launchpad.net/1.0/', mp_url)
         return self.launchpad.load(api_url)
 
-    def run(self, branch_url=None, launchpad=None, dry_run=False, **kwargs):
+    def run(self, branch_urls=None, launchpad=None, dry_run=False, **kwargs):
         for key, value in list(kwargs.items()):
             self.config.set('Tarmac', key, value)
 
@@ -471,37 +471,37 @@ class cmd_merge(TarmacCommand):
             self.launchpad = self.get_launchpad_object()
             self.logger.debug('launchpad object loaded')
 
-        proposal = None
         if self.config.proposal:
             proposal = self._get_proposal_from_mp_url(self.config.proposal)
             # Always override branch_url with the correct one.
-            branch_url = proposal.target_branch.bzr_identity
-
-        if branch_url:
-            self.logger.debug('%(branch_url)s specified as branch_url' % {
-                'branch_url': branch_url})
-            if not branch_url.startswith('lp:'):
-                raise TarmacCommandError('Branch urls must start with lp:')
-            self._do_merges(branch_url, source_mp=proposal, dry_run=dry_run)
-
+            branch_urls = [proposal.target_branch.bzr_identity]
         else:
-            for branch in self.config.branches:
-                self.logger.debug(
-                    'Merging approved branches against %(branch)s' % {
-                        'branch': branch})
-                try:
-                    merged = self._do_merges(branch, dry_run=dry_run)
+            proposal = None
 
-                    # If we've been asked to only merge one branch, then exit.
-                    if merged and self.config.one:
-                        break
-                except LockContention:
-                    continue
-                except Exception as error:
-                    self.logger.error(
-                        'An error occurred trying to merge %s: %s',
-                        branch, error)
-                    raise
+        if not branch_urls:
+            branch_urls = self.config.branches
+
+        for branch_url in branch_urls:
+            if not branch_url.startswith('lp:'):
+                raise TarmacCommandError(
+                    '%s: Branch urls must start with lp:' % branch_url)
+            self.logger.debug(
+                'Merging approved branches against %(branch_url)s' % {
+                    'branch_url': branch_url})
+            try:
+                merged = self._do_merges(
+                    branch_url, source_mp=proposal, dry_run=dry_run)
+
+                # If we've been asked to only merge one branch, then exit.
+                if merged and self.config.one:
+                    break
+            except LockContention:
+                continue
+            except Exception as error:
+                self.logger.error(
+                    'An error occurred trying to merge %s: %s',
+                    branch_url, error)
+                raise
 
 
 class cmd_plugins(TarmacCommand):
