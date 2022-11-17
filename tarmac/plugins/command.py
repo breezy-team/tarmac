@@ -188,50 +188,47 @@ class Command(TarmacPlugin):
             if self.setup_command:
                 self.logger.debug('Running setup command: %s',
                                   self.setup_command)
-                with SpooledTemporaryFile() as output:
-                    try:
-                        subprocess.check_call(
-                            self.setup_command,
-                            shell=True,
-                            timeout=REGULAR_TIMEOUT,
-                            stdin=subprocess.DEVNULL,
-                            stdout=output, stderr=subprocess.STDOUT,
-                            cwd=export_dest)
-                    except subprocess.TimeoutExpired as e:
-                        self.do_setup_failed(
-                            'Command timeout out after %d seconds.'
-                            % e.timeout, e.output)
-                    except subprocess.CalledProcessError as e:
-                        self.do_setup_failed(
-                            'Command exited with %d' % e.returncode, e.output)
-
-            self.logger.debug('Running test command: %s', self.verify_command)
-            with SpooledTemporaryFile() as output:
                 try:
-                    output = run_command_with_output_timeout(
-                        self.verify_command,
-                        logger=self.logger,
-                        timeout=self.verify_command_timeout,
-                        output_timeout=self.verify_command_output_timeout,
+                    subprocess.check_call(
+                        self.setup_command,
+                        shell=True,
+                        timeout=REGULAR_TIMEOUT,
+                        stdin=subprocess.DEVNULL,
                         cwd=export_dest)
                 except subprocess.TimeoutExpired as e:
-                    self.do_failed(
-                        '(``verify_command_timeout``) '
-                        'Command ran for more than %d seconds.' % e.timeout,
-                        e.output)
-                except NoOutput as e:
-                    self.do_failed(
-                        '(``verify_command_output_timeout``) '
-                        'Command sent no output for %d seconds.' % e.timeout,
-                        e.output)
+                    self.do_setup_failed(
+                        'Command timeout out after %d seconds.'
+                        % e.timeout, e.output, e.stderr)
                 except subprocess.CalledProcessError as e:
-                    self.do_failed(
-                        'Command exited with %d.' % e.returncode, e.output)
+                    self.do_setup_failed(
+                        'Command exited with %d' % e.returncode, e.output, e.stderr)
 
-                os.chdir(cwd)
-                self.logger.debug(
-                    'Completed test command: %s',
-                    self.verify_command)
+            self.logger.debug('Running test command: %s', self.verify_command)
+            try:
+                run_command_with_output_timeout(
+                    self.verify_command,
+                    logger=self.logger,
+                    timeout=self.verify_command_timeout,
+                    output_timeout=self.verify_command_output_timeout,
+                    cwd=export_dest)
+            except subprocess.TimeoutExpired as e:
+                self.do_failed(
+                    '(``verify_command_timeout``) '
+                    'Command ran for more than %d seconds.' % e.timeout,
+                    e.output)
+            except NoOutput as e:
+                self.do_failed(
+                    '(``verify_command_output_timeout``) '
+                    'Command sent no output for %d seconds.' % e.timeout,
+                    e.output)
+            except subprocess.CalledProcessError as e:
+                self.do_failed(
+                    'Command exited with %d.' % e.returncode, e.output)
+
+            os.chdir(cwd)
+            self.logger.debug(
+                'Completed test command: %s',
+                self.verify_command)
 
     def do_failed(self, reason, output_value):
         '''Perform failure tests.
