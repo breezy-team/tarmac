@@ -194,14 +194,17 @@ class Command(TarmacPlugin):
                         shell=True,
                         timeout=REGULAR_TIMEOUT,
                         stdin=subprocess.DEVNULL,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.STDOUT,
                         cwd=export_dest)
                 except subprocess.TimeoutExpired as e:
                     self.do_setup_failed(
                         'Command timeout out after %d seconds.'
-                        % e.timeout, e.output, e.stderr)
+                        % e.timeout, e.output)
                 except subprocess.CalledProcessError as e:
                     self.do_setup_failed(
-                        'Command exited with %d' % e.returncode, e.output, e.stderr)
+                        'Command exited with %d' % e.returncode,
+                        e.output)
 
             self.logger.debug('Running test command: %s', self.verify_command)
             try:
