@@ -15,11 +15,12 @@
 # along with Tarmac.  If not, see <http://www.gnu.org/licenses/>.
 '''Tarmac plugin for running tests pre-commit.'''
 
-from tempfile import SpooledTemporaryFile, TemporaryDirectory
+from tempfile import TemporaryDirectory
 
 from breezy.export import export
 import os
 import subprocess
+from typing import NoReturn
 
 from tarmac.exceptions import TarmacMergeError, TarmacMergeSkipError
 from tarmac.hooks import tarmac_hooks
@@ -259,16 +260,17 @@ class Command(TarmacPlugin):
             output_value)
         raise VerifyCommandFailed(message, comment)
 
-    def do_setup_failed(self, reason, output_value):
+    def do_setup_failed(self, reason, output_value) -> NoReturn:
         '''Perform setup failure tests.
         '''
         message = 'Setup command "%s" failed: %s' % (
             self.setup_command, reason)
-        full_output_value = output_value.decode('UTF-8', 'replace')
-        output_value = trim_output(full_output_value)
-        self.logger.info(
-            'Output of failed setup command %s: %s', self.setup_command,
-            output_value)
+        if output_value is not None:
+            full_output_value = output_value.decode('UTF-8', 'replace')
+            output_value = trim_output(full_output_value)
+            self.logger.info(
+                'Output of failed setup command %s: %s', self.setup_command,
+                output_value)
         raise SetupCommandFailed(message, output_value)
 
 
