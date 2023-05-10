@@ -50,4 +50,6 @@ def set_up_debug_logging():
     logger = logging.getLogger('tarmac')
     stderr_handler = logging.StreamHandler(sys.stderr)
     stderr_handler.setLevel(logging.DEBUG)
+    stderr_handler.setFormatter(
+        logging.Formatter('%(asctime)s %(message)s', '%H:%M:%S'))
     logger.addHandler(stderr_handler)
