@@ -126,9 +126,13 @@ def run_command_with_output_timeout(
 
                 logger.debug(
                     "Command appears to be hung. There has been no output for"
-                    " %d seconds. Sending SIGTERM." % output_timeout)
-                killem(proc.pid, signal.SIGTERM)
+                    " %d seconds. Sending SIGINT." % output_timeout)
+                killem(proc.pid, signal.SIGINT)
                 time.sleep(5)
+
+                if proc.poll() is not None:
+                    logger.debug("SIGINT did not work. Sending SIGTERM.")
+                    killem(proc.pid, signal.SIGTERM)
 
                 if proc.poll() is not None:
                     logger.debug("SIGTERM did not work. Sending SIGKILL.")
@@ -164,6 +168,7 @@ class Command(TarmacPlugin):
     '''
 
     def run(self, command, target, source, proposal):
+        self.fixup_command = target.config.get("fixup_command")
         self.verify_command = target.config.get('verify_command')
         self.verify_command_output_timeout = int(
             target.config.get('verify_command_output_timeout', OUTPUT_TIMEOUT))
@@ -192,6 +197,28 @@ class Command(TarmacPlugin):
                 try:
                     subprocess.check_call(
                         self.setup_command,
+                        shell=True,
+                        timeout=REGULAR_TIMEOUT,
+                        stdin=subprocess.DEVNULL,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.STDOUT,
+                        cwd=export_dest)
+                except subprocess.TimeoutExpired as e:
+                    self.do_setup_failed(
+                        'Command timeout out after %d seconds.'
+                        % e.timeout, e.output)
+                except subprocess.CalledProcessError as e:
+                    self.do_setup_failed(
+                        'Command exited with %d' % e.returncode,
+                        e.output)
+
+            if self.fixup_command:
+                self.logger.debug("Running fixup command: %s",
+                                  self.fixup_command)
+
+                try:
+                    subprocess.check_call(
+                        self.fixup_command,
                         shell=True,
                         timeout=REGULAR_TIMEOUT,
                         stdin=subprocess.DEVNULL,
